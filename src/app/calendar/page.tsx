@@ -6,6 +6,7 @@ import CalendarController from '@/components/calendar/CalendarController';
 import MonthView from '@/components/calendar/MonthView';
 import WeekView from '@/components/calendar/WeekView';
 import DayView from '@/components/calendar/DayView';
+import EventModal from '@/components/calendar/EventModal';
 import { Loader2 } from 'lucide-react';
 
 export type CalendarView = 'day' | 'week' | 'month';
@@ -15,6 +16,7 @@ export default function CalendarPage() {
     const [view, setView] = useState<CalendarView>('month');
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
     const fetchEvents = async () => {
         setLoading(true);
@@ -82,6 +84,7 @@ export default function CalendarPage() {
                 currentDate={currentDate}
                 setCurrentDate={setCurrentDate}
                 onSync={syncCalendar}
+                onNewEvent={() => setIsEventModalOpen(true)}
                 loading={loading}
             />
 
@@ -105,6 +108,13 @@ export default function CalendarPage() {
                 {view === 'week' && <WeekView currentDate={currentDate} events={events} />}
                 {view === 'day' && <DayView currentDate={currentDate} events={events} />}
             </div>
+
+            <EventModal
+                isOpen={isEventModalOpen}
+                onClose={() => setIsEventModalOpen(false)}
+                onSuccess={fetchEvents}
+                initialDate={currentDate}
+            />
         </main>
     );
 }

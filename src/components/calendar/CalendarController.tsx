@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw, Calendar as CalendarIcon, Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import GlassCard from '@/components/ui/GlassCard';
 import { CalendarView } from '@/app/calendar/page';
@@ -11,10 +11,11 @@ interface Props {
     currentDate: Date;
     setCurrentDate: (date: Date) => void;
     onSync: () => void;
+    onNewEvent: () => void;
     loading: boolean;
 }
 
-export default function CalendarController({ view, setView, currentDate, setCurrentDate, onSync, loading }: Props) {
+export default function CalendarController({ view, setView, currentDate, setCurrentDate, onSync, onNewEvent, loading }: Props) {
     const handlePrev = () => {
         const next = new Date(currentDate);
         if (view === 'month') next.setMonth(currentDate.getMonth() - 1);
@@ -69,14 +70,24 @@ export default function CalendarController({ view, setView, currentDate, setCurr
 
                 {/* View Switcher & Sync */}
                 <div className="flex items-center gap-4">
+                    <Button
+                        size="sm"
+                        variant="primary"
+                        icon={Plus}
+                        onClick={onNewEvent}
+                        className="shadow-luxury"
+                    >
+                        New Event
+                    </Button>
+
                     <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
                         {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
                             <button
                                 key={v}
                                 onClick={() => setView(v)}
                                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 capitalize ${view === v
-                                        ? 'bg-[#139187] text-white shadow-luxury'
-                                        : 'text-gray-400 hover:text-white'
+                                    ? 'bg-[#139187] text-white shadow-luxury'
+                                    : 'text-gray-400 hover:text-white'
                                     }`}
                             >
                                 {v}
