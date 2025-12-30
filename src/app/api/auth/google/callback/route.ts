@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         });
 
         // Redirect back to dashboard or calendar page
-        return NextResponse.redirect(new URL('/dashboard', request.url).toString());
+        return NextResponse.redirect(new URL('/', request.url).toString());
     } catch (error) {
         console.error('Failed to get tokens:', error);
         return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
