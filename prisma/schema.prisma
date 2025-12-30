@@ -1,0 +1,400 @@
+// Elvison OS - Database Schema
+// Based on implementation_plan.md
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER
+// ============================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+
+  projects       Project[]
+  tasks          Task[]
+  goals          Goal[]
+  habits         Habit[]
+  weeklyReviews  WeeklyReview[]
+  weeklyPlans    WeeklyPlan[]
+  knowledgeItems KnowledgeItem[]
+  captureItems   CaptureInbox[]
+  metrics        MetricsSnapshot[]
+  aiLogs         AiLog[]
+  affirmations   Affirmation[]
+  gratitude      GratitudeEntry[]
+  calendarEvents CalendarEvent[]
+}
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  userId      String
+  externalId  String?  @unique
+  title       String
+  description String?
+  start       DateTime
+  end         DateTime
+  location    String?
+  allDay      Boolean  @default(false)
+  source      String   @default("GOOGLE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([start])
+}
+
+// ============================================
+// PROJECTS
+// ============================================
+
+model Project {
+  id            String          @id @default(uuid())
+  userId        String
+  name          String
+  category      ProjectCategory
+  objective     String?
+  status        ProjectStatus   @default(ACTIVE)
+  startDate     DateTime?
+  targetEndDate DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id])
+  tasks     Task[]
+  goalLinks GoalProject[]
+  notes     KnowledgeItem[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum ProjectCategory {
+  BUSINESS
+  PERSONAL
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+// ============================================
+// TASKS
+// ============================================
+
+model Task {
+  id              String       @id @default(uuid())
+  userId          String
+  projectId       String?
+  title           String
+  priority        TaskPriority @default(MEDIUM)
+  status          TaskStatus   @default(TODO)
+  dueDate         DateTime?
+  dueTime         DateTime?
+  doToday         Boolean      @default(false)
+  calendarEventId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id])
+  project  Project?      @relation(fields: [projectId], references: [id])
+  subtasks TaskSubtask[]
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([doToday])
+}
+
+enum TaskPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+model TaskSubtask {
+  id        String   @id @default(uuid())
+  taskId    String
+  title     String
+  completed Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// ============================================
+// GOALS
+// ============================================
+
+model Goal {
+  id              String          @id @default(uuid())
+  userId          String
+  title           String
+  category        ProjectCategory
+  timeframe       GoalTimeframe
+  successCriteria String?
+  why             String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  projectLinks GoalProject[]
+
+  @@index([userId])
+  @@index([timeframe])
+}
+
+enum GoalTimeframe {
+  ANNUAL
+  QUARTERLY
+  MONTHLY
+}
+
+model GoalProject {
+  id        String @id @default(uuid())
+  goalId    String
+  projectId String
+
+  goal    Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, projectId])
+}
+
+// ============================================
+// HABITS
+// ============================================
+
+model Habit {
+  id        String         @id @default(uuid())
+  userId    String
+  name      String
+  frequency HabitFrequency @default(DAILY)
+  color     String?        @default("#139187")
+  archived  Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user User       @relation(fields: [userId], references: [id])
+  logs HabitLog[]
+
+  @@index([userId])
+}
+
+enum HabitFrequency {
+  DAILY
+  WEEKLY
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  date      DateTime @db.Date
+  completed Boolean  @default(true)
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([habitId])
+  @@index([date])
+}
+
+// ============================================
+// WEEKLY REVIEW & PLANNING
+// ============================================
+
+model WeeklyReview {
+  id          String    @id @default(uuid())
+  userId      String
+  weekStart   DateTime  @db.Date
+  wins        String[]
+  challenges  String[]
+  insights    String[]
+  weekNotes   String?
+  aiSummary   String?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+}
+
+model WeeklyPlan {
+  id            String    @id @default(uuid())
+  userId        String
+  weekStart     DateTime  @db.Date
+  priorities    String[]
+  focusAreas    String[]
+  aiSuggestions String?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+}
+
+// ============================================
+// KNOWLEDGE BASE
+// ============================================
+
+model KnowledgeItem {
+  id        String            @id @default(uuid())
+  userId    String
+  projectId String?
+  category  KnowledgeCategory
+  title     String
+  content   String
+  tags      String[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([category])
+}
+
+enum KnowledgeCategory {
+  DOCUMENT
+  PROMPT
+  TOOL
+  PLAYBOOK
+  REFERENCE
+}
+
+// ============================================
+// CAPTURE INBOX
+// ============================================
+
+model CaptureInbox {
+  id              String        @id @default(uuid())
+  userId          String
+  rawInput        String
+  source          CaptureSource
+  processedTaskId String?
+  processedAt     DateTime?
+  createdAt       DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([processedAt])
+}
+
+enum CaptureSource {
+  VOICE
+  TEXT
+  AI
+}
+
+// ============================================
+// METRICS
+// ============================================
+
+model MetricsSnapshot {
+  id             String   @id @default(uuid())
+  userId         String
+  date           DateTime @db.Date
+  tasksCompleted Int
+  habitStreak    Int
+  focusLevel     Int?
+  energyLevel    Int?
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+// ============================================
+// AI LOGS
+// ============================================
+
+model AiLog {
+  id         String   @id @default(uuid())
+  userId     String
+  agent      String
+  input      String
+  output     String
+  tokensUsed Int?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([agent])
+}
+
+// ============================================
+// MANIFESTATION & GRATITUDE
+// ============================================
+
+model Affirmation {
+  id        String          @id @default(uuid())
+  userId    String
+  type      AffirmationType
+  content   String
+  active    Boolean         @default(true)
+  order     Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+}
+
+enum AffirmationType {
+  CORE_IDENTITY
+  SHORT_TERM
+}
+
+model GratitudeEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime @db.Date
+  entries   String[]
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId])
+}
