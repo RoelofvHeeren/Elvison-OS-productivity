@@ -23,6 +23,7 @@ const navItems = [
     { href: '/goals', label: 'Goals', icon: Target },
     { href: '/habits', label: 'Habits', icon: Flame },
     { href: '/manifestation', label: 'Manifestation', icon: Sparkles },
+    { href: '/calendar', label: 'Calendar', icon: CalendarCheck },
     { href: '/knowledge', label: 'Knowledge', icon: BookOpen },
     { href: '/weekly-review', label: 'Weekly Review', icon: CalendarCheck },
 ];
