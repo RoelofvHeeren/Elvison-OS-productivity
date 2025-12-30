@@ -73,7 +73,7 @@ export default function CalendarPage() {
         <main className="flex-1 p-8 overflow-y-auto min-h-screen bg-black">
             <PageHeader
                 title="Calendar"
-                subtitle="Manage your time and schedule with precision"
+                description="Manage your time and schedule with precision"
             />
 
             <CalendarController
@@ -96,7 +96,7 @@ export default function CalendarPage() {
                     <MonthView
                         currentDate={currentDate}
                         events={events}
-                        onDateClick={(date) => {
+                        onDateClick={(date: Date) => {
                             setCurrentDate(date);
                             setView('day');
                         }}
