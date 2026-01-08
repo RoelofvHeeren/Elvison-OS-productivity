@@ -29,8 +29,10 @@ export async function POST(request: NextRequest) {
 
             // We need to cast to any because the simple openai wrapper might not have audio types fully typed
             // or we construct a File object for the API
+            // Whisper API accepts various formats (mp3, mp4, mpeg, mpga, m4a, wav, webm)
+            const fileType = file.type.split('/')[1] || 'webm';
             const transcription = await openai.audio.transcriptions.create({
-                file: new File([buffer], 'recording.webm', { type: file.type }),
+                file: new File([buffer], `recording.${fileType}`, { type: file.type }),
                 model: 'whisper-1',
                 language: 'en',
             });

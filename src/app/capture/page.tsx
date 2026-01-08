@@ -31,7 +31,19 @@ function CapturePageContent() {
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+            // Safari support: prefer audio/mp4, fallback to webm or default
+            let mimeType = 'audio/webm';
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                mimeType = 'audio/mp4';
+            } else if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                mimeType = ''; // Let browser choose default
+            }
+
+            console.log('Using mimeType:', mimeType || 'default');
+            const mediaRecorder = mimeType
+                ? new MediaRecorder(stream, { mimeType })
+                : new MediaRecorder(stream);
 
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
@@ -43,8 +55,8 @@ function CapturePageContent() {
             };
 
             mediaRecorder.onstop = async () => {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                await processCapture(blob);
+                const blob = new Blob(chunksRef.current, { type: mimeType || 'audio/mp4' });
+                await processCapture(blob); // Send with detected mimeType
 
                 // Stop all tracks
                 stream.getTracks().forEach(track => track.stop());
