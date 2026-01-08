@@ -63,11 +63,13 @@ export default function WeekView({ currentDate, events }: Props) {
                                         <div
                                             key={event.id}
                                             className={`p-1.5 rounded border-l-2 text-[10px] leading-tight ${event.source === 'LOCAL_TASK'
-                                                    ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'
-                                                    : 'bg-[#139187]/10 border-[#139187]/50 text-emerald-200'
+                                                ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'
+                                                : 'bg-[#139187]/10 border-[#139187]/50 text-emerald-200'
                                                 }`}
                                         >
-                                            <div className="font-bold truncate">{event.title}</div>
+                                            <div className="font-bold truncate">
+                                                {event.source === 'LOCAL_TASK' ? 'Task' : 'Event'}
+                                            </div>
                                             {!event.allDay && (
                                                 <div className="opacity-60 text-[8px]">
                                                     {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

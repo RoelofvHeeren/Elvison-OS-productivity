@@ -77,7 +77,7 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
                                 <div
                                     key={i}
                                     onClick={() => onDateClick(d.date)}
-                                    className={`min-h-[100px] p-2 border-r border-b border-white/5 transition-colors hover:bg-white/[0.03] cursor-pointer group ${!d.currentMonth ? 'opacity-30' : ''}`}
+                                    className={`min-h-[80px] p-2 border-r border-b border-white/5 transition-colors hover:bg-white/[0.03] cursor-pointer group ${!d.currentMonth ? 'opacity-30' : ''}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <span className={`flex items-center justify-center w-7 h-7 text-sm rounded-full transition-all ${isToday ? 'bg-[#139187] text-white shadow-luxury font-bold' : 'text-gray-400 group-hover:text-white'
