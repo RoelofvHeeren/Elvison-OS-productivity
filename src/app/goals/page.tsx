@@ -25,13 +25,13 @@ interface Project {
 }
 
 const tabs = [
-    { id: 'ANNUAL', label: 'Annual', icon: Calendar },
-    { id: 'QUARTERLY', label: 'Quarterly', icon: Calendar },
     { id: 'MONTHLY', label: 'Monthly', icon: Calendar },
+    { id: 'QUARTERLY', label: 'Quarterly', icon: Calendar },
+    { id: 'ANNUAL', label: 'Annually', icon: Calendar },
 ];
 
 export default function GoalsPage() {
-    const [activeTab, setActiveTab] = useState('ANNUAL');
+    const [activeTab, setActiveTab] = useState('MONTHLY');
     const [goals, setGoals] = useState<Goal[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);

@@ -24,7 +24,7 @@ export default function TabNav({
     children,
 }: TabNavProps) {
     return (
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
             <nav className="flex border-b border-white/10">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
@@ -35,8 +35,8 @@ export default function TabNav({
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
                             className={`flex-1 py-4 px-6 font-medium text-sm transition-colors ${isActive
-                                    ? 'bg-[#139187]/20 text-[#139187] border-b-2 border-[#139187]'
-                                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
+                                ? 'bg-[#139187]/20 text-[#139187] border-b-2 border-[#139187]'
+                                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
                                 }`}
                         >
                             <span className="flex items-center justify-center gap-2">
@@ -45,8 +45,8 @@ export default function TabNav({
                                 {tab.count !== undefined && (
                                     <span
                                         className={`px-2 py-0.5 rounded-full text-xs ${isActive
-                                                ? 'bg-[#139187]/30 text-[#139187]'
-                                                : 'bg-white/10 text-gray-400'
+                                            ? 'bg-[#139187]/30 text-[#139187]'
+                                            : 'bg-white/10 text-gray-400'
                                             }`}
                                     >
                                         {tab.count}

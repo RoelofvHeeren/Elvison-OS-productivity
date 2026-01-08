@@ -16,6 +16,8 @@ import {
     FileText,
     Edit,
     Loader2,
+    Circle,
+    CheckCircle2,
 } from 'lucide-react';
 
 interface Project {
@@ -51,6 +53,7 @@ export default function ProjectsPage() {
     const [viewMode, setViewMode] = useState<'tasks' | 'notes' | null>(null);
     const [newNote, setNewNote] = useState({ title: '', content: '' });
     const [isAddingNote, setIsAddingNote] = useState(false);
+    const [viewingProject, setViewingProject] = useState<Project | null>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -171,6 +174,39 @@ export default function ProjectsPage() {
         }
     };
 
+    const handleTaskToggle = async (taskId: string, currentStatus: string) => {
+        const newStatus = currentStatus === 'DONE' ? 'TODO' : 'DONE';
+
+        // Optimistic update for selectedProject
+        if (selectedProject) {
+            const updatedTasks = selectedProject.tasks?.map(t =>
+                t.id === taskId ? { ...t, status: newStatus } : t
+            );
+            setSelectedProject({ ...selectedProject, tasks: updatedTasks });
+        }
+
+        // Optimistic update for viewingProject
+        if (viewingProject) {
+            const updatedTasks = viewingProject.tasks?.map(t =>
+                t.id === taskId ? { ...t, status: newStatus } : t
+            );
+            setViewingProject({ ...viewingProject, tasks: updatedTasks });
+        }
+
+        try {
+            await fetch(`/api/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            // Refresh projects to update counts
+            fetchProjects();
+        } catch (error) {
+            console.error('Failed to toggle task:', error);
+            fetchProjects();
+        }
+    };
+
     if (loading) {
         return (
             <>
@@ -220,9 +256,12 @@ export default function ProjectsPage() {
                                 <div className="p-4 border-b border-white/5">
                                     <div className="flex items-start justify-between mb-2">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-white">
+                                            <button
+                                                onClick={() => setViewingProject(project)}
+                                                className="text-lg font-semibold text-white hover:text-[#139187] transition-colors text-left"
+                                            >
                                                 {project.name}
-                                            </h3>
+                                            </button>
                                             <span
                                                 className={`inline-block px-2 py-0.5 rounded text-xs ${getCategoryStyles(
                                                     project.category
@@ -393,17 +432,23 @@ export default function ProjectsPage() {
                     <div className="space-y-3">
                         {selectedProject?.tasks && selectedProject.tasks.length > 0 ? (
                             selectedProject.tasks.map((task) => (
-                                <div key={task.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5">
+                                <button
+                                    key={task.id}
+                                    onClick={() => handleTaskToggle(task.id, task.status)}
+                                    className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
+                                >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-1.5 rounded-full ${task.status === 'DONE' ? 'bg-green-500/20 text-green-400' : 'bg-black/20 text-gray-500'}`}>
-                                            <CheckSquare className="w-4 h-4" />
-                                        </div>
+                                        {task.status === 'DONE' ? (
+                                            <CheckCircle2 className="w-5 h-5 text-green-400" />
+                                        ) : (
+                                            <Circle className="w-5 h-5 text-gray-500 hover:text-[#139187]" />
+                                        )}
                                         <span className={`text-sm ${task.status === 'DONE' ? 'text-gray-500 line-through' : 'text-white'}`}>
                                             {task.title}
                                         </span>
                                     </div>
                                     <StatusBadge status={getStatusType(task.status)} label={task.status} />
-                                </div>
+                                </button>
                             ))
                         ) : (
                             <div className="text-center py-8 text-gray-400">
@@ -488,6 +533,111 @@ export default function ProjectsPage() {
                                     <p>No notes yet.</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Full Project Detail Modal */}
+            <Modal
+                isOpen={!!viewingProject}
+                onClose={() => setViewingProject(null)}
+                title={viewingProject?.name || 'Project Details'}
+            >
+                {viewingProject && (
+                    <div className="space-y-6">
+                        {/* Project Info */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded text-xs ${getCategoryStyles(viewingProject.category)}`}>
+                                    {viewingProject.category}
+                                </span>
+                                <StatusBadge status={getStatusType(viewingProject.status)} label={viewingProject.status} />
+                            </div>
+                            {viewingProject.objective && (
+                                <p className="text-sm text-gray-400">{viewingProject.objective}</p>
+                            )}
+                        </div>
+
+                        {/* Tasks Section */}
+                        <div>
+                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                                <CheckSquare className="w-4 h-4 text-[#139187]" />
+                                Tasks ({viewingProject.tasks?.length || 0})
+                            </h4>
+                            <div className="space-y-2">
+                                {viewingProject.tasks && viewingProject.tasks.length > 0 ? (
+                                    viewingProject.tasks.map((task) => (
+                                        <button
+                                            key={task.id}
+                                            onClick={() => handleTaskToggle(task.id, task.status)}
+                                            className="w-full flex items-center gap-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-left"
+                                        >
+                                            {task.status === 'DONE' ? (
+                                                <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                                            ) : (
+                                                <Circle className="w-4 h-4 text-gray-500 shrink-0" />
+                                            )}
+                                            <span className={`text-sm ${task.status === 'DONE' ? 'text-gray-500 line-through' : 'text-white'}`}>
+                                                {task.title}
+                                            </span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-gray-500">No tasks yet</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Notes Section */}
+                        <div>
+                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-[#139187]" />
+                                Notes ({viewingProject.notes?.length || 0})
+                            </h4>
+                            <div className="space-y-2">
+                                {viewingProject.notes && viewingProject.notes.length > 0 ? (
+                                    viewingProject.notes.map((note) => (
+                                        <div key={note.id} className="p-2 bg-white/5 rounded-lg">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-sm font-medium text-white">{note.title}</span>
+                                                <span className="text-xs text-gray-500">
+                                                    {new Date(note.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-gray-400 line-clamp-2">{note.content}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-gray-500">No notes yet</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-white/10">
+                            <Button
+                                variant="secondary"
+                                className="flex-1"
+                                icon={Edit}
+                                onClick={() => {
+                                    openForm(viewingProject);
+                                    setViewingProject(null);
+                                }}
+                            >
+                                Edit Project
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                className="flex-1"
+                                onClick={() => {
+                                    setSelectedProject(viewingProject);
+                                    setViewMode('notes');
+                                    setViewingProject(null);
+                                }}
+                            >
+                                Add Note
+                            </Button>
                         </div>
                     </div>
                 )}

@@ -26,6 +26,19 @@ interface Habit {
     logs: { date: string; completed: boolean }[];
 }
 
+// Normalize date to YYYY-MM-DD format for consistent comparison
+function normalizeDate(date: string | Date): string {
+    if (typeof date === 'string') {
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            return date;
+        }
+        // Otherwise parse and convert
+        return new Date(date).toISOString().split('T')[0];
+    }
+    return date.toISOString().split('T')[0];
+}
+
 function getWeekDays(weekOffset: number = 0) {
     const days = [];
     const today = new Date();
@@ -97,13 +110,13 @@ export default function HabitsPage() {
         const habit = habits.find(h => h.id === habitId);
         if (!habit) return;
 
-        const isCompleted = habit.logs.some(l => l.date === date && l.completed);
+        const isCompleted = habit.logs.some(l => normalizeDate(l.date) === date && l.completed);
 
         // Optimistic update
         setHabits(habits.map(h => {
             if (h.id !== habitId) return h;
             const newLogs = isCompleted
-                ? h.logs.filter(l => l.date !== date)
+                ? h.logs.filter(l => normalizeDate(l.date) !== date)
                 : [...h.logs, { date, completed: true }];
             return { ...h, logs: newLogs };
         }));
@@ -271,7 +284,7 @@ export default function HabitsPage() {
                                         </div>
                                     </td>
                                     {weekDays.map((day) => {
-                                        const log = habit.logs.find((l) => l.date === day.date);
+                                        const log = habit.logs.find((l) => normalizeDate(l.date) === day.date);
                                         const completed = log?.completed || false;
                                         return (
                                             <td key={day.date} className="text-center px-2 py-3">

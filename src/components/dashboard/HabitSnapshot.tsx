@@ -12,6 +12,19 @@ interface Habit {
     logs: { date: string; completed: boolean }[];
 }
 
+// Normalize date to YYYY-MM-DD format for consistent comparison
+function normalizeDate(date: string | Date): string {
+    if (typeof date === 'string') {
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            return date;
+        }
+        // Otherwise parse and convert
+        return new Date(date).toISOString().split('T')[0];
+    }
+    return date.toISOString().split('T')[0];
+}
+
 export default function HabitSnapshot() {
     const [habits, setHabits] = useState<Habit[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,14 +54,14 @@ export default function HabitSnapshot() {
         const habit = habits.find(h => h.id === habitId);
         if (!habit) return;
 
-        const isCompleted = habit.logs.some(l => l.date === today && l.completed);
+        const isCompleted = habit.logs.some(l => normalizeDate(l.date) === today && l.completed);
         setTogglingId(habitId);
 
         // Optimistic update
         setHabits(habits.map(h => {
             if (h.id !== habitId) return h;
             const newLogs = isCompleted
-                ? h.logs.filter(l => l.date !== today)
+                ? h.logs.filter(l => normalizeDate(l.date) !== today)
                 : [...h.logs, { date: today, completed: true }];
             return {
                 ...h,
@@ -79,7 +92,7 @@ export default function HabitSnapshot() {
     };
 
     const getCompletedToday = (habit: Habit) =>
-        habit.logs.some(l => l.date === today && l.completed);
+        habit.logs.some(l => normalizeDate(l.date) === today && l.completed);
 
     const completedCount = habits.filter(getCompletedToday).length;
     const totalCount = habits.length;

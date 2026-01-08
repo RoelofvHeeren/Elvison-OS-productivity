@@ -18,6 +18,7 @@ import {
     Loader2,
     Check,
     X,
+    Trash2,
 } from 'lucide-react';
 
 interface Affirmation {
@@ -206,6 +207,19 @@ export default function ManifestationPage() {
         setInlineEditValue('');
     };
 
+    const deleteAffirmation = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this affirmation?')) return;
+
+        try {
+            const res = await fetch(`/api/affirmations/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchData();
+            }
+        } catch (error) {
+            console.error('Failed to delete affirmation:', error);
+        }
+    };
+
     if (loading) {
         return (
             <>
@@ -283,6 +297,13 @@ export default function ManifestationPage() {
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </button>
+                                                            <button
+                                                                onClick={() => deleteAffirmation(affirmation.id)}
+                                                                className="p-1.5 hover:bg-white/5 rounded text-gray-500 hover:text-red-400"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
                                                         </div>
                                                     </>
                                                 )}
@@ -339,6 +360,13 @@ export default function ManifestationPage() {
                                                                 className="p-1.5 hover:bg-white/5 rounded text-gray-500 hover:text-white"
                                                             >
                                                                 <Edit className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => deleteAffirmation(affirmation.id)}
+                                                                className="p-1.5 hover:bg-white/5 rounded text-gray-500 hover:text-red-400"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     </>

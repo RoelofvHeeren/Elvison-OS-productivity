@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import VideoBackground from "@/components/layout/VideoBackground";
-import Sidebar from "@/components/layout/Sidebar";
+import AppLayout from "@/components/layout/AppLayout";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -25,6 +25,21 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Elvison OS",
   description: "AI-Enhanced Personal Productivity Dashboard",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Elvison",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#139187",
 };
 
 export default function RootLayout({
@@ -34,19 +49,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+      </head>
       <body
         className={`${plusJakarta.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
         style={{ fontFamily: 'var(--font-sans)' }}
       >
         <VideoBackground />
-        <div className="relative z-10 flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 min-h-screen p-6 lg:p-8">
-            <div className="max-w-[1400px] mx-auto space-y-6">
-              {children}
-            </div>
-          </main>
-        </div>
+        <AppLayout>{children}</AppLayout>
       </body>
     </html>
   );
