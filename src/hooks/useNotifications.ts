@@ -8,7 +8,10 @@ interface NotificationPermissionState {
     subscription: PushSubscription | null;
 }
 
+import { useSettings } from './useSettings';
+
 export function useNotifications() {
+    const { settings } = useSettings();
     const [state, setState] = useState<NotificationPermissionState>({
         permission: 'default',
         isSupported: false,
@@ -137,6 +140,11 @@ export function useNotifications() {
         title: string,
         options?: NotificationOptions
     ): Promise<boolean> => {
+        if (!settings.notifications.enabled) {
+            console.log('[Notifications] Notifications disabled in settings');
+            return false;
+        }
+
         if (state.permission !== 'granted') {
             const granted = await requestPermission();
             if (!granted) return false;

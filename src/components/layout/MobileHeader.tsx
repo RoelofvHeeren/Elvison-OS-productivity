@@ -1,9 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Menu, Bell, X, ChevronRight } from 'lucide-react';
+import { Menu, Settings, X, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SettingsModal from '../settings/SettingsModal';
 import {
     LayoutDashboard,
     CheckSquare,
@@ -42,16 +43,17 @@ const navItems = [
 export default function MobileHeader() {
     const pathname = usePathname();
     const pageTitle = pageTitles[pathname] || 'Elvison';
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Close menu when route changes
     useEffect(() => {
         setIsMenuOpen(false);
+        setIsSettingsOpen(false);
     }, [pathname]);
 
     // Prevent scrolling when menu is open
     useEffect(() => {
-        if (isMenuOpen) {
+        if (isMenuOpen || isSettingsOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -59,7 +61,7 @@ export default function MobileHeader() {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isMenuOpen]);
+    }, [isMenuOpen, isSettingsOpen]);
 
     return (
         <>
@@ -79,13 +81,17 @@ export default function MobileHeader() {
 
                 <div className="flex items-center gap-2">
                     <button
+                        onClick={() => setIsSettingsOpen(true)}
                         className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
-                        aria-label="Notifications"
+                        aria-label="Settings"
                     >
-                        <Bell className="h-5 w-5" />
+                        <Settings className="h-5 w-5" />
                     </button>
                 </div>
             </header>
+
+            {/* Settings Modal */}
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
             {/* Full Screen Menu */}
             <div

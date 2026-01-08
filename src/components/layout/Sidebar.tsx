@@ -14,7 +14,9 @@ import {
     CalendarCheck,
     ChevronLeft,
     ChevronRight,
+    Settings,
 } from 'lucide-react';
+import SettingsModal from '../settings/SettingsModal';
 
 const navItems = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,6 +32,7 @@ const navItems = [
 
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const pathname = usePathname();
 
     return (
@@ -79,17 +82,32 @@ export default function Sidebar() {
             </nav>
 
             {/* Collapse Button */}
-            <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="mt-4 flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-                {collapsed ? (
-                    <ChevronRight className="h-5 w-5" />
-                ) : (
-                    <ChevronLeft className="h-5 w-5" />
-                )}
-            </button>
+            <div className="mt-auto flex flex-col gap-2">
+                <button
+                    onClick={() => setIsSettingsOpen(true)}
+                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1`}
+                    aria-label="Settings"
+                >
+                    <Settings
+                        className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 text-[#139187]`}
+                    />
+                    {!collapsed && <span>Settings</span>}
+                </button>
+
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                    {collapsed ? (
+                        <ChevronRight className="h-5 w-5" />
+                    ) : (
+                        <ChevronLeft className="h-5 w-5" />
+                    )}
+                </button>
+            </div>
+
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
         </aside>
     );
 }
