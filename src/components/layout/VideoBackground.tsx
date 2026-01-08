@@ -4,56 +4,67 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function VideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [canPlay, setCanPlay] = useState(true);
+  const hasAttemptedPlay = useRef(false);
 
   useEffect(() => {
-    setIsMounted(true);
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || hasAttemptedPlay.current) return;
+    hasAttemptedPlay.current = true;
 
     // Ensure muted is set for autoplay policies
     video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
 
-    // Attempt to play immediately
-    const playVideo = async () => {
+    const attemptPlay = async () => {
       try {
         await video.play();
+        setCanPlay(true);
       } catch (err) {
-        console.log("Autoplay blocked, waiting for interaction:", err);
+        console.log('Autoplay blocked, setting up interaction listener:', err);
 
-        // If autoplay fails, add a one-time listener to user interaction
-        const enableVideoOnInteraction = async () => {
+        // Set up one-time interaction listener
+        const handleInteraction = async () => {
           try {
-            video.muted = true; // Re-enforce mute
+            video.muted = true;
             await video.play();
-            // Remove listeners once successful
-            document.removeEventListener('touchstart', enableVideoOnInteraction);
-            document.removeEventListener('click', enableVideoOnInteraction);
-            document.removeEventListener('scroll', enableVideoOnInteraction);
-          } catch (accessErr) {
-            console.error("Interaction play failed:", accessErr);
+            setCanPlay(true);
+            cleanup();
+          } catch (playErr) {
+            console.error('Play after interaction failed:', playErr);
+            // If we still can't play, hide the video to avoid broken UI
+            setCanPlay(false);
           }
         };
 
-        // Add listeners for common interactions
-        document.addEventListener('touchstart', enableVideoOnInteraction, { passive: true });
-        document.addEventListener('click', enableVideoOnInteraction, { passive: true });
-        document.addEventListener('scroll', enableVideoOnInteraction, { passive: true }); // Sometimes scroll counts as interaction
-
-        // Cleanup function for this specific effect run
-        return () => {
-          document.removeEventListener('touchstart', enableVideoOnInteraction);
-          document.removeEventListener('click', enableVideoOnInteraction);
-          document.removeEventListener('scroll', enableVideoOnInteraction);
+        const cleanup = () => {
+          document.removeEventListener('touchstart', handleInteraction);
+          document.removeEventListener('touchend', handleInteraction);
+          document.removeEventListener('click', handleInteraction);
         };
+
+        document.addEventListener('touchstart', handleInteraction, { once: true, passive: true });
+        document.addEventListener('touchend', handleInteraction, { once: true, passive: true });
+        document.addEventListener('click', handleInteraction, { once: true });
+
+        // Return cleanup for useEffect
+        return cleanup;
       }
     };
 
-    playVideo();
+    const cleanupPromise = attemptPlay();
+
+    return () => {
+      cleanupPromise?.then(cleanup => cleanup?.());
+    };
   }, []);
 
-  // Don't render until client-side to avoid hydration mismatches with video usage
-  if (!isMounted) return null;
+  // Hide the video entirely if we can't play it (avoids broken play button)
+  if (!canPlay) {
+    return null;
+  }
 
   return (
     <video
@@ -62,12 +73,7 @@ export default function VideoBackground() {
       muted
       loop
       playsInline
-      // @ts-ignore - explicitly needed for some older iOS versions
-      webkit-playsinline="true"
-      disablePictureInPicture
       controls={false}
-      className="bg-video"
-      aria-hidden="true"
       style={{
         position: 'fixed',
         top: 0,
@@ -77,8 +83,9 @@ export default function VideoBackground() {
         objectFit: 'cover',
         zIndex: 0,
         opacity: 0.4,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
+      aria-hidden="true"
     >
       <source src="/background.mp4" type="video/mp4" />
     </video>
