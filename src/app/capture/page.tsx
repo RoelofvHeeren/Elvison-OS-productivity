@@ -96,7 +96,7 @@ function CapturePageContent() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to process capture');
+                throw new Error(`${data.error || 'Failed'}${data.details ? `: ${data.details}` : ''}`);
             }
 
             setResult(data);
