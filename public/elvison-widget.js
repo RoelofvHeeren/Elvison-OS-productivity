@@ -65,14 +65,14 @@ async function createMediumWidget() {
 
     // Task (Blue)
     addCaptureBtn(btnStack, "Task", "https://elvison-os-productivity-production.up.railway.app/capture?mode=task", "#3B82F6");
-    btnStack.addSpacer(8);
+    btnStack.addSpacer(12);
     // Note (Orange)
     addCaptureBtn(btnStack, "Note", "https://elvison-os-productivity-production.up.railway.app/capture?mode=note", "#F59E0B");
-    btnStack.addSpacer(8);
-    // Reminder (Green) - explicitly named Reminder as requested
+    btnStack.addSpacer(12);
+    // Reminder (Green)
     addCaptureBtn(btnStack, "Reminder", "https://elvison-os-productivity-production.up.railway.app/capture?mode=reminder", "#10B981");
 
-    w.addSpacer(16);
+    w.addSpacer(20);
 
     // Stats Row
     const statsStack = w.addStack();
@@ -84,8 +84,6 @@ async function createMediumWidget() {
 
     // Habits
     addStat(statsStack, `${data.stats.habitsCompleted}/${data.stats.habitsTotal}`, "Habits", "#10B981");
-
-    // No Goals here as requested
 
     w.addSpacer(12);
 
