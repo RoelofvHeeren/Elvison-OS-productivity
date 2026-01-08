@@ -73,7 +73,6 @@ export default function CalendarPage() {
     }, [currentDate, view]);
 
     return (
-    return (
         <div className="flex flex-col h-full">
             <PageHeader
                 title="Calendar"
