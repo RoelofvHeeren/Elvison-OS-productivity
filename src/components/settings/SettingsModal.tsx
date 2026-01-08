@@ -91,10 +91,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
                                             {/* Status Badge */}
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded border ${Notification.permission === 'granted'
-                                                    ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                                                    : Notification.permission === 'denied'
-                                                        ? 'border-red-500/30 text-red-400 bg-red-500/10'
-                                                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
+                                                ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                                                : Notification.permission === 'denied'
+                                                    ? 'border-red-500/30 text-red-400 bg-red-500/10'
+                                                    : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                                                 }`}>
                                                 {Notification.permission === 'granted' ? 'Active' : Notification.permission === 'denied' ? 'Blocked' : 'Needs Permission'}
                                             </span>
@@ -177,9 +177,23 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     </div>
 
                                     <button
-                                        onClick={handleTestNotification}
-                                        className="w-full mt-2 rounded-lg bg-white/5 py-2 text-xs font-medium text-[#139187] hover:bg-white/10 transition-colors"
+                                        onClick={async () => {
+                                            const btn = document.getElementById('test-notification-btn');
+                                            if (btn) {
+                                                btn.textContent = 'Sending...';
+                                                btn.setAttribute('disabled', 'true');
+                                            }
+                                            console.log('Test Notification button clicked');
+                                            await handleTestNotification();
+                                            if (btn) {
+                                                btn.textContent = 'Send Test Notification';
+                                                btn.removeAttribute('disabled');
+                                            }
+                                        }}
+                                        id="test-notification-btn"
+                                        className="w-full mt-4 rounded-lg bg-[#139187]/10 border border-[#139187]/20 py-3 text-xs font-semibold text-[#139187] hover:bg-[#139187]/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
                                     >
+                                        <Bell className="h-3 w-3" />
                                         Send Test Notification
                                     </button>
                                 </div>
