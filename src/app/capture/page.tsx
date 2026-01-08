@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Mic, Square, Loader2, Send, CheckCircle2, ChevronLeft } from 'lucide-react';
 import Button, { IconButton } from '@/components/ui/Button';
 
-export default function CapturePage() {
+function CapturePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const mode = searchParams.get('mode') || 'task'; // task, note, reminder
@@ -197,5 +197,13 @@ export default function CapturePage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function CapturePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>}>
+            <CapturePageContent />
+        </Suspense>
     );
 }
