@@ -5,10 +5,9 @@ import { useState, useEffect } from 'react';
 interface NotificationPreferences {
     enabled: boolean;
     types: {
-        goals: boolean;
-        habits: boolean;
-        tasks: boolean;
-        projects: boolean;
+        dailyPlan: boolean;
+        taskDue: boolean;
+        weeklyReview: boolean;
     };
 }
 
@@ -20,10 +19,9 @@ const DEFAULT_SETTINGS: SettingsState = {
     notifications: {
         enabled: true,
         types: {
-            goals: true,
-            habits: true,
-            tasks: true,
-            projects: true,
+            dailyPlan: true,
+            taskDue: true,
+            weeklyReview: true,
         },
     },
 };

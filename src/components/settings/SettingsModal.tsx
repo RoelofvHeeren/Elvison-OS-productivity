@@ -107,26 +107,62 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <div className="space-y-2">
                                         <p className="text-xs font-medium text-gray-400 mb-2">Notify me about</p>
 
-                                        {Object.entries(settings.notifications.types).map(([key, value]) => (
-                                            <div key={key} className="flex items-center justify-between py-1">
-                                                <span className="text-sm text-gray-300 capitalize">{key}</span>
-                                                <button
-                                                    onClick={() => updateNotificationPreferences({
-                                                        types: {
-                                                            ...settings.notifications.types,
-                                                            [key]: !value
-                                                        }
-                                                    })}
-                                                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${value ? 'bg-[#139187]' : 'bg-gray-700'
+                                        <div className="flex items-center justify-between py-1">
+                                            <span className="text-sm text-gray-300">Daily Plan</span>
+                                            <button
+                                                onClick={() => updateNotificationPreferences({
+                                                    types: {
+                                                        ...settings.notifications.types,
+                                                        dailyPlan: !settings.notifications.types.dailyPlan
+                                                    }
+                                                })}
+                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${settings.notifications.types.dailyPlan ? 'bg-[#139187]' : 'bg-gray-700'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${settings.notifications.types.dailyPlan ? 'translate-x-5' : 'translate-x-1'
                                                         }`}
-                                                >
-                                                    <span
-                                                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-1'
-                                                            }`}
-                                                    />
-                                                </button>
-                                            </div>
-                                        ))}
+                                                />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between py-1">
+                                            <span className="text-sm text-gray-300">Task Due Dates</span>
+                                            <button
+                                                onClick={() => updateNotificationPreferences({
+                                                    types: {
+                                                        ...settings.notifications.types,
+                                                        taskDue: !settings.notifications.types.taskDue
+                                                    }
+                                                })}
+                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${settings.notifications.types.taskDue ? 'bg-[#139187]' : 'bg-gray-700'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${settings.notifications.types.taskDue ? 'translate-x-5' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between py-1">
+                                            <span className="text-sm text-gray-300">Weekly Review</span>
+                                            <button
+                                                onClick={() => updateNotificationPreferences({
+                                                    types: {
+                                                        ...settings.notifications.types,
+                                                        weeklyReview: !settings.notifications.types.weeklyReview
+                                                    }
+                                                })}
+                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${settings.notifications.types.weeklyReview ? 'bg-[#139187]' : 'bg-gray-700'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${settings.notifications.types.weeklyReview ? 'translate-x-5' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <button

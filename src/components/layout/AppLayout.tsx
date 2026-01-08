@@ -13,18 +13,26 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     // Mobile Layout
     if (isMobile) {
-        return <MobileLayout>{children}</MobileLayout>;
+        return (
+            <>
+                <NotificationScheduler />
+                <MobileLayout>{children}</MobileLayout>
+            </>
+        );
     }
 
     // Desktop Layout (unchanged)
     return (
-        <div className="relative z-10 flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 min-h-screen p-6 lg:p-8">
-                <div className="w-[98%] mx-auto space-y-6">
-                    {children}
-                </div>
-            </main>
-        </div>
+        <>
+            <NotificationScheduler />
+            <div className="relative z-10 flex min-h-screen">
+                <Sidebar />
+                <main className="flex-1 min-h-screen p-6 lg:p-8">
+                    <div className="w-[98%] mx-auto space-y-6">
+                        {children}
+                    </div>
+                </main>
+            </div>
+        </>
     );
 }
