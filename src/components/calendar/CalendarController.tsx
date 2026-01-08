@@ -13,9 +13,11 @@ interface Props {
     onSync: () => void;
     onNewEvent: () => void;
     loading: boolean;
+    transparent?: boolean;
 }
 
-export default function CalendarController({ view, setView, currentDate, setCurrentDate, onSync, onNewEvent, loading }: Props) {
+export default function CalendarController({ view, setView, currentDate, setCurrentDate, onSync, onNewEvent, loading, transparent }: Props) {
+    // ... handlers ...
     const handlePrev = () => {
         const next = new Date(currentDate);
         if (view === 'month') next.setMonth(currentDate.getMonth() - 1);
@@ -47,8 +49,11 @@ export default function CalendarController({ view, setView, currentDate, setCurr
         return `${start.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     };
 
+    const Container = transparent ? 'div' : GlassCard;
+    const containerProps = transparent ? { className: "!p-0 border-none bg-transparent w-full" } : { className: "!p-4 bg-white/5 border-white/10" };
+
     return (
-        <GlassCard className="!p-4 bg-white/5 border-white/10">
+        <Container {...containerProps}>
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 {/* Navigation */}
                 <div className="flex items-center gap-2">
@@ -104,6 +109,6 @@ export default function CalendarController({ view, setView, currentDate, setCurr
                     </button>
                 </div>
             </div>
-        </GlassCard>
+        </Container>
     );
 }

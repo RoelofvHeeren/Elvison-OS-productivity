@@ -7,6 +7,7 @@ import MonthView from '@/components/calendar/MonthView';
 import WeekView from '@/components/calendar/WeekView';
 import DayView from '@/components/calendar/DayView';
 import EventModal from '@/components/calendar/EventModal';
+import GlassCard from '@/components/ui/GlassCard';
 import { Loader2 } from 'lucide-react';
 
 export type CalendarView = 'day' | 'week' | 'month';
@@ -78,35 +79,43 @@ export default function CalendarPage() {
                 description="Manage your time and schedule with precision"
             />
 
-            <CalendarController
-                view={view}
-                setView={setView}
-                currentDate={currentDate}
-                setCurrentDate={setCurrentDate}
-                onSync={syncCalendar}
-                onNewEvent={() => setIsEventModalOpen(true)}
-                loading={loading}
-            />
-
-            <div className="mt-12 relative min-h-[600px]">
-                {loading && (
-                    <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-                        <Loader2 className="w-8 h-8 text-[#139187] animate-spin" />
+            <div className="flex flex-col h-[calc(100vh-140px)]">
+                {/* Unified Container */}
+                <GlassCard className="flex-1 flex flex-col !p-0 overflow-hidden bg-black/20 backdrop-blur-xl">
+                    <div className="p-4 border-b border-white/10 bg-white/5">
+                        <CalendarController
+                            view={view}
+                            setView={setView}
+                            currentDate={currentDate}
+                            setCurrentDate={setCurrentDate}
+                            onSync={syncCalendar}
+                            onNewEvent={() => setIsEventModalOpen(true)}
+                            loading={loading}
+                            transparent={true} // Add this prop to Controller
+                        />
                     </div>
-                )}
 
-                {view === 'month' && (
-                    <MonthView
-                        currentDate={currentDate}
-                        events={events}
-                        onDateClick={(date: Date) => {
-                            setCurrentDate(date);
-                            setView('day');
-                        }}
-                    />
-                )}
-                {view === 'week' && <WeekView currentDate={currentDate} events={events} />}
-                {view === 'day' && <DayView currentDate={currentDate} events={events} />}
+                    <div className="flex-1 relative overflow-y-auto">
+                        {loading && (
+                            <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-[#139187] animate-spin" />
+                            </div>
+                        )}
+
+                        {view === 'month' && (
+                            <MonthView
+                                currentDate={currentDate}
+                                events={events}
+                                onDateClick={(date: Date) => {
+                                    setCurrentDate(date);
+                                    setView('day');
+                                }}
+                            />
+                        )}
+                        {view === 'week' && <WeekView currentDate={currentDate} events={events} />}
+                        {view === 'day' && <DayView currentDate={currentDate} events={events} />}
+                    </div>
+                </GlassCard>
             </div>
 
             <EventModal

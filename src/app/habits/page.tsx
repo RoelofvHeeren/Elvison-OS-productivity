@@ -353,7 +353,7 @@ export default function HabitsPage() {
                                     const checkDate = new Date();
                                     checkDate.setDate(checkDate.getDate() - (29 - i));
                                     const dateStr = checkDate.toISOString().split('T')[0];
-                                    const log = habit.logs.find(l => l.date === dateStr);
+                                    const log = habit.logs.find(l => normalizeDate(l.date) === dateStr);
                                     return (
                                         <div
                                             key={i}

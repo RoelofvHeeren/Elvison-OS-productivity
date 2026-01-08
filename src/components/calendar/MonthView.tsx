@@ -54,7 +54,7 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
-        <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/20">
+        <div className="bg-transparent">
             {/* Scroll Container for Mobile */}
             <div className="overflow-x-auto">
                 <div className="min-w-[600px] md:min-w-0">
@@ -104,6 +104,6 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
                     </div>
                 </div>
             </div>
-        </GlassCard>
+        </div>
     );
 }
