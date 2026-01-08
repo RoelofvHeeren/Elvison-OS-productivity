@@ -73,13 +73,14 @@ export default function CalendarPage() {
     }, [currentDate, view]);
 
     return (
-        <main className="flex-1 p-8 overflow-y-auto min-h-screen bg-black">
+    return (
+        <div className="flex flex-col h-full">
             <PageHeader
                 title="Calendar"
                 description="Manage your time and schedule with precision"
             />
 
-            <div className="flex flex-col h-[calc(100vh-140px)]">
+            <div className="flex-1 flex flex-col min-h-0">
                 {/* Unified Container */}
                 <GlassCard className="flex-1 flex flex-col !p-0 overflow-hidden bg-black/20 backdrop-blur-xl">
                     <div className="p-4 border-b border-white/10 bg-white/5">
@@ -124,6 +125,6 @@ export default function CalendarPage() {
                 onSuccess={fetchEvents}
                 initialDate={currentDate}
             />
-        </main>
+        </div>
     );
 }
