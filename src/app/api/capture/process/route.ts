@@ -8,11 +8,11 @@ const MOCK_USER_ID = 'user-1';
 interface CaptureResult {
     type: 'TASK' | 'NOTE';
     title: string;
-    content?: string; // For notes
+    content?: string;
     priority?: 'HIGH' | 'MEDIUM' | 'LOW';
-    dueDate?: string; // ISO string or null
-    projectId?: string; // UUID
-    projectError?: string; // If project mentioned but not found
+    dueDate?: string;
+    projectId?: string;
+    projectName?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -21,13 +21,44 @@ export async function POST(request: NextRequest) {
         const file = formData.get('audio') as Blob | null;
         let text = formData.get('text') as string | null;
         const mode = formData.get('mode') as string || 'task';
+        const action = formData.get('action') as string || 'parse'; // 'parse' or 'save'
 
-        // 1. Transcribe if audio using Gemini
+        // If action is 'save', we receive the approved data and save it
+        if (action === 'save') {
+            const itemData = JSON.parse(formData.get('data') as string);
+
+            if (itemData.type === 'TASK') {
+                const task = await prisma.task.create({
+                    data: {
+                        userId: MOCK_USER_ID,
+                        title: itemData.title,
+                        priority: itemData.priority || 'MEDIUM',
+                        dueDate: itemData.dueDate ? new Date(itemData.dueDate) : null,
+                        projectId: itemData.projectId || null,
+                        status: 'TODO',
+                        doToday: true, // Mark as today's task
+                    }
+                });
+                return NextResponse.json({ success: true, item: task, type: 'TASK' });
+            } else {
+                const note = await prisma.knowledgeItem.create({
+                    data: {
+                        userId: MOCK_USER_ID,
+                        title: itemData.title,
+                        content: itemData.content || '',
+                        category: 'PROMPT',
+                        tags: ['quick-capture'],
+                    }
+                });
+                return NextResponse.json({ success: true, item: note, type: 'NOTE' });
+            }
+        }
+
+        // Otherwise, parse the audio/text and return candidate for review
         if (file) {
             console.log('[Capture] Transcribing audio with Gemini...');
             const buffer = Buffer.from(await file.arrayBuffer());
 
-            // Verify buffer
             if (buffer.length === 0) {
                 throw new Error("Audio buffer is empty");
             }
@@ -43,14 +74,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No input provided' }, { status: 400 });
         }
 
-        // 2. Fetch Context (Active Projects)
+        // Fetch Context (Active Projects)
         const projects = await prisma.project.findMany({
             where: { userId: MOCK_USER_ID, status: 'ACTIVE' },
             select: { id: true, name: true }
         });
         const projectList = projects.map(p => `"${p.name}" (ID: ${p.id})`).join(', ');
 
-        // 3. AI Processing with Gemini
+        // AI Processing with Gemini
         const systemPrompt = `
         You are an intelligent productivity assistant for "Elvison OS".
         Your goal is to parse user voice transcripts into structured items.
@@ -68,6 +99,7 @@ export async function POST(request: NextRequest) {
         3. **Project**: Look for project names in the transcript. Fuzzy match against the "Active Projects" list. 
            - If "Elvison OS" is mentioned and you have a project named "Elvison OS", link it.
            - If no project is found, leave projectId null.
+           - If you find a matching project, also return projectName.
         4. **Priority**: Default to MEDIUM. Set HIGH if urgency is implied ("ASAP", "Urgent", "Important").
 
         INSTRUCTIONS FOR NOTE:
@@ -81,7 +113,8 @@ export async function POST(request: NextRequest) {
             "content": "..." (only for notes),
             "priority": "HIGH" | "MEDIUM" | "LOW",
             "dueDate": "ISO string or null",
-            "projectId": "UUID or null"
+            "projectId": "UUID or null",
+            "projectName": "Project name or null"
         }
         `;
 
@@ -90,32 +123,13 @@ export async function POST(request: NextRequest) {
             text
         );
 
-        // 4. Database Creation
-        if (result.type === 'TASK') {
-            const task = await prisma.task.create({
-                data: {
-                    userId: MOCK_USER_ID,
-                    title: result.title,
-                    priority: result.priority || 'MEDIUM',
-                    dueDate: result.dueDate ? new Date(result.dueDate) : null,
-                    projectId: result.projectId || null,
-                    status: 'TODO'
-                }
-            });
-            return NextResponse.json({ success: true, item: task, type: 'TASK', originalText: text });
-        } else {
-            // Note
-            const note = await prisma.knowledgeItem.create({
-                data: {
-                    userId: MOCK_USER_ID,
-                    title: result.title,
-                    content: result.content || text,
-                    category: 'PROMPT', // Default category for quick notes
-                    tags: ['quick-capture'],
-                }
-            });
-            return NextResponse.json({ success: true, item: note, type: 'NOTE', originalText: text });
-        }
+        // Return candidate for review (not saved yet!)
+        return NextResponse.json({
+            success: true,
+            candidate: result,
+            originalText: text,
+            projects: projects // Send project list for editing
+        });
 
     } catch (error) {
         console.error('[Capture] Error:', error);

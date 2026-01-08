@@ -8,7 +8,6 @@ export async function GET(request: Request) {
     const secret = searchParams.get('key');
     const headerSecret = request.headers.get('x-widget-secret');
 
-    // Simple security: Check against an env var or a hardcoded fallback
     const VALID_SECRET = process.env.WIDGET_SECRET || 'elvison-widget-secret';
 
     if (secret !== VALID_SECRET && headerSecret !== VALID_SECRET) {
@@ -18,23 +17,29 @@ export async function GET(request: Request) {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // 1. Fetch Goals Count
-        const goalsCount = await prisma.goal.count({
-            where: { userId: MOCK_USER_ID }
-        });
-
-        // 2. Fetch Tasks Stats
-        const pendingTasksCount = await prisma.task.count({
+        // Fetch remaining (incomplete) tasks for today
+        const todayTasks = await prisma.task.findMany({
             where: {
                 userId: MOCK_USER_ID,
-                status: { not: 'DONE' }
-            }
+                status: { not: 'DONE' },
+                doToday: true
+            },
+            select: {
+                id: true,
+                title: true,
+                priority: true,
+                dueDate: true,
+            },
+            orderBy: [
+                { priority: 'desc' },
+                { dueDate: 'asc' }
+            ],
+            take: 5 // Limit for widget display
         });
 
-        const todayTasksCount = await prisma.task.count({
+        // Count remaining tasks
+        const remainingTasksCount = await prisma.task.count({
             where: {
                 userId: MOCK_USER_ID,
                 status: { not: 'DONE' },
@@ -42,7 +47,7 @@ export async function GET(request: Request) {
             }
         });
 
-        // 3. Fetch Habits Progress
+        // Fetch Habits Progress
         const activeHabits = await prisma.habit.findMany({
             where: {
                 userId: MOCK_USER_ID,
@@ -60,17 +65,18 @@ export async function GET(request: Request) {
         const completedHabitsCount = activeHabits.filter(h => h.logs.length > 0 && h.logs[0].completed).length;
         const totalHabitsCount = activeHabits.length;
 
-        // 4. Construct Response
         const data = {
-            greeting: `Good ${getTimeOfDay(new Date().getHours())}`,
             stats: {
-                goals: goalsCount,
-                tasksPending: pendingTasksCount,
-                tasksToday: todayTasksCount,
+                tasksRemaining: remainingTasksCount,
                 habitsCompleted: completedHabitsCount,
                 habitsTotal: totalHabitsCount,
-                habitsProgress: totalHabitsCount > 0 ? Math.round((completedHabitsCount / totalHabitsCount) * 100) : 0
             },
+            tasks: todayTasks.map(t => ({
+                id: t.id,
+                title: t.title,
+                priority: t.priority,
+                dueTime: t.dueDate ? new Date(t.dueDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null
+            })),
             updatedAt: new Date().toISOString()
         };
 
@@ -79,10 +85,4 @@ export async function GET(request: Request) {
         console.error('Failed to fetch widget data:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}
-
-function getTimeOfDay(hour: number): string {
-    if (hour < 12) return 'Morning';
-    if (hour < 18) return 'Afternoon';
-    return 'Evening';
 }
