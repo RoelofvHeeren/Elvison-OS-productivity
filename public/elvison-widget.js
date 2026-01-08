@@ -12,8 +12,8 @@ const COLORS = {
     bg: "#0F0F11",
     teal: "#139187",
     white: "#FFFFFF",
-    gray: "#888888",
-    darkGray: "#444444"
+    gray: "#AAAAAA",
+    darkGray: "#666666"
 };
 
 // Fetch background image
@@ -54,7 +54,7 @@ async function createSmallWidget() {
     w.backgroundColor = new Color(COLORS.bg);
     w.setPadding(12, 12, 12, 12);
     const txt = w.addText("Use MEDIUM or LARGE");
-    txt.textColor = Color.white();
+    txt.textColor = new Color(COLORS.white);
     txt.font = Font.systemFont(11);
     txt.centerAlignText();
     return w;
@@ -65,7 +65,7 @@ async function createMediumWidget() {
     const w = new ListWidget();
     w.setPadding(16, 16, 16, 16);
 
-    // Try to set background image
+    // Background
     const bgImage = await getBackgroundImage();
     if (bgImage) {
         w.backgroundImage = bgImage;
@@ -84,7 +84,7 @@ async function createMediumWidget() {
     headerStack.addSpacer();
     const date = headerStack.addText(new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
     date.font = Font.systemFont(10);
-    date.textColor = new Color(COLORS.gray);
+    date.textColor = new Color(COLORS.white);
     w.addSpacer(12);
 
     // Greeting
@@ -93,7 +93,7 @@ async function createMediumWidget() {
     greeting.textColor = new Color(COLORS.white);
     w.addSpacer(12);
 
-    // Capture Buttons - Teal theme
+    // Capture Buttons - White text
     const btnStack = w.addStack();
     btnStack.layoutHorizontally();
     addCaptureBtn(btnStack, "Task", `${APP_URL}/capture?mode=task`);
@@ -126,7 +126,7 @@ async function createLargeWidget() {
     w.setPadding(20, 20, 20, 20);
     w.url = APP_URL;
 
-    // Try to set background image
+    // Background
     const bgImage = await getBackgroundImage();
     if (bgImage) {
         w.backgroundImage = bgImage;
@@ -144,7 +144,7 @@ async function createLargeWidget() {
     headerStack.addSpacer();
     const date = headerStack.addText(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }));
     date.font = Font.systemFont(11);
-    date.textColor = new Color(COLORS.gray);
+    date.textColor = new Color(COLORS.white);
     w.addSpacer(10);
 
     // Greeting
@@ -153,7 +153,7 @@ async function createLargeWidget() {
     greeting.textColor = new Color(COLORS.white);
     w.addSpacer(14);
 
-    // Capture Buttons - Teal theme
+    // Capture Buttons - White text
     const btnStack = w.addStack();
     btnStack.layoutHorizontally();
     addCaptureBtn(btnStack, "Task", `${APP_URL}/capture?mode=task`);
@@ -174,7 +174,7 @@ async function createLargeWidget() {
     // Today's Tasks Section
     const sectionTitle = w.addText("TODAY'S TASKS");
     sectionTitle.font = Font.boldSystemFont(10);
-    sectionTitle.textColor = new Color(COLORS.gray);
+    sectionTitle.textColor = new Color(COLORS.white);
     w.addSpacer(8);
 
     if (data.tasks && data.tasks.length > 0) {
@@ -190,28 +190,28 @@ async function createLargeWidget() {
             dot.textColor = new Color(COLORS.teal);
             taskStack.addSpacer(6);
 
-            // Task title
-            const taskTitle = taskStack.addText(task.title.length > 30 ? task.title.substring(0, 30) + "..." : task.title);
-            taskTitle.font = Font.systemFont(13);
+            // Task title - NO truncation, allow wrapping
+            const taskTitle = taskStack.addText(task.title);
+            taskTitle.font = Font.systemFont(12);
             taskTitle.textColor = new Color(COLORS.white);
-            taskTitle.lineLimit = 1;
+            taskTitle.lineLimit = 2;
 
             taskStack.addSpacer();
 
             // Due time if exists
             if (task.dueTime) {
                 const timeText = taskStack.addText(task.dueTime);
-                timeText.font = Font.systemFont(11);
+                timeText.font = Font.systemFont(10);
                 timeText.textColor = new Color(COLORS.gray);
             }
 
-            w.addSpacer(6);
+            w.addSpacer(5);
         }
 
         if (data.stats.tasksRemaining > data.tasks.length) {
             const moreText = w.addText(`+${data.stats.tasksRemaining - data.tasks.length} more`);
             moreText.font = Font.italicSystemFont(11);
-            moreText.textColor = new Color(COLORS.darkGray);
+            moreText.textColor = new Color(COLORS.gray);
         }
     } else {
         const noTasks = w.addText("No tasks for today ✓");
@@ -238,18 +238,18 @@ function addStat(stack, value, label) {
     valText.textColor = new Color(COLORS.teal);
     const labelText = col.addText(label);
     labelText.font = Font.systemFont(10);
-    labelText.textColor = new Color(COLORS.gray);
+    labelText.textColor = new Color(COLORS.white);
 }
 
 function addCaptureBtn(stack, label, url) {
     const btn = stack.addStack();
-    btn.backgroundColor = new Color(COLORS.teal, 0.2);
+    btn.backgroundColor = new Color(COLORS.teal, 0.25);
     btn.cornerRadius = 8;
     btn.setPadding(6, 12, 6, 12);
     btn.url = url;
     const txt = btn.addText(label);
     txt.font = Font.semiboldSystemFont(12);
-    txt.textColor = new Color(COLORS.teal);
+    txt.textColor = new Color(COLORS.white);
 }
 
 async function fetchData() {
