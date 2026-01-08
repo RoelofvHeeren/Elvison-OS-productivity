@@ -53,8 +53,10 @@ function CapturePageContent() {
             mediaRecorder.start();
             setIsRecording(true);
             setError(null);
-        } catch (err) {
-            setError('Could not start recording.');
+        } catch (err: any) {
+            console.error('Recording error:', err);
+            // Show detailed error for debugging
+            setError(`Error: ${err.name || 'Unknown'} - ${err.message || String(err)}`);
         }
     };
 
