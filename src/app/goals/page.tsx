@@ -178,12 +178,7 @@ export default function GoalsPage() {
                 </Button>
             </PageHeader>
 
-            <GlassCard className="bg-gradient-to-br from-[#139187]/10 to-transparent">
-                <p className="text-gray-300 text-sm">
-                    Goals are set and modified by you, not AI. They represent your vision and direction.
-                    Projects are linked to goals to track alignment.
-                </p>
-            </GlassCard>
+
 
             <TabNav
                 tabs={tabs.map((t) => ({

@@ -88,7 +88,7 @@ export default function CalendarPage() {
                 loading={loading}
             />
 
-            <div className="mt-6 relative min-h-[600px]">
+            <div className="mt-12 relative min-h-[600px]">
                 {loading && (
                     <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-2xl">
                         <Loader2 className="w-8 h-8 text-[#139187] animate-spin" />

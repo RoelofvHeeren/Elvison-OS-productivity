@@ -29,15 +29,15 @@ export default function Dashboard() {
       <DashboardStats />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
         {/* Left Column - Tasks */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-12">
           <TopPriorities />
           <TodaysTasks />
         </div>
 
         {/* Right Column - Habits, Affirmations */}
-        <div className="space-y-8">
+        <div className="space-y-12">
           <CalendarWidget />
           <DailyAffirmation />
           <HabitSnapshot />

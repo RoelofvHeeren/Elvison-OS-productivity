@@ -7,6 +7,7 @@ export default function VideoBackground() {
       muted
       loop
       playsInline
+      controls={false}
       className="bg-video"
       aria-hidden="true"
     >

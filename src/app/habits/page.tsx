@@ -357,7 +357,7 @@ export default function HabitsPage() {
                                     return (
                                         <div
                                             key={i}
-                                            className={`w-4 h-4 rounded-sm flex-shrink-0 ${log?.completed ? 'bg-green-500/60' : 'bg-black/30'
+                                            className={`w-4 h-4 rounded-sm flex-shrink-0 ${log?.completed ? 'bg-green-500/60' : 'bg-white/10'
                                                 }`}
                                             title={dateStr}
                                         />
