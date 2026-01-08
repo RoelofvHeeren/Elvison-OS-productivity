@@ -152,12 +152,33 @@ function CapturePageContent() {
     return (
         <div className="min-h-screen bg-black flex flex-col p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
                 <IconButton icon={ChevronLeft} onClick={() => router.push('/')} />
                 <span className="text-sm font-medium text-gray-400 uppercase tracking-widest">
-                    New {mode}
+                    Quick Capture
                 </span>
                 <div className="w-8" /> {/* Spacer */}
+            </div>
+
+            {/* Mode Switcher Tabs */}
+            <div className="flex justify-center gap-2 mb-8">
+                {[
+                    { key: 'task', label: 'Task', color: '#3B82F6' },
+                    { key: 'note', label: 'Note', color: '#F59E0B' },
+                    { key: 'reminder', label: 'Reminder', color: '#10B981' }
+                ].map(({ key, label, color }) => (
+                    <button
+                        key={key}
+                        onClick={() => router.replace(`/capture?mode=${key}`)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${mode === key
+                                ? 'text-white shadow-lg'
+                                : 'text-gray-500 bg-white/5 hover:text-gray-300'
+                            }`}
+                        style={mode === key ? { backgroundColor: color } : {}}
+                    >
+                        {label}
+                    </button>
+                ))}
             </div>
 
             {/* Main */}
