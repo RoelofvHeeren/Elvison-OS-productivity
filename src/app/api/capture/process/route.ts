@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { openai, generateStructuredOutput } from '@/lib/openai';
+import { generateStructuredOutputGemini, transcribeAudioGemini } from '@/lib/gemini';
 import { prisma } from '@/lib/db';
 
 const MOCK_USER_ID = 'user-1';
@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
         let text = formData.get('text') as string | null;
         const mode = formData.get('mode') as string || 'task';
 
-        // 1. Transcribe if audio
+        // 1. Transcribe if audio using Gemini
         if (file) {
-            console.log('[Capture] Transcribing audio...');
+            console.log('[Capture] Transcribing audio with Gemini...');
             const buffer = Buffer.from(await file.arrayBuffer());
 
             // Verify buffer
@@ -32,21 +32,10 @@ export async function POST(request: NextRequest) {
                 throw new Error("Audio buffer is empty");
             }
 
-            // Map correct extensions for Whisper
-            const mime = file.type;
-            let ext = 'webm';
-            if (mime.includes('mp4')) ext = 'm4a'; // Whisper prefers m4a for mp4 container
-            else if (mime.includes('wav')) ext = 'wav';
-            else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3';
+            const mime = file.type || 'audio/mp4';
+            console.log(`[Capture] Processing filetype: ${mime}`);
 
-            console.log(`[Capture] Processing filetype: ${mime} -> .${ext}`);
-
-            const transcription = await openai.audio.transcriptions.create({
-                file: new File([buffer], `recording.${ext}`, { type: file.type }),
-                model: 'whisper-1',
-                language: 'en',
-            });
-            text = transcription.text;
+            text = await transcribeAudioGemini(buffer, mime);
             console.log('[Capture] Transcription:', text);
         }
 
@@ -61,7 +50,7 @@ export async function POST(request: NextRequest) {
         });
         const projectList = projects.map(p => `"${p.name}" (ID: ${p.id})`).join(', ');
 
-        // 3. AI Processing
+        // 3. AI Processing with Gemini
         const systemPrompt = `
         You are an intelligent productivity assistant for "Elvison OS".
         Your goal is to parse user voice transcripts into structured items.
@@ -84,12 +73,21 @@ export async function POST(request: NextRequest) {
         INSTRUCTIONS FOR NOTE:
         - Title: Generate a short summary title.
         - Content: Clean up the transcript into nice markdown.
+
+        RESPOND WITH THIS EXACT JSON STRUCTURE:
+        {
+            "type": "TASK" or "NOTE",
+            "title": "...",
+            "content": "..." (only for notes),
+            "priority": "HIGH" | "MEDIUM" | "LOW",
+            "dueDate": "ISO string or null",
+            "projectId": "UUID or null"
+        }
         `;
 
-        const result = await generateStructuredOutput<CaptureResult>(
+        const result = await generateStructuredOutputGemini<CaptureResult>(
             systemPrompt,
-            text,
-            'gpt-4o'
+            text
         );
 
         // 4. Database Creation
