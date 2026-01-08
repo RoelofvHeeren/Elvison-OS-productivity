@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 
 interface Props {
@@ -18,6 +19,17 @@ export default function WeekView({ currentDate, events }: Props) {
     });
 
     const hours = Array.from({ length: 24 }, (_, i) => i);
+
+    useEffect(() => {
+        // Auto-scroll to current time or 9 AM
+        const currentHour = new Date().getHours();
+        // Priority: Current time -> 9 AM -> 12 AM
+        const targetHour = currentHour > 5 && currentHour < 22 ? currentHour : 9;
+        const el = document.getElementById(`week-hour-${targetHour}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, []);
 
     return (
         <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/40">
@@ -44,7 +56,7 @@ export default function WeekView({ currentDate, events }: Props) {
 
             <div className="overflow-y-auto max-h-[800px] custom-scrollbar">
                 {hours.map(hour => (
-                    <div key={hour} className="flex border-b border-white/[0.03]">
+                    <div key={hour} id={`week-hour-${hour}`} className="flex border-b border-white/[0.03]">
                         {/* Hour label */}
                         <div className="w-16 h-20 flex justify-center text-[10px] text-gray-500 font-mono pr-2 pt-1 border-r border-white/10 shrink-0">
                             {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}

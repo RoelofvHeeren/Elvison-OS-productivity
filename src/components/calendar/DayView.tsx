@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 
 interface Props {
@@ -11,6 +12,16 @@ export default function DayView({ currentDate, events }: Props) {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const dayEvents = events.filter(e => new Date(e.start).toDateString() === currentDate.toDateString());
 
+    useEffect(() => {
+        // Auto-scroll to current time or 9 AM
+        const currentHour = new Date().getHours();
+        const targetHour = currentHour > 5 && currentHour < 22 ? currentHour : 9;
+        const el = document.getElementById(`day-hour-${targetHour}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, []);
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-3">
@@ -20,7 +31,7 @@ export default function DayView({ currentDate, events }: Props) {
                             const hourEvents = dayEvents.filter(e => new Date(e.start).getHours() === hour);
 
                             return (
-                                <div key={hour} className="flex border-b border-white/[0.03]">
+                                <div key={hour} id={`day-hour-${hour}`} className="flex border-b border-white/[0.03]">
                                     <div className="w-20 h-24 flex justify-center text-xs text-gray-400 font-mono pr-4 pt-4 border-r border-white/10 shrink-0 bg-white/[0.02]">
                                         {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                                     </div>
@@ -30,8 +41,8 @@ export default function DayView({ currentDate, events }: Props) {
                                             <div
                                                 key={event.id}
                                                 className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] ${event.source === 'LOCAL_TASK'
-                                                        ? 'bg-blue-500/5 border-blue-500/50 text-blue-100'
-                                                        : 'bg-[#139187]/5 border-[#139187]/50 text-emerald-100'
+                                                    ? 'bg-blue-500/5 border-blue-500/50 text-blue-100'
+                                                    : 'bg-[#139187]/5 border-[#139187]/50 text-emerald-100'
                                                     }`}
                                             >
                                                 <div className="flex justify-between items-start mb-1">

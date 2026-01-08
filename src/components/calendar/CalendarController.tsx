@@ -36,17 +36,18 @@ export default function CalendarController({ view, setView, currentDate, setCurr
 
     const formatDateRange = () => {
         if (view === 'month') {
-            return currentDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+            return currentDate.toLocaleDateString('default', { month: 'short', year: 'numeric' });
         }
         if (view === 'day') {
-            return currentDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            // Remove year for day view to save space
+            return currentDate.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' });
         }
         // Week view range
         const start = new Date(currentDate);
         start.setDate(currentDate.getDate() - currentDate.getDay());
         const end = new Date(start);
         end.setDate(start.getDate() + 6);
-        return `${start.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        return `${start.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('default', { month: 'short', day: 'numeric' })}`;
     };
 
     const Container = transparent ? 'div' : GlassCard;
@@ -68,7 +69,7 @@ export default function CalendarController({ view, setView, currentDate, setCurr
                             <ChevronRight className="w-5 h-5 text-gray-400" />
                         </button>
                     </div>
-                    <h2 className="text-xl font-bold text-white min-w-[200px] px-4">
+                    <h2 className="text-base font-bold text-white min-w-[150px] px-2 truncate">
                         {formatDateRange()}
                     </h2>
                 </div>
