@@ -3,6 +3,7 @@
 import { useIsMobile } from '@/hooks/useIsMobile';
 import Sidebar from './Sidebar';
 import MobileLayout from './MobileLayout';
+import NotificationScheduler from '../notifications/NotificationScheduler';
 
 interface AppLayoutProps {
     children: React.ReactNode;
