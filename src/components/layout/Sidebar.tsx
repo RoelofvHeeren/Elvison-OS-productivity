@@ -46,7 +46,7 @@ export default function Sidebar() {
                     <img
                         src="/Transparent Logo Elvison.png"
                         alt="Elvison"
-                        className="h-10 w-10 object-contain"
+                        className="h-7 w-7 object-contain"
                     />
                 </div>
                 {!collapsed && (

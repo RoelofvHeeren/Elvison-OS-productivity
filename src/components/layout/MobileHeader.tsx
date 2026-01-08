@@ -107,7 +107,7 @@ export default function MobileHeader() {
                                 <img
                                     src="/Transparent Logo Elvison.png"
                                     alt="Elvison"
-                                    className="h-8 w-8 object-contain"
+                                    className="h-6 w-6 object-contain"
                                 />
                             </div>
                             <span className="font-serif text-xl font-bold text-white">
