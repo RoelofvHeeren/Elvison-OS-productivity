@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { setGoogleCredentials } from '@/lib/calendar';
-
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 export async function GET(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const { searchParams } = new URL(request.url);
     const start = searchParams.get('start');
     const end = searchParams.get('end');
@@ -12,7 +17,7 @@ export async function GET(request: Request) {
     try {
         const events = await prisma.calendarEvent.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 ...(start && end && {
                     start: {
                         gte: new Date(start),
@@ -26,7 +31,7 @@ export async function GET(request: Request) {
         // Also fetch tasks as events
         const tasks = await prisma.task.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 dueDate: { not: null },
                 ...(start && end && {
                     dueDate: {
@@ -55,11 +60,17 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     try {
         const body = await request.json();
         const { title, description, start, end, attendees } = body;
 
-        const calendar = await setGoogleCredentials(MOCK_USER_ID);
+        const calendar = await setGoogleCredentials(userId);
         if (!calendar) {
             return NextResponse.json({ error: 'Google Calendar not connected' }, { status: 401 });
         }

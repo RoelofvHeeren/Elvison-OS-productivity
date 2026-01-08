@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 // GET /api/projects - Fetch all projects
 export async function GET(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
     try {
         const projects = await prisma.project.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 ...(status && { status: status as any }),
             },
             include: {
@@ -58,25 +63,19 @@ export async function GET(request: Request) {
 
 // POST /api/projects - Create a new project
 export async function POST(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     try {
         const body = await request.json();
         const { name, category, objective, startDate, targetEndDate } = body;
 
-        // Ensure user exists (temporary fix for development)
-        const userExists = await prisma.user.findUnique({ where: { id: MOCK_USER_ID } });
-        if (!userExists) {
-            await prisma.user.create({
-                data: {
-                    id: MOCK_USER_ID,
-                    email: 'demo@example.com',
-                    name: 'Demo User'
-                }
-            });
-        }
-
         const project = await prisma.project.create({
             data: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 name,
                 category: category || 'PERSONAL',
                 objective: objective || null,

@@ -48,11 +48,14 @@ async function createWidget() {
     const btnStack = w.addStack();
     btnStack.layoutHorizontally();
 
+    // Task (Blue)
     addCaptureBtn(btnStack, "Task", "https://elvison-os-productivity-production.up.railway.app/capture?mode=task", "#3B82F6");
     btnStack.addSpacer(8);
+    // Note (Orange)
     addCaptureBtn(btnStack, "Note", "https://elvison-os-productivity-production.up.railway.app/capture?mode=note", "#F59E0B");
     btnStack.addSpacer(8);
-    addCaptureBtn(btnStack, "Plan", "https://elvison-os-productivity-production.up.railway.app/capture?mode=plan", "#10B981");
+    // Reminder (Green) - explicitly named Reminder as requested
+    addCaptureBtn(btnStack, "Reminder", "https://elvison-os-productivity-production.up.railway.app/capture?mode=reminder", "#10B981");
 
     w.addSpacer(16);
 
@@ -66,10 +69,8 @@ async function createWidget() {
 
     // Habits
     addStat(statsStack, `${data.stats.habitsCompleted}/${data.stats.habitsTotal}`, "Habits", "#10B981");
-    statsStack.addSpacer();
 
-    // Goals
-    addStat(statsStack, data.stats.goals.toString(), "Active Goals", "#F59E0B");
+    // No Goals here as requested
 
     w.addSpacer(12);
 
@@ -118,8 +119,7 @@ async function fetchData() {
             stats: {
                 tasksToday: "-",
                 habitsCompleted: "-",
-                habitsTotal: "-",
-                goals: "-"
+                habitsTotal: "-"
             }
         };
     }

@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import { prisma } from './db';
 
-const MOCK_USER_ID = 'user-1';
+
 
 const getRedirectUri = () => {
     if (process.env.NEXT_PUBLIC_BASE_URL) {

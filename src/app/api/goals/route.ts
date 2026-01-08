@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 // GET /api/goals - Fetch goals by timeframe
 export async function GET(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const { searchParams } = new URL(request.url);
     const timeframe = searchParams.get('timeframe');
 
     try {
         const goals = await prisma.goal.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 ...(timeframe && { timeframe: timeframe as any }),
             },
             include: {
@@ -58,25 +63,19 @@ export async function GET(request: Request) {
 
 // POST /api/goals - Create a new goal
 export async function POST(request: Request) {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     try {
         const body = await request.json();
         const { title, category, timeframe, successCriteria, why, linkedProjectIds } = body;
 
-        // Ensure user exists (temporary fix for development)
-        const userExists = await prisma.user.findUnique({ where: { id: MOCK_USER_ID } });
-        if (!userExists) {
-            await prisma.user.create({
-                data: {
-                    id: MOCK_USER_ID,
-                    email: 'demo@example.com',
-                    name: 'Demo User'
-                }
-            });
-        }
-
         const goal = await prisma.goal.create({
             data: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 title,
                 category: category || 'PERSONAL',
                 timeframe: timeframe || 'QUARTERLY',
