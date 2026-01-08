@@ -31,15 +31,22 @@
 }
 
 /* Base Styles */
+html,
 body {
   background-color: #000000;
   color: var(--foreground);
   font-family: var(--font-sans);
+  max-width: 100%;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+  -webkit-font-smoothing: antialiased;
 }
 
 #__next {
   position: relative;
   z-index: 1;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Video Background */

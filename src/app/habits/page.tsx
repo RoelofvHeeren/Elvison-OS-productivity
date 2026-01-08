@@ -347,21 +347,23 @@ export default function HabitsPage() {
                         </div>
 
                         {/* 30-day Mini Grid */}
-                        <div className="grid grid-cols-10 gap-1 mb-3">
-                            {Array.from({ length: 30 }).map((_, i) => {
-                                const checkDate = new Date();
-                                checkDate.setDate(checkDate.getDate() - (29 - i));
-                                const dateStr = checkDate.toISOString().split('T')[0];
-                                const log = habit.logs.find(l => l.date === dateStr);
-                                return (
-                                    <div
-                                        key={i}
-                                        className={`w-4 h-4 rounded-sm ${log?.completed ? 'bg-green-500/60' : 'bg-black/30'
-                                            }`}
-                                        title={dateStr}
-                                    />
-                                );
-                            })}
+                        <div className="overflow-x-auto pb-2 mb-1">
+                            <div className="grid grid-cols-10 gap-1 min-w-[200px]">
+                                {Array.from({ length: 30 }).map((_, i) => {
+                                    const checkDate = new Date();
+                                    checkDate.setDate(checkDate.getDate() - (29 - i));
+                                    const dateStr = checkDate.toISOString().split('T')[0];
+                                    const log = habit.logs.find(l => l.date === dateStr);
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={`w-4 h-4 rounded-sm flex-shrink-0 ${log?.completed ? 'bg-green-500/60' : 'bg-black/30'
+                                                }`}
+                                            title={dateStr}
+                                        />
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Completion Rate */}

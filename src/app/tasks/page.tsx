@@ -280,17 +280,7 @@ export default function TasksPage() {
                 </Button>
             </PageHeader>
 
-            {/* Quick Capture */}
-            <GlassCard>
-                <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-3">
-                    Quick Capture
-                </h3>
-                <VoiceCapture
-                    onCapture={handleVoiceCapture}
-                    onAIProcess={handleAIProcess}
-                    isProcessing={isProcessingAI}
-                />
-            </GlassCard>
+
 
             {/* Task List */}
             <div className="space-y-4">

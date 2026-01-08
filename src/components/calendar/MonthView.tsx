@@ -12,14 +12,19 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    // Monday Start Logic
+    // getDay(): Sun=0, Mon=1...Sat=6
+    // We want Mon=0, ... Sun=6
+    const firstDay = new Date(year, month, 1).getDay();
+    const startDay = (firstDay + 6) % 7; // Convert to Mon-start index
+
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const prevMonthDays = new Date(year, month, 0).getDate();
 
     const days = [];
 
     // Previous month padding
-    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+    for (let i = startDay - 1; i >= 0; i--) {
         days.push({
             day: prevMonthDays - i,
             date: new Date(year, month - 1, prevMonthDays - i),
@@ -36,8 +41,8 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
         });
     }
 
-    // Next month padding to fill grid
-    const remaining = 42 - days.length;
+    // Next month padding
+    const remaining = 42 - days.length; // 6 rows * 7 cols
     for (let i = 1; i <= remaining; i++) {
         days.push({
             day: i,
@@ -46,57 +51,58 @@ export default function MonthView({ currentDate, events, onDateClick }: Props) {
         });
     }
 
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
         <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/20">
-            <div className="grid grid-cols-7 border-b border-white/10">
-                {weekdays.map(day => (
-                    <div key={day} className="py-4 text-center text-xs font-bold text-[#139187] uppercase tracking-widest bg-white/[0.02]">
-                        {day}
+            {/* Scroll Container for Mobile */}
+            <div className="overflow-x-auto">
+                <div className="min-w-[600px] md:min-w-0">
+                    <div className="grid grid-cols-7 border-b border-white/10">
+                        {weekdays.map(day => (
+                            <div key={day} className="py-4 text-center text-xs font-bold text-[#139187] uppercase tracking-widest bg-white/[0.02]">
+                                {day}
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
 
-            <div className="grid grid-cols-7">
-                {days.map((d, i) => {
-                    const isToday = new Date().toDateString() === d.date.toDateString();
-                    const dayEvents = events.filter(e => new Date(e.start).toDateString() === d.date.toDateString());
+                    <div className="grid grid-cols-7">
+                        {days.map((d, i) => {
+                            const isToday = new Date().toDateString() === d.date.toDateString();
+                            const dayEvents = events.filter(e => new Date(e.start).toDateString() === d.date.toDateString());
+                            const taskCount = dayEvents.filter(e => e.source === 'LOCAL_TASK').length;
+                            const eventCount = dayEvents.length - taskCount;
 
-                    return (
-                        <div
-                            key={i}
-                            onClick={() => onDateClick(d.date)}
-                            className={`min-h-[120px] p-2 border-r border-b border-white/5 transition-colors hover:bg-white/[0.03] cursor-pointer group ${!d.currentMonth ? 'opacity-30' : ''}`}
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className={`flex items-center justify-center w-7 h-7 text-sm rounded-full transition-all ${isToday ? 'bg-[#139187] text-white shadow-luxury font-bold' : 'text-gray-400 group-hover:text-white'
-                                    }`}>
-                                    {d.day}
-                                </span>
-                            </div>
-
-                            <div className="space-y-1">
-                                {dayEvents.slice(0, 3).map((event, idx) => (
-                                    <div
-                                        key={event.id}
-                                        className={`px-1.5 py-0.5 text-[10px] rounded border-l-2 truncate ${event.source === 'LOCAL_TASK'
-                                                ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'
-                                                : 'bg-[#139187]/10 border-[#139187]/50 text-emerald-200'
-                                            }`}
-                                    >
-                                        {event.title}
+                            return (
+                                <div
+                                    key={i}
+                                    onClick={() => onDateClick(d.date)}
+                                    className={`min-h-[100px] p-2 border-r border-b border-white/5 transition-colors hover:bg-white/[0.03] cursor-pointer group ${!d.currentMonth ? 'opacity-30' : ''}`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`flex items-center justify-center w-7 h-7 text-sm rounded-full transition-all ${isToday ? 'bg-[#139187] text-white shadow-luxury font-bold' : 'text-gray-400 group-hover:text-white'
+                                            }`}>
+                                            {d.day}
+                                        </span>
                                     </div>
-                                ))}
-                                {dayEvents.length > 3 && (
-                                    <div className="text-[10px] text-gray-500 pl-1 font-medium">
-                                        + {dayEvents.length - 3} more
+
+                                    <div className="space-y-1">
+                                        {eventCount > 0 && (
+                                            <div className="px-2 py-1 text-[10px] rounded-full bg-[#139187]/20 text-[#139187] font-medium border border-[#139187]/20 truncate">
+                                                {eventCount} event{eventCount > 1 ? 's' : ''}
+                                            </div>
+                                        )}
+                                        {taskCount > 0 && (
+                                            <div className="px-2 py-1 text-[10px] rounded-full bg-blue-500/10 text-blue-300 font-medium border border-blue-500/20 truncate">
+                                                {taskCount} task{taskCount > 1 ? 's' : ''}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </GlassCard>
     );

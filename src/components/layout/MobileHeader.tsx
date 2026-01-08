@@ -92,7 +92,7 @@ export default function MobileHeader() {
                 className={`fixed inset-0 bg-black z-50 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
-                <div className="flex flex-col h-full bg-black">
+                <div className="flex flex-col h-full bg-black pt-[env(safe-area-inset-top)]">
                     {/* Menu Header */}
                     <div className="flex items-center justify-between p-4 border-b border-white/10">
                         <div className="flex items-center gap-3">
