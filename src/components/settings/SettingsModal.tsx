@@ -72,6 +72,39 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                     </section> */}
 
+                    {/* Widgets Section */}
+                    <section className="space-y-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            Widgets
+                        </h3>
+                        <div className="rounded-xl bg-white/5 p-4 space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20 text-purple-400">
+                                    <Monitor className="h-5 w-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-medium text-white">iOS Widget</span>
+                                    <span className="text-xs text-gray-400">Using Scriptable App</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 text-xs text-gray-300">
+                                <p>1. Install the <a href="https://scriptable.app" target="_blank" className="text-blue-400 underline">Scriptable App</a> on iOS.</p>
+                                <p>2. Copy the script below.</p>
+                                <p>3. Create a new script in Scriptable and paste the code.</p>
+                                <p>4. Add a Scriptable widget to your home screen.</p>
+                            </div>
+
+                            <a
+                                href="/elvison-widget.js"
+                                target="_blank"
+                                className="flex items-center justify-center w-full rounded-lg bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20 transition-colors"
+                            >
+                                View/Download Script
+                            </a>
+                        </div>
+                    </section>
+
                     {/* Notifications Section */}
                     <section className="space-y-3">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">

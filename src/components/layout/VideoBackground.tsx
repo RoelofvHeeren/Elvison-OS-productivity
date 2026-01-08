@@ -1,17 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function VideoBackground() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   useEffect(() => {
-    const video = document.querySelector('video');
+    const video = videoRef.current;
     if (video) {
+      // Explicitly set muted property to ensure mobile autoplay works
+      video.muted = true;
       video.play().catch(e => console.error("Auto-play failed:", e));
     }
   }, []);
 
   return (
     <video
+      ref={videoRef}
       autoPlay
       muted
       loop
