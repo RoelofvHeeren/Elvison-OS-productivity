@@ -5,15 +5,30 @@
 const API_URL = "https://elvison-os-productivity-production.up.railway.app/api/widgets/dashboard";
 const API_KEY = "elvison-widget-secret";
 
-let widget = await createWidget();
+let widget;
 if (config.runsInWidget) {
+    if (config.widgetFamily === 'small') {
+        widget = await createSmallWidget();
+    } else {
+        widget = await createMediumWidget();
+    }
     Script.setWidget(widget);
 } else {
+    widget = await createMediumWidget();
     widget.presentMedium();
 }
 Script.complete();
 
-async function createWidget() {
+async function createSmallWidget() {
+    const w = new ListWidget();
+    w.backgroundColor = new Color("#0F0F11");
+    const txt = w.addText("Please select the MEDIUM size widget.");
+    txt.textColor = Color.white();
+    txt.centerAlignText();
+    return w;
+}
+
+async function createMediumWidget() {
     const data = await fetchData();
 
     const w = new ListWidget();
