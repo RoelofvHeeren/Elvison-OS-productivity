@@ -27,12 +27,22 @@ export async function POST(request: NextRequest) {
             console.log('[Capture] Transcribing audio...');
             const buffer = Buffer.from(await file.arrayBuffer());
 
-            // We need to cast to any because the simple openai wrapper might not have audio types fully typed
-            // or we construct a File object for the API
-            // Whisper API accepts various formats (mp3, mp4, mpeg, mpga, m4a, wav, webm)
-            const fileType = file.type.split('/')[1] || 'webm';
+            // Verify buffer
+            if (buffer.length === 0) {
+                throw new Error("Audio buffer is empty");
+            }
+
+            // Map correct extensions for Whisper
+            const mime = file.type;
+            let ext = 'webm';
+            if (mime.includes('mp4')) ext = 'm4a'; // Whisper prefers m4a for mp4 container
+            else if (mime.includes('wav')) ext = 'wav';
+            else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3';
+
+            console.log(`[Capture] Processing filetype: ${mime} -> .${ext}`);
+
             const transcription = await openai.audio.transcriptions.create({
-                file: new File([buffer], `recording.${fileType}`, { type: file.type }),
+                file: new File([buffer], `recording.${ext}`, { type: file.type }),
                 model: 'whisper-1',
                 language: 'en',
             });
