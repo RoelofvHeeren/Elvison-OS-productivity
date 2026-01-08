@@ -43,6 +43,7 @@ const navItems = [
 export default function MobileHeader() {
     const pathname = usePathname();
     const pageTitle = pageTitles[pathname] || 'Elvison';
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Close menu when route changes
