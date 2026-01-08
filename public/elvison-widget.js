@@ -53,7 +53,7 @@ async function createMediumWidget() {
     w.addSpacer(12);
 
     // Greeting
-    const greeting = w.addText(data.greeting);
+    const greeting = w.addText(getGreeting());
     greeting.font = Font.thinSystemFont(18);
     greeting.textColor = Color.white();
 
@@ -107,6 +107,13 @@ function addStat(stack, value, label, colorHex) {
     const labelText = col.addText(label);
     labelText.font = Font.systemFont(10);
     labelText.textColor = new Color("#888888");
+}
+
+function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour >= 3 && hour < 12) return "Good Morning";
+    if (hour >= 12 && hour < 18) return "Good Afternoon";
+    return "Good Evening";
 }
 
 function addCaptureBtn(stack, label, url, colorHex) {
