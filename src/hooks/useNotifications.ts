@@ -149,7 +149,7 @@ export function useNotifications() {
                 badge: '/icons/icon-72x72.png',
                 vibrate: [100, 50, 100],
                 ...options,
-            });
+            } as any);
             return true;
         } catch (error) {
             console.error('[Notifications] Show notification error:', error);
