@@ -151,6 +151,7 @@ export function useNotifications() {
         }
 
         try {
+            // Try Service Worker first (for better background handling)
             const registration = await navigator.serviceWorker.ready;
             await registration.showNotification(title, {
                 icon: '/icons/icon-192x192.png',
@@ -160,10 +161,21 @@ export function useNotifications() {
             } as any);
             return true;
         } catch (error) {
-            console.error('[Notifications] Show notification error:', error);
-            return false;
+            console.warn('[Notifications] SW Notification failed, trying standard API:', error);
+
+            // Fallback to standard Notification API
+            try {
+                new Notification(title, {
+                    icon: '/icons/icon-192x192.png',
+                    ...options,
+                });
+                return true;
+            } catch (fallbackError) {
+                console.error('[Notifications] Standard Notification API also failed:', fallbackError);
+                return false;
+            }
         }
-    }, [state.permission, requestPermission]);
+    }, [settings.notifications.enabled, state.permission, requestPermission]);
 
     return {
         ...state,
