@@ -266,14 +266,21 @@ select:focus {
     grid-column: span 1;
   }
 
-  /* Reduce padding */
+  /* Ensure consistent padding on mobile */
   .p-6,
   .lg\:p-8 {
-    padding: 0;
+    padding: 1rem;
   }
 
-  /* Make glass cards full width */
+  /* Make glass cards full width but with some spacing */
   .glass-card {
-    border-radius: 0.75rem;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    /* Add airiness between cards */
+  }
+
+  /* Increase spacing between stacked items */
+  .space-y-6> :not([hidden])~ :not([hidden]) {
+    margin-top: 1.5rem;
   }
 }
