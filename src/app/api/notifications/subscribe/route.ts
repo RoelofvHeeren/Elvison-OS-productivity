@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-// For production, you'd use web-push library and VAPID keys
-// npm install web-push
-// const webpush = require('web-push');
+// Use a fixed user ID for the single-user mode (or fetch from session if available later)
+// For now, we'll try to find the first user or creating a default one if needed
+async function getUserId() {
+    const user = await prisma.user.findFirst();
+    if (user) return user.id;
+
+    // Fallback: create default user if none exists
+    const newUser = await prisma.user.create({
+        data: {
+            email: 'user@elvison.os',
+            name: 'Elvison User'
+        }
+    });
+    return newUser.id;
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,20 +28,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Store the push subscription in the database
-        // For now, we'll just log it since we don't have a user auth system
-        console.log('[Push] New subscription:', subscription.endpoint);
+        const userId = await getUserId();
 
-        // In a real app, you'd save this to the database:
-        // await prisma.pushSubscription.upsert({
-        //   where: { endpoint: subscription.endpoint },
-        //   update: { keys: subscription.keys },
-        //   create: {
-        //     endpoint: subscription.endpoint,
-        //     keys: subscription.keys,
-        //     expirationTime: subscription.expirationTime,
-        //   },
-        // });
+        // Store or update the push subscription
+        await prisma.pushSubscription.upsert({
+            where: { endpoint: subscription.endpoint },
+            update: {
+                keys: subscription.keys ?? {},
+                userId
+            },
+            create: {
+                endpoint: subscription.endpoint,
+                keys: subscription.keys ?? {},
+                userId
+            },
+        });
+
+        console.log('[Push] Subscription saved for user:', userId);
 
         return NextResponse.json({
             success: true,
@@ -54,12 +70,11 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        console.log('[Push] Removing subscription:', endpoint);
+        await prisma.pushSubscription.delete({
+            where: { endpoint },
+        });
 
-        // In a real app, you'd delete from database:
-        // await prisma.pushSubscription.delete({
-        //   where: { endpoint },
-        // });
+        console.log('[Push] Subscription removed');
 
         return NextResponse.json({
             success: true,
@@ -67,9 +82,7 @@ export async function DELETE(request: NextRequest) {
         });
     } catch (error) {
         console.error('[Push] Unsubscribe error:', error);
-        return NextResponse.json(
-            { error: 'Failed to remove subscription' },
-            { status: 500 }
-        );
+        // Don't fail if already deleted
+        return NextResponse.json({ success: true });
     }
 }
