@@ -24,6 +24,7 @@ const moreNavItems = [
     { href: '/manifestation', label: 'Manifestation' },
     { href: '/knowledge', label: 'Knowledge' },
     { href: '/weekly-review', label: 'Weekly Review' },
+    { href: '/profile', label: 'Profile' },
 ];
 
 export default function BottomNav() {
@@ -51,8 +52,8 @@ export default function BottomNav() {
                             href={item.href}
                             onClick={() => setShowMore(false)}
                             className={`block px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === item.href
-                                    ? 'bg-[#139187] text-white'
-                                    : 'text-white/80 hover:bg-white/10'
+                                ? 'bg-[#139187] text-white'
+                                : 'text-white/80 hover:bg-white/10'
                                 }`}
                         >
                             {item.label}

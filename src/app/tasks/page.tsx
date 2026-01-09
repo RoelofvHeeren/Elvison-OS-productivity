@@ -8,7 +8,9 @@ import TabNav from '@/components/ui/TabNav';
 import VoiceCapture from '@/components/tasks/VoiceCapture';
 import TaskForm from '@/components/tasks/TaskForm';
 import TaskItem from '@/components/tasks/TaskItem';
-import { CheckSquare, Plus, Filter, Search, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import TaskWeeklyOverview from '@/components/tasks/TaskWeeklyOverview';
+import DayTaskCard from '@/components/tasks/DayTaskCard';
+import { CheckSquare, Plus, Filter, Search, Loader2, ChevronDown, ChevronRight, LayoutList, Calendar, CalendarDays } from 'lucide-react';
 
 interface Task {
     id: string;
@@ -34,6 +36,8 @@ const tabs = [
     { id: 'completed', label: 'Completed' },
 ];
 
+type ViewMode = 'list' | 'daily' | 'weekly';
+
 export default function TasksPage() {
     const [activeTab, setActiveTab] = useState('all');
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -45,6 +49,9 @@ export default function TasksPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCompletedToday, setShowCompletedToday] = useState(false);
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [weekOffset, setWeekOffset] = useState(0);
+    const [togglingId, setTogglingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -159,6 +166,7 @@ export default function TasksPage() {
         if (!task) return;
 
         const newStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
+        setTogglingId(id);
 
         // Optimistic update
         setTasks(tasks.map(t =>
@@ -176,6 +184,8 @@ export default function TasksPage() {
             setTasks(tasks.map(t =>
                 t.id === id ? { ...t, status: task.status } : t
             ));
+        } finally {
+            setTogglingId(null);
         }
     };
 
@@ -280,97 +290,151 @@ export default function TasksPage() {
                 </Button>
             </PageHeader>
 
-
-
-            {/* Task List */}
-            <div className="space-y-4">
-                {/* Search & Filters */}
-                <div className="flex items-center gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search tasks..."
-                            className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
-                        />
-                    </div>
-                    <Button variant="secondary" icon={Filter}>
-                        Filters
-                    </Button>
+            {/* View Mode Toggle */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1">
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'list'
+                                ? 'bg-[#139187] text-white'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <LayoutList className="w-4 h-4" />
+                        List
+                    </button>
+                    <button
+                        onClick={() => setViewMode('daily')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'daily'
+                                ? 'bg-[#139187] text-white'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <Calendar className="w-4 h-4" />
+                        Daily
+                    </button>
+                    <button
+                        onClick={() => setViewMode('weekly')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'weekly'
+                                ? 'bg-[#139187] text-white'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            }`}
+                    >
+                        <CalendarDays className="w-4 h-4" />
+                        Weekly
+                    </button>
                 </div>
+            </div>
 
-                {/* Tabs */}
-                <TabNav
-                    tabs={tabs.map((t) => ({
-                        ...t,
-                        count:
-                            t.id === 'all'
-                                ? tasks.length
-                                : t.id === 'today'
-                                    ? tasks.filter((task) => task.doToday && task.status !== 'DONE').length
-                                    : t.id === 'completed'
-                                        ? tasks.filter((task) => task.status === 'DONE').length
-                                        : undefined,
-                    }))}
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                >
+            {/* Conditional View Rendering */}
+            {viewMode === 'weekly' ? (
+                <TaskWeeklyOverview
+                    tasks={tasks}
+                    weekOffset={weekOffset}
+                    onWeekChange={setWeekOffset}
+                    onToggleTask={handleToggleStatus}
+                    togglingId={togglingId}
+                />
+            ) : viewMode === 'daily' ? (
+                <DayTaskCard
+                    date={new Date()}
+                    tasks={tasks.filter(t => t.doToday || (t.dueDate && t.dueDate.startsWith(new Date().toISOString().split('T')[0])))}
+                    onToggleTask={handleToggleStatus}
+                    togglingId={togglingId}
+                    className="max-w-md mx-auto"
+                />
+            ) : (
+                <>
                     {/* Task List */}
-                    <div className="space-y-3">
-                        {filteredTasks.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-gray-400">No tasks found</p>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    {activeTab === 'all'
-                                        ? 'Create your first task using voice or the button above'
-                                        : 'No tasks match the current filter'}
-                                </p>
-                            </div>
-                        ) : (
-                            filteredTasks.map((task) => (
-                                <TaskItem
-                                    key={task.id}
-                                    task={task}
-                                    onToggleStatus={handleToggleStatus}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    onToggleSubtask={handleToggleSubtask}
+                    <div className="space-y-4">
+                        {/* Search & Filters */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search tasks..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
                                 />
-                            ))
-                        )}
+                            </div>
+                            <Button variant="secondary" icon={Filter}>
+                                Filters
+                            </Button>
+                        </div>
 
-                        {/* Completed Today Section for Today Tab */}
-                        {activeTab === 'today' && completedTodayTasks.length > 0 && (
-                            <div className="mt-8">
-                                <button
-                                    onClick={() => setShowCompletedToday(!showCompletedToday)}
-                                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors mb-4"
-                                >
-                                    {showCompletedToday ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                    Completed Today ({completedTodayTasks.length})
-                                </button>
+                        {/* Tabs */}
+                        <TabNav
+                            tabs={tabs.map((t) => ({
+                                ...t,
+                                count:
+                                    t.id === 'all'
+                                        ? tasks.length
+                                        : t.id === 'today'
+                                            ? tasks.filter((task) => task.doToday && task.status !== 'DONE').length
+                                            : t.id === 'completed'
+                                                ? tasks.filter((task) => task.status === 'DONE').length
+                                                : undefined,
+                            }))}
+                            activeTab={activeTab}
+                            onTabChange={setActiveTab}
+                        >
+                            {/* Task List */}
+                            <div className="space-y-3">
+                                {filteredTasks.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-400">No tasks found</p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {activeTab === 'all'
+                                                ? 'Create your first task using voice or the button above'
+                                                : 'No tasks match the current filter'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    filteredTasks.map((task) => (
+                                        <TaskItem
+                                            key={task.id}
+                                            task={task}
+                                            onToggleStatus={handleToggleStatus}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                            onToggleSubtask={handleToggleSubtask}
+                                        />
+                                    ))
+                                )}
 
-                                {showCompletedToday && (
-                                    <div className="space-y-3 opacity-60">
-                                        {completedTodayTasks.map((task) => (
-                                            <TaskItem
-                                                key={task.id}
-                                                task={task}
-                                                onToggleStatus={handleToggleStatus}
-                                                onEdit={handleEdit}
-                                                onDelete={handleDelete}
-                                                onToggleSubtask={handleToggleSubtask}
-                                            />
-                                        ))}
+                                {/* Completed Today Section for Today Tab */}
+                                {activeTab === 'today' && completedTodayTasks.length > 0 && (
+                                    <div className="mt-8">
+                                        <button
+                                            onClick={() => setShowCompletedToday(!showCompletedToday)}
+                                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors mb-4"
+                                        >
+                                            {showCompletedToday ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                            Completed Today ({completedTodayTasks.length})
+                                        </button>
+
+                                        {showCompletedToday && (
+                                            <div className="space-y-3 opacity-60">
+                                                {completedTodayTasks.map((task) => (
+                                                    <TaskItem
+                                                        key={task.id}
+                                                        task={task}
+                                                        onToggleStatus={handleToggleStatus}
+                                                        onEdit={handleEdit}
+                                                        onDelete={handleDelete}
+                                                        onToggleSubtask={handleToggleSubtask}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                        )}
+                        </TabNav>
                     </div>
-                </TabNav>
-            </div>
+                </>)}
 
             {/* Task Form Modal */}
             <TaskForm

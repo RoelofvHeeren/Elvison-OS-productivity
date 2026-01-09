@@ -14,6 +14,7 @@ import {
     Sparkles,
     BookOpen,
     CalendarCheck,
+    User,
 } from 'lucide-react';
 
 const pageTitles: Record<string, string> = {
@@ -26,6 +27,7 @@ const pageTitles: Record<string, string> = {
     '/calendar': 'Calendar',
     '/knowledge': 'Knowledge',
     '/weekly-review': 'Weekly Review',
+    '/profile': 'Profile',
 };
 
 const navItems = [
@@ -38,6 +40,7 @@ const navItems = [
     { href: '/calendar', label: 'Calendar', icon: CalendarCheck },
     { href: '/knowledge', label: 'Knowledge', icon: BookOpen },
     { href: '/weekly-review', label: 'Weekly Review', icon: CalendarCheck },
+    { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function MobileHeader() {

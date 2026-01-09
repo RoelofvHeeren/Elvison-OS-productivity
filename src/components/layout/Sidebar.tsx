@@ -15,6 +15,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Settings,
+    User,
 } from 'lucide-react';
 import SettingsModal from '../settings/SettingsModal';
 
@@ -83,6 +84,19 @@ export default function Sidebar() {
 
             {/* Collapse Button */}
             <div className="mt-auto flex flex-col gap-2">
+                <Link
+                    href="/profile"
+                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 ${pathname === '/profile'
+                        ? 'bg-black text-white shadow-3d translate-x-1'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1'
+                        }`}
+                >
+                    <User
+                        className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 text-[#139187]`}
+                    />
+                    {!collapsed && <span>Profile</span>}
+                </Link>
+
                 <button
                     onClick={() => setIsSettingsOpen(true)}
                     className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1`}
