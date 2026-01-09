@@ -18,16 +18,57 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const handleTestNotification = async (type: string) => {
         const granted = await requestPermission();
         if (!granted) {
-            alert('Notification permission denied. Please enable notifications in your browser settings.');
+            alert('Notification permission denied!');
             return;
         }
 
         try {
-            const res = await fetch('/api/notifications/test-trigger', {
+            // Get the service worker registration and subscription
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                alert('No push subscription found. Please enable notifications first.');
+                return;
+            }
+
+            // Define notification messages
+            const notifications: Record<string, { title: string; body: string; data: { url: string } }> = {
+                daily_plan: {
+                    title: 'Daily Plan Not Set',
+                    body: 'No tasks scheduled for today. Tap to plan your day.',
+                    data: { url: '/tasks' }
+                },
+                task_due: {
+                    title: 'Task Due Soon',
+                    body: 'A task is approaching its due date.',
+                    data: { url: '/tasks' }
+                },
+                weekly_review: {
+                    title: 'Weekly Review Pending',
+                    body: "Time to review this week's progress and insights.",
+                    data: { url: '/weekly-review' }
+                },
+                reminder: {
+                    title: 'Reminder',
+                    body: 'You have a scheduled reminder.',
+                    data: { url: '/calendar' }
+                }
+            };
+
+            const notification = notifications[type];
+            if (!notification) {
+                alert('Invalid notification type');
+                return;
+            }
+
+            // Send to existing working endpoint
+            const res = await fetch('/api/notifications/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type })
+                body: JSON.stringify({ subscription, notification })
             });
+
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             console.log('Test notification sent:', data);
