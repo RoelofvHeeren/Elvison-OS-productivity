@@ -66,7 +66,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             const res = await fetch('/api/notifications/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subscription, notification })
+                body: JSON.stringify({
+                    subscription: subscription.toJSON(), // Convert to plain object
+                    notification
+                })
             });
 
             const data = await res.json();
