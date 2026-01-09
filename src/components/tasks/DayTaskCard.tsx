@@ -1,5 +1,4 @@
-
-// Force redeploy for high-contrast UI updates
+'use client';
 
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import CompletionCircle from '@/components/ui/CompletionCircle';
@@ -53,10 +52,10 @@ export default function DayTaskCard({
                     <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
                         {isToday ? 'Today' : dayName}
                     </h3>
-                    <p className="text-xs text-gray-200 font-semibold uppercase tracking-wide">{dateStr}</p>
+                    <p className="text-xs text-white font-semibold uppercase tracking-wide">{dateStr}</p>
                 </div>
                 {isToday && (
-                    <span className="px-2 py-0.5 bg-[#139187] text-white text-xs font-bold rounded-full shadow-[0_0_10px_rgba(19,145,135,0.4)]">
+                    <span className="px-2 py-0.5 bg-[#139187] text-white text-xs font-bold rounded-full">
                         TODAY
                     </span>
                 )}
@@ -68,7 +67,7 @@ export default function DayTaskCard({
             </div>
 
             {/* Task Count */}
-            <p className="text-center text-sm text-gray-200 font-semibold mb-4">
+            <p className="text-center text-sm text-white font-semibold mb-4">
                 {completedCount}/{totalCount} tasks
             </p>
 

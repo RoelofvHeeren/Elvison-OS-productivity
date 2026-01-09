@@ -15,14 +15,25 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     if (!isOpen) return null;
 
-    const handleTestNotification = async () => {
+    const handleTestNotification = async (type: string) => {
         const granted = await requestPermission();
-        if (granted) {
-            showLocalNotification('Test Notification', {
-                body: 'This is a test notification from Elvison OS.',
-            });
-        } else {
+        if (!granted) {
             alert('Notification permission denied. Please enable notifications in your browser settings.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/notifications/test-trigger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            console.log('Test notification sent:', data);
+        } catch (error) {
+            console.error('Failed to trigger test notification:', error);
+            alert('Failed to send test notification. Check console for details.');
         }
     };
 
@@ -209,26 +220,36 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={async () => {
-                                            const btn = document.getElementById('test-notification-btn');
-                                            if (btn) {
-                                                btn.textContent = 'Sending...';
-                                                btn.setAttribute('disabled', 'true');
-                                            }
-                                            console.log('Test Notification button clicked');
-                                            await handleTestNotification();
-                                            if (btn) {
-                                                btn.textContent = 'Send Test Notification';
-                                                btn.removeAttribute('disabled');
-                                            }
-                                        }}
-                                        id="test-notification-btn"
-                                        className="w-full mt-4 rounded-lg bg-[#139187]/10 border border-[#139187]/20 py-3 text-xs font-semibold text-[#139187] hover:bg-[#139187]/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
-                                    >
-                                        <Bell className="h-3 w-3" />
-                                        Send Test Notification
-                                    </button>
+                                    <div className="pt-2 grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={() => handleTestNotification('daily_plan')}
+                                            className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs transition-colors"
+                                        >
+                                            <Monitor className="h-3 w-3" />
+                                            Test Daily Plan
+                                        </button>
+                                        <button
+                                            onClick={() => handleTestNotification('task_due')}
+                                            className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs transition-colors"
+                                        >
+                                            <Bell className="h-3 w-3" />
+                                            Test Task Due
+                                        </button>
+                                        <button
+                                            onClick={() => handleTestNotification('weekly_review')}
+                                            className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs transition-colors"
+                                        >
+                                            <Shield className="h-3 w-3" />
+                                            Test Weekly Review
+                                        </button>
+                                        <button
+                                            onClick={() => handleTestNotification('reminder')}
+                                            className="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs transition-colors"
+                                        >
+                                            <Volume2 className="h-3 w-3" />
+                                            Test Reminder
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

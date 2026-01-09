@@ -127,7 +127,7 @@ export default function TaskWeeklyOverview({
 
                         return (
                             <div key={day.dateStr} className="flex flex-col items-center">
-                                <span className={`text-xs mb-1 font-bold uppercase tracking-wide ${day.isToday ? 'text-[#139187]' : 'text-gray-300'}`}>
+                                <span className={`text-xs mb-1 font-bold uppercase tracking-wide ${day.isToday ? 'text-[#139187]' : 'text-white'}`}>
                                     {day.dayName}
                                 </span>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 ${day.isToday ? 'bg-[#139187]/20 text-[#139187]' : 'text-white'
@@ -135,7 +135,7 @@ export default function TaskWeeklyOverview({
                                     {day.dayNum}
                                 </div>
                                 <CompletionCircleCompact percentage={percentage} size={36} />
-                                <span className="text-[10px] text-gray-300 font-medium mt-1">
+                                <span className="text-[10px] text-white font-semibold mt-1">
                                     {completed}/{total}
                                 </span>
                             </div>
