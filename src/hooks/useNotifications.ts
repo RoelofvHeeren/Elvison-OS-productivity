@@ -57,11 +57,13 @@ export function useNotifications() {
                 const registration = await navigator.serviceWorker.ready;
 
                 // In production, you'd use your VAPID public key here
-                // const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-                // const subscription = await registration.pushManager.subscribe({
-                //   userVisibleOnly: true,
-                //   applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-                // });
+                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+                if (vapidPublicKey) {
+                    await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                    });
+                }
 
                 console.log('[Notifications] Permission granted');
                 return true;
@@ -90,11 +92,13 @@ export function useNotifications() {
             let subscription = await registration.pushManager.getSubscription();
 
             if (!subscription) {
-                // Note: This will fail without a valid VAPID key
-                // subscription = await registration.pushManager.subscribe({
-                //   userVisibleOnly: true,
-                //   applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-                // });
+                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+                if (vapidPublicKey) {
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                    });
+                }
             }
 
             if (subscription) {

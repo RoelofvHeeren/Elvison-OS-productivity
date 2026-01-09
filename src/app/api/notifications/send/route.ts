@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// For production, you'd use web-push library
-// import webpush from 'web-push';
-// webpush.setVapidDetails(
-//   'mailto:your-email@example.com',
-//   process.env.VAPID_PUBLIC_KEY!,
-//   process.env.VAPID_PRIVATE_KEY!
-// );
+import { sendNotification } from '@/lib/notifications';
 
 interface NotificationPayload {
     title: string;
@@ -39,10 +33,14 @@ export async function POST(request: NextRequest) {
             actions: notification.actions || [],
         };
 
-        // In production, you'd send the push notification:
-        // await webpush.sendNotification(subscription, JSON.stringify(payload));
+        // Send the push notification
+        const success = await sendNotification(subscription, JSON.stringify(payload));
 
-        console.log('[Push] Would send notification:', payload);
+        if (!success) {
+            throw new Error('Failed to send push notification via web-push');
+        }
+
+        console.log('[Push] Notification sent successfully:', payload.title);
 
         return NextResponse.json({
             success: true,

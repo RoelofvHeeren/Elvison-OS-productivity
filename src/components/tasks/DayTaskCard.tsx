@@ -52,11 +52,11 @@ export default function DayTaskCard({
                     <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
                         {isToday ? 'Today' : dayName}
                     </h3>
-                    <p className="text-xs text-gray-400 font-medium">{dateStr}</p>
+                    <p className="text-xs text-gray-200 font-semibold uppercase tracking-wide">{dateStr}</p>
                 </div>
                 {isToday && (
-                    <span className="px-2 py-0.5 bg-[#139187]/20 text-[#139187] text-xs rounded-full">
-                        Today
+                    <span className="px-2 py-0.5 bg-[#139187] text-white text-xs font-bold rounded-full shadow-[0_0_10px_rgba(19,145,135,0.4)]">
+                        TODAY
                     </span>
                 )}
             </div>
@@ -67,7 +67,7 @@ export default function DayTaskCard({
             </div>
 
             {/* Task Count */}
-            <p className="text-center text-sm text-gray-300 font-medium mb-4">
+            <p className="text-center text-sm text-gray-200 font-semibold mb-4">
                 {completedCount}/{totalCount} tasks
             </p>
 
@@ -95,10 +95,10 @@ export default function DayTaskCard({
                                 ) : isCompleted ? (
                                     <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
                                 ) : (
-                                    <Circle className="w-5 h-5 text-gray-300 shrink-0" />
+                                    <Circle className="w-5 h-5 text-gray-300 shrink-0 hover:text-white transition-colors" />
                                 )}
                                 <span
-                                    className={`text-sm font-semibold truncate ${isCompleted ? 'text-gray-500 line-through' : 'text-white'
+                                    className={`text-sm font-bold truncate ${isCompleted ? 'text-gray-400 line-through decoration-gray-500' : 'text-white'
                                         }`}
                                 >
                                     {task.title}

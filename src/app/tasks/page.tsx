@@ -295,9 +295,9 @@ export default function TasksPage() {
                 <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1">
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'list'
-                                ? 'bg-[#139187] text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'list'
+                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                                : 'text-gray-300 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <LayoutList className="w-4 h-4" />
@@ -305,9 +305,9 @@ export default function TasksPage() {
                     </button>
                     <button
                         onClick={() => setViewMode('daily')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'daily'
-                                ? 'bg-[#139187] text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'daily'
+                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                                : 'text-gray-300 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <Calendar className="w-4 h-4" />
@@ -315,9 +315,9 @@ export default function TasksPage() {
                     </button>
                     <button
                         onClick={() => setViewMode('weekly')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${viewMode === 'weekly'
-                                ? 'bg-[#139187] text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'weekly'
+                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                                : 'text-gray-300 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <CalendarDays className="w-4 h-4" />

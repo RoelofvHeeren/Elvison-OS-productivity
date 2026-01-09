@@ -65,11 +65,11 @@ export default function DayHabitCard({
                     <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
                         {isToday ? 'Today' : dayName}
                     </h3>
-                    <p className="text-xs text-gray-400 font-medium">{dateFormatted}</p>
+                    <p className="text-xs text-gray-200 font-semibold uppercase tracking-wide">{dateFormatted}</p>
                 </div>
                 {isToday && (
-                    <span className="px-2 py-0.5 bg-[#139187]/20 text-[#139187] text-xs rounded-full">
-                        Today
+                    <span className="px-2 py-0.5 bg-[#139187] text-white text-xs font-bold rounded-full shadow-[0_0_10px_rgba(19,145,135,0.4)]">
+                        TODAY
                     </span>
                 )}
             </div>
@@ -80,7 +80,7 @@ export default function DayHabitCard({
             </div>
 
             {/* Habit Count */}
-            <p className="text-center text-sm text-gray-300 font-medium mb-4">
+            <p className="text-center text-sm text-gray-200 font-semibold mb-4">
                 {completedCount}/{totalCount} habits
             </p>
 
@@ -121,10 +121,10 @@ export default function DayHabitCard({
                                         </div>
                                     ) : (
                                         <div className="w-5 h-5 rounded bg-black/30 flex items-center justify-center">
-                                            <Minus className="w-3 h-3 text-gray-300" />
+                                            <Minus className="w-3 h-3 text-gray-200" />
                                         </div>
                                     )}
-                                    <span className={`text-sm font-semibold ${isCompleted ? 'text-gray-400' : 'text-white'}`}>
+                                    <span className={`text-sm font-bold ${isCompleted ? 'text-gray-400' : 'text-white'}`}>
                                         {habit.name}
                                     </span>
                                 </div>
