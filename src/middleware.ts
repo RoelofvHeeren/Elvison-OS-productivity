@@ -4,9 +4,8 @@ import { NextResponse } from "next/server"
 
 export default auth((req) => {
     const isLoggedIn = !!req.auth
-    const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard") ||
+    const isOnDashboard = req.nextUrl.pathname.startsWith("/tasks") ||
         req.nextUrl.pathname === "/" ||
-        req.nextUrl.pathname.startsWith("/tasks") ||
         req.nextUrl.pathname.startsWith("/goals") ||
         req.nextUrl.pathname.startsWith("/projects") ||
         // Add other protected routes here
@@ -23,7 +22,7 @@ export default auth((req) => {
 
     if (isAuthPage) {
         if (isLoggedIn) {
-            return NextResponse.redirect(new URL("/dashboard", req.nextUrl))
+            return NextResponse.redirect(new URL("/", req.nextUrl))
         }
         return
     }
