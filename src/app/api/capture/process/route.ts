@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateStructuredOutputGemini, transcribeAudioGemini } from '@/lib/gemini';
 import { prisma } from '@/lib/db';
 
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 // Schema for the AI output
 interface CaptureResult {
@@ -15,9 +15,13 @@ interface CaptureResult {
     projectName?: string;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
-        const formData = await request.formData();
+        const formData = await req.formData();
         const file = formData.get('audio') as Blob | null;
         let text = formData.get('text') as string | null;
         const mode = formData.get('mode') as string || 'task';
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
             if (itemData.type === 'TASK') {
                 const task = await prisma.task.create({
                     data: {
-                        userId: MOCK_USER_ID,
+                        userId: userId,
                         title: itemData.title,
                         priority: itemData.priority || 'MEDIUM',
                         dueDate: itemData.dueDate ? new Date(itemData.dueDate) : null,
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
             } else {
                 const note = await prisma.knowledgeItem.create({
                     data: {
-                        userId: MOCK_USER_ID,
+                        userId: userId,
                         title: itemData.title,
                         content: itemData.content || '',
                         category: 'PROMPT',
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch Context (Active Projects)
         const projects = await prisma.project.findMany({
-            where: { userId: MOCK_USER_ID, status: 'ACTIVE' },
+            where: { userId: userId, status: 'ACTIVE' },
             select: { id: true, name: true }
         });
         const projectList = projects.map(p => `"${p.name}" (ID: ${p.id})`).join(', ');
@@ -135,4 +139,4 @@ export async function POST(request: NextRequest) {
         console.error('[Capture] Error:', error);
         return NextResponse.json({ error: 'Processing failed', details: String(error) }, { status: 500 });
     }
-}
+});

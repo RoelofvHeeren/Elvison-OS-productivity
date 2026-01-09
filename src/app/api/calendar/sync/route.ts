@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import { setGoogleCredentials } from '@/lib/calendar';
 import { prisma } from '@/lib/db';
 
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
-export async function POST() {
+export const POST = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
-        const calendar = await setGoogleCredentials(MOCK_USER_ID);
+        const calendar = await setGoogleCredentials(userId);
         if (!calendar) {
             return NextResponse.json({ error: 'Not authenticated with Google' }, { status: 401 });
         }
@@ -42,7 +46,7 @@ export async function POST() {
                     allDay: !event.start.dateTime,
                 },
                 create: {
-                    userId: MOCK_USER_ID,
+                    userId: userId,
                     externalId: event.id,
                     title: event.summary,
                     description: event.description || null,
@@ -57,7 +61,7 @@ export async function POST() {
         // 3. Push tasks with deadlines to Google Calendar (if not already synced)
         const tasksToSync = await prisma.task.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 dueDate: { not: null },
                 calendarEventId: null,
             },
@@ -95,4 +99,4 @@ export async function POST() {
         console.error('Failed to sync calendar:', error);
         return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
     }
-}
+});

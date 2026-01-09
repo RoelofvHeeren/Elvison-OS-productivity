@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 // GET /api/priorities - Fetch top 3 priorities
-export async function GET() {
+export const GET = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
         // First, check for user-overridden priorities
         const today = new Date();
@@ -13,7 +17,7 @@ export async function GET() {
         // Get high-priority tasks with due dates
         const tasks = await prisma.task.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 status: { not: 'DONE' },
                 OR: [
                     { priority: 'HIGH' },
@@ -54,12 +58,16 @@ export async function GET() {
         console.error('Failed to fetch priorities:', error);
         return NextResponse.json({ error: 'Failed to fetch priorities' }, { status: 500 });
     }
-}
+});
 
 // PATCH /api/priorities - Override a priority
-export async function PATCH(request: Request) {
+export const PATCH = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
-        const body = await request.json();
+        const body = await req.json();
         const { id, title, priority, project } = body;
 
         // For now, we'll update the underlying task
@@ -80,4 +88,4 @@ export async function PATCH(request: Request) {
         console.error('Failed to override priority:', error);
         return NextResponse.json({ error: 'Failed to override priority' }, { status: 500 });
     }
-}
+});

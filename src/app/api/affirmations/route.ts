@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
 interface Affirmation {
     id: string;
@@ -11,11 +11,15 @@ interface Affirmation {
 }
 
 // GET /api/affirmations - Fetch all affirmations
-export async function GET() {
+export const GET = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
         const affirmations = await prisma.affirmation.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
             },
             orderBy: [{ type: 'asc' }, { order: 'asc' }],
         });
@@ -31,35 +35,29 @@ export async function GET() {
         console.error('Failed to fetch affirmations:', error);
         return NextResponse.json({ error: 'Failed to fetch affirmations' }, { status: 500 });
     }
-}
+});
 
 // POST /api/affirmations - Create a new affirmation
-export async function POST(request: Request) {
+export const POST = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
-        const body = await request.json();
+        const body = await req.json();
         const { content, type } = body;
 
-        // Ensure user exists (temporary fix for development)
-        const userExists = await prisma.user.findUnique({ where: { id: MOCK_USER_ID } });
-        if (!userExists) {
-            await prisma.user.create({
-                data: {
-                    id: MOCK_USER_ID,
-                    email: 'demo@example.com',
-                    name: 'Demo User'
-                }
-            });
-        }
+
 
         // Get the max order for this type
         const maxOrder = await prisma.affirmation.aggregate({
-            where: { userId: MOCK_USER_ID, type: type || 'CORE_IDENTITY' },
+            where: { userId: userId, type: type || 'CORE_IDENTITY' },
             _max: { order: true },
         });
 
         const affirmation = await prisma.affirmation.create({
             data: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 content,
                 type: type || 'CORE_IDENTITY',
                 order: (maxOrder._max.order || 0) + 1,
@@ -71,4 +69,4 @@ export async function POST(request: Request) {
         console.error('Failed to create affirmation:', error);
         return NextResponse.json({ error: 'Failed to create affirmation' }, { status: 500 });
     }
-}
+});

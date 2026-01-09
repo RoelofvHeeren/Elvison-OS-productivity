@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth"
 
-export async function GET() {
+export const GET = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
         // 1. Get Tasks Today count
         const tasksTodayCount = await prisma.task.count({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 doToday: true,
                 status: { not: 'DONE' } // Only count pending tasks for "Today"
             }
@@ -17,7 +21,7 @@ export async function GET() {
         // 2. Get Habits and calculate streaks
         const habits = await prisma.habit.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 archived: false,
             },
             include: {
@@ -64,4 +68,4 @@ export async function GET() {
         console.error('Failed to fetch dashboard stats:', error);
         return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
     }
-}
+});

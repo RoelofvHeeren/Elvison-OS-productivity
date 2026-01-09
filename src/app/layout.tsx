@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/g
 import "./globals.css";
 import VideoBackground from "@/components/layout/VideoBackground";
 import AppLayout from "@/components/layout/AppLayout";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -58,7 +59,9 @@ export default function RootLayout({
         style={{ fontFamily: 'var(--font-sans)' }}
       >
         <VideoBackground />
-        <AppLayout>{children}</AppLayout>
+        <AuthProvider>
+          <AppLayout>{children}</AppLayout>
+        </AuthProvider>
       </body>
     </html>
   );

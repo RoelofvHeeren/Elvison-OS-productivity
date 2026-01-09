@@ -1,19 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-
-// Mock user ID for now - in production this would come from auth
-const MOCK_USER_ID = 'user-1';
+import { auth } from "@/auth";
 
 // GET /api/tasks - Fetch tasks
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
+export const GET = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
+    const { searchParams } = new URL(req.url);
     const doToday = searchParams.get('doToday');
     const status = searchParams.get('status');
 
     try {
         const tasks = await prisma.task.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 ...(doToday === 'true' && { doToday: true }),
                 ...(status && { status: status as any }),
             },
@@ -37,34 +39,23 @@ export async function GET(request: Request) {
         console.error('Failed to fetch tasks:', error);
         return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
     }
-}
+});
 
 // POST /api/tasks - Create a new task
-// POST /api/tasks - Create a new task
-export async function POST(request: Request) {
+export const POST = auth(async (req) => {
+    if (!req.auth || !req.auth.user || !req.auth.user.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = req.auth.user.id;
     try {
-        const body = await request.json();
+        const body = await req.json();
         console.log('[API] Creating task with payload:', JSON.stringify(body, null, 2));
 
         const { title, priority, dueDate, dueTime, doToday, projectId, subtasks } = body;
 
-        // Ensure user exists (temporary fix for development)
-        // In a real app we'd handle this via auth middleware/seed
-        const userExists = await prisma.user.findUnique({ where: { id: MOCK_USER_ID } });
-        if (!userExists) {
-            console.log('[API] Mock user not found, creating...');
-            await prisma.user.create({
-                data: {
-                    id: MOCK_USER_ID,
-                    email: 'demo@example.com',
-                    name: 'Demo User'
-                }
-            });
-        }
-
         const task = await prisma.task.create({
             data: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 title,
                 priority: priority || 'MEDIUM',
                 dueDate: dueDate ? new Date(dueDate) : null,
@@ -90,4 +81,4 @@ export async function POST(request: Request) {
         console.error('Failed to create task:', error);
         return NextResponse.json({ error: 'Failed to create task', details: String(error) }, { status: 500 });
     }
-}
+});
