@@ -82,7 +82,7 @@ export default function VideoBackground() {
         height: '100%',
         objectFit: 'cover',
         zIndex: 0,
-        opacity: 0.4,
+        opacity: 0.6,
         pointerEvents: 'none',
       }}
       aria-hidden="true"

@@ -43,7 +43,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-950 p-4">
+        <div className="flex h-screen w-screen items-center justify-center p-4 overflow-hidden relative z-20">
             <div className="w-full max-w-md space-y-8 rounded-lg bg-gray-900 p-8 shadow-lg">
                 <div>
                     <h2 className="text-center text-3xl font-extrabold text-white">
