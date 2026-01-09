@@ -141,7 +141,7 @@ export default function HabitWeeklyOverview({
                                     percentage={day.isFuture ? 0 : percentage}
                                     size={36}
                                 />
-                                <span className="text-[10px] text-gray-400 font-medium mt-1">
+                                <span className="text-[10px] text-gray-300 font-medium mt-1">
                                     {day.isFuture ? '-' : `${completed}/${total}`}
                                 </span>
                             </div>

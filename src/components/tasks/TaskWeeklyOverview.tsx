@@ -135,7 +135,7 @@ export default function TaskWeeklyOverview({
                                     {day.dayNum}
                                 </div>
                                 <CompletionCircleCompact percentage={percentage} size={36} />
-                                <span className="text-[10px] text-gray-400 font-medium mt-1">
+                                <span className="text-[10px] text-gray-300 font-medium mt-1">
                                     {completed}/{total}
                                 </span>
                             </div>
