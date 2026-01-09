@@ -1,6 +1,7 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { usePWA } from '@/hooks/usePWA';
 import Sidebar from './Sidebar';
 import MobileLayout from './MobileLayout';
 import NotificationScheduler from '../notifications/NotificationScheduler';
@@ -14,6 +15,10 @@ import { usePathname } from 'next/navigation';
 export default function AppLayout({ children }: AppLayoutProps) {
     const isMobile = useIsMobile();
     const pathname = usePathname();
+
+    // Register Service Worker
+    usePWA();
+
     const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/signup');
 
     if (isAuthPage) {
