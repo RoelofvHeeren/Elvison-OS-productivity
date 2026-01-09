@@ -20,10 +20,9 @@ export default auth((req) => {
         return NextResponse.redirect(new URL("/login", req.nextUrl))
     }
 
+    // Simplified middleware to prevent logout loops
+    // We allow authenticated users to visit /login if they really want to (or are redirected there after logout)
     if (isAuthPage) {
-        if (isLoggedIn) {
-            return NextResponse.redirect(new URL("/", req.nextUrl))
-        }
         return
     }
 })

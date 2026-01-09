@@ -65,7 +65,7 @@ export const GET = auth(async (req) => {
             habitStreak: maxStreak
         });
     } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
-        return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+        console.error('Failed to fetch dashboard stats. Error:', error);
+        return NextResponse.json({ error: 'Failed to fetch stats', details: String(error) }, { status: 500 });
     }
 });
