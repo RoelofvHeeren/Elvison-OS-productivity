@@ -102,9 +102,9 @@ export default function TaskWeeklyOverview({
                             onClick={() => onWeekChange(weekOffset - 1)}
                             className="p-1 hover:bg-white/5 rounded transition-colors"
                         >
-                            <ChevronLeft className="w-4 h-4 text-gray-400" />
+                            <ChevronLeft className="w-4 h-4 text-white" />
                         </button>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-white font-semibold">
                             {getWeekLabel(weekOffset, weekDays)}
                         </span>
                         <button
@@ -112,7 +112,7 @@ export default function TaskWeeklyOverview({
                             disabled={weekOffset >= 0}
                             className="p-1 hover:bg-white/5 rounded disabled:opacity-30 transition-colors"
                         >
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                            <ChevronRight className="w-4 h-4 text-white" />
                         </button>
                     </div>
                 </div>

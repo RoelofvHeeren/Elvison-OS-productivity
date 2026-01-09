@@ -128,7 +128,7 @@ export default function DayHabitCard({
                                         {habit.name}
                                     </span>
                                 </div>
-                                <span className="text-xs text-gray-500 flex items-center gap-1">
+                                <span className="text-xs text-white flex items-center gap-1">
                                     <Flame className="w-3 h-3 text-orange-400" />
                                     {habit.streak}
                                 </span>

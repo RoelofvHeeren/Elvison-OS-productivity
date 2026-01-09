@@ -95,7 +95,7 @@ export default function DayTaskCard({
                                 ) : isCompleted ? (
                                     <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
                                 ) : (
-                                    <Circle className="w-5 h-5 text-gray-300 shrink-0 hover:text-white transition-colors" />
+                                    <Circle className="w-5 h-5 text-white shrink-0" />
                                 )}
                                 <span
                                     className={`text-sm font-bold truncate ${isCompleted ? 'text-gray-400 line-through decoration-gray-500' : 'text-white'
