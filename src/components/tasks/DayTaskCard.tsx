@@ -75,7 +75,7 @@ export default function DayTaskCard({
             {tasks.length === 0 ? (
                 <p className="text-center text-sm text-gray-500">No tasks</p>
             ) : (
-                <div className="space-y-2 flex-1 overflow-y-auto max-h-48">
+                <div className="space-y-2 flex-1 overflow-y-auto">
                     {tasks.map((task) => {
                         const isCompleted = task.status === 'DONE';
                         const isToggling = togglingId === task.id;
@@ -85,20 +85,20 @@ export default function DayTaskCard({
                                 key={task.id}
                                 onClick={() => onToggleTask(task.id)}
                                 disabled={isToggling}
-                                className={`w-full flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${isCompleted
-                                        ? 'bg-black/10 opacity-60'
+                                className={`w-full flex items-center gap-2 p-3 rounded-lg text-left transition-colors ${isCompleted
+                                        ? 'bg-black/10'
                                         : 'bg-black/20 hover:bg-black/30'
                                     } ${isToggling ? 'opacity-50' : ''}`}
                             >
                                 {isToggling ? (
-                                    <Loader2 className="w-4 h-4 text-[#139187] animate-spin shrink-0" />
+                                    <Loader2 className="w-5 h-5 text-[#139187] animate-spin shrink-0" />
                                 ) : isCompleted ? (
-                                    <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
                                 ) : (
-                                    <Circle className="w-4 h-4 text-gray-500 shrink-0" />
+                                    <Circle className="w-5 h-5 text-gray-400 shrink-0" />
                                 )}
                                 <span
-                                    className={`text-sm truncate ${isCompleted ? 'text-gray-500 line-through' : 'text-white'
+                                    className={`text-sm font-medium truncate ${isCompleted ? 'text-gray-500 line-through' : 'text-white'
                                         }`}
                                 >
                                     {task.title}

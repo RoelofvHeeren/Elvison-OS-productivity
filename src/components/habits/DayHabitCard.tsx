@@ -88,7 +88,7 @@ export default function DayHabitCard({
             {habits.length === 0 ? (
                 <p className="text-center text-sm text-gray-500">No habits</p>
             ) : (
-                <div className="space-y-2 flex-1 overflow-y-auto max-h-48">
+                <div className="space-y-2 flex-1 overflow-y-auto">
                     {habits.map((habit) => {
                         const isCompleted = habit.logs.some(
                             l => normalizeDate(l.date) === dateStr && l.completed
@@ -100,14 +100,14 @@ export default function DayHabitCard({
                                 key={habit.id}
                                 onClick={() => !isFuture && onToggleHabit(habit.id, dateStr)}
                                 disabled={isToggling || isFuture}
-                                className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors ${isFuture
+                                className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${isFuture
                                         ? 'bg-black/10 opacity-50 cursor-not-allowed'
                                         : isCompleted
                                             ? 'bg-black/10'
                                             : 'bg-black/20 hover:bg-black/30'
                                     } ${isToggling ? 'opacity-50' : ''}`}
                             >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                     {isToggling ? (
                                         <div className="w-5 h-5 rounded flex items-center justify-center">
                                             <Loader2 className="w-3 h-3 text-[#139187] animate-spin" />
@@ -124,7 +124,7 @@ export default function DayHabitCard({
                                             <Minus className="w-3 h-3 text-gray-500" />
                                         </div>
                                     )}
-                                    <span className={`text-sm ${isCompleted ? 'text-gray-300' : 'text-gray-500'}`}>
+                                    <span className={`text-sm font-medium ${isCompleted ? 'text-gray-400' : 'text-white'}`}>
                                         {habit.name}
                                     </span>
                                 </div>
