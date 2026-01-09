@@ -1,5 +1,7 @@
 
-import { prisma } from './prisma';
+
+import { prisma } from './db';
+
 
 type NotificationType = 'daily_plan' | 'task_due' | 'weekly_review' | 'reminder';
 
