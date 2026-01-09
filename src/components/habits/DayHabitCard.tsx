@@ -1,4 +1,5 @@
-'use client';
+
+// Force redeploy for high-contrast UI updates
 
 import { Check, Minus, Loader2, Flame } from 'lucide-react';
 import CompletionCircle from '@/components/ui/CompletionCircle';
