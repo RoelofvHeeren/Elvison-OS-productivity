@@ -49,10 +49,10 @@ export default function DayTaskCard({
             {/* Date Header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h3 className={`text-lg font-semibold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
+                    <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
                         {isToday ? 'Today' : dayName}
                     </h3>
-                    <p className="text-xs text-gray-500">{dateStr}</p>
+                    <p className="text-xs text-gray-400 font-medium">{dateStr}</p>
                 </div>
                 {isToday && (
                     <span className="px-2 py-0.5 bg-[#139187]/20 text-[#139187] text-xs rounded-full">
@@ -67,7 +67,7 @@ export default function DayTaskCard({
             </div>
 
             {/* Task Count */}
-            <p className="text-center text-sm text-gray-400 mb-4">
+            <p className="text-center text-sm text-gray-300 font-medium mb-4">
                 {completedCount}/{totalCount} tasks
             </p>
 
@@ -86,8 +86,8 @@ export default function DayTaskCard({
                                 onClick={() => onToggleTask(task.id)}
                                 disabled={isToggling}
                                 className={`w-full flex items-center gap-2 p-3 rounded-lg text-left transition-colors ${isCompleted
-                                        ? 'bg-black/10'
-                                        : 'bg-black/20 hover:bg-black/30'
+                                    ? 'bg-black/10'
+                                    : 'bg-black/20 hover:bg-black/30'
                                     } ${isToggling ? 'opacity-50' : ''}`}
                             >
                                 {isToggling ? (
@@ -95,10 +95,10 @@ export default function DayTaskCard({
                                 ) : isCompleted ? (
                                     <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
                                 ) : (
-                                    <Circle className="w-5 h-5 text-gray-400 shrink-0" />
+                                    <Circle className="w-5 h-5 text-gray-300 shrink-0" />
                                 )}
                                 <span
-                                    className={`text-sm font-medium truncate ${isCompleted ? 'text-gray-500 line-through' : 'text-white'
+                                    className={`text-sm font-semibold truncate ${isCompleted ? 'text-gray-500 line-through' : 'text-white'
                                         }`}
                                 >
                                     {task.title}
