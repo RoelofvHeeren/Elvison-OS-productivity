@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
+
 
 // Use a fixed user ID for the single-user mode (or fetch from session if available later)
 // For now, we'll try to find the first user or creating a default one if needed

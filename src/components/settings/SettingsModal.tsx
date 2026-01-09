@@ -81,6 +81,31 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         }
     };
 
+    const handleResetSubscriptions = async () => {
+        if (!confirm('This will delete all push subscriptions. You will need to re-enable notifications. Continue?')) {
+            return;
+        }
+        try {
+            // Call the unsubscribe endpoint to delete the subscription
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (subscription) {
+                const res = await fetch('/api/notifications/subscribe', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint: subscription.endpoint })
+                });
+                await subscription.unsubscribe();
+            }
+
+            alert('Subscriptions cleared! Please re-enable notifications to create a fresh subscription.');
+        } catch (error) {
+            console.error('Failed to reset subscriptions:', error);
+            alert('Failed to reset. Check console for details.');
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -294,6 +319,13 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             Test Reminder
                                         </button>
                                     </div>
+
+                                    <button
+                                        onClick={handleResetSubscriptions}
+                                        className="w-full mt-3 rounded-lg bg-red-500/10 border border-red-500/20 py-2.5 text-xs font-medium text-red-400 hover:bg-red-500/20 active:scale-[0.98] transition-all cursor-pointer"
+                                    >
+                                        Reset Push Subscriptions
+                                    </button>
                                 </div>
                             )}
                         </div>
