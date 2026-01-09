@@ -105,5 +105,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     trustHost: true,
     secret: process.env.AUTH_SECRET,
+    cookies: {
+        sessionToken: {
+            name: `__Secure-authjs.session-token`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            },
+        },
+        callbackUrl: {
+            name: `__Secure-authjs.callback-url`,
+            options: {
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            },
+        },
+        csrfToken: {
+            name: `__Secure-authjs.csrf-token`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            },
+        },
+        pkceCodeVerifier: {
+            name: `__Secure-authjs.pkce.code_verifier`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            },
+        },
+        state: {
+            name: `__Secure-authjs.state`,
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: true,
+            },
+        },
+    },
 })
 
