@@ -199,7 +199,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         <Bell className="h-5 w-5" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-white">Enable Notifications</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="font-medium text-white">Enable Notifications</span>
+                                            <span className="text-[10px] text-gray-500 font-mono">v1.1</span>
+                                        </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
                                             {/* Status Badge */}
