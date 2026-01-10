@@ -93,25 +93,29 @@ export function useNotifications() {
         try {
             const registration = await navigator.serviceWorker.ready;
 
-            // For demo purposes, we'll just get/create a subscription
-            // In production, you'd provide your VAPID public key
-            let subscription = await registration.pushManager.getSubscription();
+            // ALWAYS unsubscribe old subscription and create fresh one with current server key
+            let existingSubscription = await registration.pushManager.getSubscription();
+            if (existingSubscription) {
+                console.log('[Notifications] Unsubscribing old subscription before creating fresh one');
+                await existingSubscription.unsubscribe();
+            }
 
-            if (!subscription) {
-                try {
-                    const response = await fetch('/api/auth/vapid-key');
-                    const data = await response.json();
-                    const vapidPublicKey = data.publicKey;
+            let subscription: PushSubscription | null = null;
+            try {
+                const response = await fetch('/api/auth/vapid-key');
+                const data = await response.json();
+                const vapidPublicKey = data.publicKey;
+                console.log('[Notifications] Got VAPID key from server:', vapidPublicKey?.substring(0, 10) + '...');
 
-                    if (vapidPublicKey) {
-                        subscription = await registration.pushManager.subscribe({
-                            userVisibleOnly: true,
-                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
-                        });
-                    }
-                } catch (err) {
-                    console.error('[Notifications] Failed to fetch VAPID key or subscribe:', err);
+                if (vapidPublicKey) {
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                    });
+                    console.log('[Notifications] Created fresh subscription with current key');
                 }
+            } catch (err) {
+                console.error('[Notifications] Failed to fetch VAPID key or subscribe:', err);
             }
 
             if (subscription) {
