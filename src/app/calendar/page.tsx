@@ -7,8 +7,10 @@ import MonthView from '@/components/calendar/MonthView';
 import WeekView from '@/components/calendar/WeekView';
 import DayView from '@/components/calendar/DayView';
 import EventModal from '@/components/calendar/EventModal';
+import RemindersPanel from '@/components/calendar/RemindersPanel';
 import GlassCard from '@/components/ui/GlassCard';
-import { Loader2 } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { Loader2, Bell } from 'lucide-react';
 
 export type CalendarView = 'day' | 'week' | 'month';
 
@@ -18,6 +20,7 @@ export default function CalendarPage() {
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+    const [showReminders, setShowReminders] = useState(false);
 
     const fetchEvents = async () => {
         setLoading(true);
@@ -77,44 +80,58 @@ export default function CalendarPage() {
             <PageHeader
                 title="Calendar"
                 description="Manage your time and schedule with precision"
-            />
+            >
+                <Button
+                    variant={showReminders ? 'accent' : 'secondary'}
+                    icon={Bell}
+                    onClick={() => setShowReminders(!showReminders)}
+                >
+                    {showReminders ? 'Hide Reminders' : 'View Reminders'}
+                </Button>
+            </PageHeader>
 
             <div className="flex-1 flex flex-col min-h-0">
                 {/* Unified Container */}
                 <GlassCard className="flex-1 flex flex-col !p-0 overflow-hidden bg-black/20 backdrop-blur-xl">
-                    <div className="p-4 border-b border-white/10 bg-white/5">
-                        <CalendarController
-                            view={view}
-                            setView={setView}
-                            currentDate={currentDate}
-                            setCurrentDate={setCurrentDate}
-                            onSync={syncCalendar}
-                            onNewEvent={() => setIsEventModalOpen(true)}
-                            loading={loading}
-                            transparent={true} // Add this prop to Controller
-                        />
-                    </div>
-
-                    <div className="flex-1 relative overflow-y-auto">
-                        {loading && (
-                            <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                                <Loader2 className="w-8 h-8 text-[#139187] animate-spin" />
+                    {showReminders ? (
+                        <RemindersPanel onClose={() => setShowReminders(false)} />
+                    ) : (
+                        <>
+                            <div className="p-4 border-b border-white/10 bg-white/5">
+                                <CalendarController
+                                    view={view}
+                                    setView={setView}
+                                    currentDate={currentDate}
+                                    setCurrentDate={setCurrentDate}
+                                    onSync={syncCalendar}
+                                    onNewEvent={() => setIsEventModalOpen(true)}
+                                    loading={loading}
+                                    transparent={true} // Add this prop to Controller
+                                />
                             </div>
-                        )}
 
-                        {view === 'month' && (
-                            <MonthView
-                                currentDate={currentDate}
-                                events={events}
-                                onDateClick={(date: Date) => {
-                                    setCurrentDate(date);
-                                    setView('day');
-                                }}
-                            />
-                        )}
-                        {view === 'week' && <WeekView currentDate={currentDate} events={events} />}
-                        {view === 'day' && <DayView currentDate={currentDate} events={events} />}
-                    </div>
+                            <div className="flex-1 relative overflow-y-auto">
+                                {loading && (
+                                    <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-[#139187] animate-spin" />
+                                    </div>
+                                )}
+
+                                {view === 'month' && (
+                                    <MonthView
+                                        currentDate={currentDate}
+                                        events={events}
+                                        onDateClick={(date: Date) => {
+                                            setCurrentDate(date);
+                                            setView('day');
+                                        }}
+                                    />
+                                )}
+                                {view === 'week' && <WeekView currentDate={currentDate} events={events} />}
+                                {view === 'day' && <DayView currentDate={currentDate} events={events} />}
+                            </div>
+                        </>
+                    )}
                 </GlassCard>
             </div>
 

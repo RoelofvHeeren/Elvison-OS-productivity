@@ -49,7 +49,7 @@ export default function DashboardStats() {
     }
 
     return (
-        <div className="relative">
+        <div className="relative mb-6">
             {error && (
                 <div className="absolute -top-6 right-0 text-[10px] text-red-500/50 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />

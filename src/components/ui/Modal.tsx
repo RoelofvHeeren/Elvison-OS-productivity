@@ -48,11 +48,11 @@ export default function Modal({
             />
 
             {/* Modal Content */}
-            <div className="relative bg-gray-800 border border-gray-700 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-[#0F1115]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded-lg text-gray-400 transition-colors"
+                    className="absolute top-4 right-4 p-1 hover:text-white text-gray-400 transition-colors"
                 >
                     <X className="w-5 h-5" />
                 </button>

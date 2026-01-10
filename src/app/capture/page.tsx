@@ -2,15 +2,16 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Mic, Square, Loader2, CheckCircle2, ChevronLeft, Edit3, Calendar, FolderOpen, Flag } from 'lucide-react';
+import { Mic, Square, Loader2, CheckCircle2, ChevronLeft, Edit3, Calendar, FolderOpen, Flag, Bell, Clock } from 'lucide-react';
 import Button, { IconButton } from '@/components/ui/Button';
 
 interface CaptureCandidate {
-    type: 'TASK' | 'NOTE';
+    type: 'TASK' | 'NOTE' | 'REMINDER';
     title: string;
     content?: string;
     priority?: 'HIGH' | 'MEDIUM' | 'LOW';
     dueDate?: string;
+    datetime?: string;
     projectId?: string;
     projectName?: string;
 }
@@ -37,6 +38,7 @@ function CapturePageContent() {
     // Editable fields
     const [editTitle, setEditTitle] = useState('');
     const [editDueDate, setEditDueDate] = useState('');
+    const [editDatetime, setEditDatetime] = useState('');
     const [editPriority, setEditPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
     const [editProjectId, setEditProjectId] = useState<string>('');
 
@@ -125,6 +127,7 @@ function CapturePageContent() {
             // Initialize editable fields
             setEditTitle(data.candidate.title);
             setEditDueDate(data.candidate.dueDate || '');
+            setEditDatetime(data.candidate.datetime || '');
             setEditPriority(data.candidate.priority || 'MEDIUM');
             setEditProjectId(data.candidate.projectId || '');
         } catch (err) {
@@ -144,6 +147,7 @@ function CapturePageContent() {
             ...candidate,
             title: editTitle,
             dueDate: editDueDate || null,
+            datetime: editDatetime || null,
             priority: editPriority,
             projectId: editProjectId || null,
         };
@@ -206,7 +210,9 @@ function CapturePageContent() {
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-white mb-2">Saved!</h1>
                     <p className="text-gray-400 text-sm max-w-xs mx-auto">
-                        {candidate?.type === 'TASK' ? `Task: "${editTitle}"` : 'Note saved'}
+                        {candidate?.type === 'TASK' ? `Task: "${editTitle}"`
+                            : candidate?.type === 'REMINDER' ? `Reminder: "${editTitle}"`
+                                : 'Note saved'}
                     </p>
                 </div>
                 <div className="flex gap-4 w-full max-w-xs">
@@ -299,16 +305,39 @@ function CapturePageContent() {
                                             key={p}
                                             onClick={() => setEditPriority(p)}
                                             className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${editPriority === p
-                                                    ? p === 'HIGH' ? 'bg-red-500 text-white'
-                                                        : p === 'MEDIUM' ? 'bg-yellow-500 text-black'
-                                                            : 'bg-green-500 text-white'
-                                                    : 'bg-white/10 text-gray-400'
+                                                ? p === 'HIGH' ? 'bg-red-500 text-white'
+                                                    : p === 'MEDIUM' ? 'bg-yellow-500 text-black'
+                                                        : 'bg-green-500 text-white'
+                                                : 'bg-white/10 text-gray-400'
                                                 }`}
                                         >
                                             {p}
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+                        </>
+                    )}
+
+                    {candidate.type === 'REMINDER' && (
+                        <>
+                            {/* Reminder Datetime */}
+                            <div className="bg-white/5 rounded-lg p-4">
+                                <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                    <Clock className="w-3 h-3" /> Remind me at
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    value={editDatetime ? editDatetime.slice(0, 16) : ''}
+                                    onChange={(e) => setEditDatetime(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                    className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                />
+                                {editDatetime && (
+                                    <p className="text-xs text-gray-500 mt-1">{formatDate(editDatetime)}</p>
+                                )}
+                                {!editDatetime && (
+                                    <p className="text-xs text-red-400 mt-1">Reminder time is required</p>
+                                )}
                             </div>
                         </>
                     )}
@@ -325,7 +354,7 @@ function CapturePageContent() {
                         variant="primary"
                         className="flex-1"
                         onClick={saveCapture}
-                        disabled={isSaving || !editTitle.trim()}
+                        disabled={isSaving || !editTitle.trim() || (candidate.type === 'REMINDER' && !editDatetime)}
                     >
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Save'}
                     </Button>
@@ -355,8 +384,8 @@ function CapturePageContent() {
                         key={key}
                         onClick={() => router.replace(`/capture?mode=${key}`)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${mode === key
-                                ? 'text-white shadow-lg'
-                                : 'text-gray-500 bg-white/5 hover:text-gray-300'
+                            ? 'text-white shadow-lg'
+                            : 'text-gray-500 bg-white/5 hover:text-gray-300'
                             }`}
                         style={mode === key ? { backgroundColor: color } : {}}
                     >

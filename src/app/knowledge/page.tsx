@@ -22,11 +22,12 @@ import {
     Upload,
     Loader2,
     X,
+    StickyNote,
 } from 'lucide-react';
 
 interface KnowledgeItem {
     id: string;
-    category: 'DOCUMENT' | 'PROMPT' | 'TOOL' | 'PLAYBOOK' | 'REFERENCE';
+    category: 'DOCUMENT' | 'PROMPT' | 'TOOL' | 'PLAYBOOK' | 'REFERENCE' | 'NOTE';
     title: string;
     content: string;
     tags: string[];
@@ -39,10 +40,12 @@ const categoryIcons = {
     TOOL: Wrench,
     PLAYBOOK: Book,
     REFERENCE: Bookmark,
+    NOTE: StickyNote,
 };
 
 const tabs = [
     { id: 'all', label: 'All' },
+    { id: 'NOTE', label: 'Notes', icon: StickyNote },
     { id: 'DOCUMENT', label: 'Documents', icon: FileText },
     { id: 'PROMPT', label: 'Prompts', icon: MessageSquare },
     { id: 'TOOL', label: 'Tools', icon: Wrench },
@@ -428,6 +431,7 @@ export default function KnowledgePage() {
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         options={[
+                            { value: 'NOTE', label: 'Note' },
                             { value: 'DOCUMENT', label: 'Document' },
                             { value: 'PROMPT', label: 'Prompt' },
                             { value: 'TOOL', label: 'Tool' },

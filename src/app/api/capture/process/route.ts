@@ -6,11 +6,12 @@ import { auth } from "@/auth"
 
 // Schema for the AI output
 interface CaptureResult {
-    type: 'TASK' | 'NOTE';
+    type: 'TASK' | 'NOTE' | 'REMINDER';
     title: string;
     content?: string;
     priority?: 'HIGH' | 'MEDIUM' | 'LOW';
-    dueDate?: string;
+    dueDate?: string;  // For tasks
+    datetime?: string; // For reminders
     projectId?: string;
     projectName?: string;
 }
@@ -44,14 +45,30 @@ export const POST = auth(async (req) => {
                     }
                 });
                 return NextResponse.json({ success: true, item: task, type: 'TASK' });
+            } else if (itemData.type === 'REMINDER') {
+                // Save as Reminder
+                const reminderDatetime = itemData.datetime || itemData.dueDate;
+                if (!reminderDatetime) {
+                    return NextResponse.json({ error: 'Reminder requires a datetime' }, { status: 400 });
+                }
+                const reminder = await prisma.reminder.create({
+                    data: {
+                        userId: userId,
+                        title: itemData.title,
+                        datetime: new Date(reminderDatetime),
+                        type: 'CUSTOM',
+                    }
+                });
+                return NextResponse.json({ success: true, item: reminder, type: 'REMINDER' });
             } else {
+                // Save as Note in Knowledge Base with NOTE category
                 const note = await prisma.knowledgeItem.create({
                     data: {
                         userId: userId,
                         title: itemData.title,
                         content: itemData.content || '',
-                        category: 'PROMPT',
-                        tags: ['quick-capture'],
+                        category: 'NOTE',
+                        tags: ['quick-capture', 'voice-note'],
                     }
                 });
                 return NextResponse.json({ success: true, item: note, type: 'NOTE' });
@@ -85,40 +102,58 @@ export const POST = auth(async (req) => {
         });
         const projectList = projects.map(p => `"${p.name}" (ID: ${p.id})`).join(', ');
 
+        // Determine the output type based on mode
+        const modeType = mode === 'reminder' ? 'REMINDER' : mode === 'note' ? 'NOTE' : 'TASK';
+
         // AI Processing with Gemini
         const systemPrompt = `
         You are an intelligent productivity assistant for "Elvison OS".
         Your goal is to parse user voice transcripts into structured items.
 
         CONTEXT:
-        - Mode: ${mode.toUpperCase()} (Task/Reminder = TASK, Note = NOTE)
+        - Mode: ${mode.toUpperCase()}
+        - Expected Type: ${modeType}
         - Today's Date: ${new Date().toISOString()} (User is in user-local timezone, treat relative dates like "tomorrow" relative to this)
-        - Active Projects: ${projectList}
+        - Active Projects: ${projectList || 'None'}
 
-        INSTRUCTIONS FOR TASK/REMINDER:
+        ${modeType === 'TASK' ? `
+        INSTRUCTIONS FOR TASK:
         1. **Title**: Generate a CONCISE, ACTIONABLE title from the transcript. Do NOT just copy the full transcript. 
            - Example Transcript: "I need to call Peter tomorrow at 5pm to discuss the marketing budget."
            - Good Title: "Call Peter re: Marketing Budget"
-        2. **Due Date**: Extract any mentioned deadline. "Tomorrow 9am", "Next Friday", "In 2 hours". Return as ISO string.
+        2. **Due Date (dueDate)**: Extract any mentioned deadline. "Tomorrow 9am", "Next Friday", "In 2 hours". Return as ISO string.
         3. **Project**: Look for project names in the transcript. Fuzzy match against the "Active Projects" list. 
-           - If "Elvison OS" is mentioned and you have a project named "Elvison OS", link it.
            - If no project is found, leave projectId null.
            - If you find a matching project, also return projectName.
         4. **Priority**: Default to MEDIUM. Set HIGH if urgency is implied ("ASAP", "Urgent", "Important").
+        ` : ''}
 
+        ${modeType === 'REMINDER' ? `
+        INSTRUCTIONS FOR REMINDER:
+        1. **Title**: Generate a CONCISE reminder title from the transcript.
+           - Example Transcript: "Remind me to pick up groceries at 6pm today"
+           - Good Title: "Pick up groceries"
+        2. **Datetime (datetime)**: Extract the exact time for the reminder. This is REQUIRED for reminders.
+           - "At 3pm", "Tomorrow morning", "In 30 minutes", "Tonight at 8"
+           - Return as ISO string. If no time is specified, default to 1 hour from now.
+        ` : ''}
+
+        ${modeType === 'NOTE' ? `
         INSTRUCTIONS FOR NOTE:
-        - Title: Generate a short summary title.
-        - Content: Clean up the transcript into nice markdown.
+        1. **Title**: Generate a short summary title for the note.
+        2. **Content**: Clean up the transcript into nice markdown, preserving the key information.
+        ` : ''}
 
         RESPOND WITH THIS EXACT JSON STRUCTURE:
         {
-            "type": "TASK" or "NOTE",
+            "type": "${modeType}",
             "title": "...",
-            "content": "..." (only for notes),
-            "priority": "HIGH" | "MEDIUM" | "LOW",
-            "dueDate": "ISO string or null",
-            "projectId": "UUID or null",
-            "projectName": "Project name or null"
+            ${modeType === 'NOTE' ? '"content": "..." (the note content in markdown),' : ''}
+            ${modeType === 'TASK' ? '"priority": "HIGH" | "MEDIUM" | "LOW",' : ''}
+            ${modeType === 'TASK' ? '"dueDate": "ISO string or null",' : ''}
+            ${modeType === 'REMINDER' ? '"datetime": "ISO string (REQUIRED)",' : ''}
+            ${modeType === 'TASK' ? '"projectId": "UUID or null",' : ''}
+            ${modeType === 'TASK' ? '"projectName": "Project name or null"' : ''}
         }
         `;
 
@@ -126,6 +161,9 @@ export const POST = auth(async (req) => {
             systemPrompt,
             text
         );
+
+        // Ensure proper type is set in result
+        result.type = modeType;
 
         // Return candidate for review (not saved yet!)
         return NextResponse.json({

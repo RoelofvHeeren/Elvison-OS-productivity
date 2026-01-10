@@ -111,7 +111,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                                 required
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                className="w-24 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                className="w-32 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                         </div>
                     </div>
@@ -132,7 +132,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                                 required
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                className="w-24 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                className="w-32 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                         </div>
                     </div>
