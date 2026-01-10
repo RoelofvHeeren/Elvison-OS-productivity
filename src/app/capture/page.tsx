@@ -43,10 +43,15 @@ function CapturePageContent() {
     const [editProjectId, setEditProjectId] = useState<string>('');
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const chunksRef = useRef<Blob[]>([]);
 
     useEffect(() => {
+        // Request permissions early but don't hold the stream
         navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                stream.getTracks().forEach(track => track.stop());
+            })
             .catch(err => {
                 console.error('Microphone permission denied:', err);
                 setError('Microphone access is required for voice capture.');
@@ -56,6 +61,7 @@ function CapturePageContent() {
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
 
             let mimeType = 'audio/webm';
             if (MediaRecorder.isTypeSupported('audio/mp4')) {
@@ -79,8 +85,12 @@ function CapturePageContent() {
 
             mediaRecorder.onstop = async () => {
                 const blob = new Blob(chunksRef.current, { type: mimeType || 'audio/mp4' });
+                // We stop tracks immediately in stopRecording(), but ensure here too
+                if (streamRef.current) {
+                    streamRef.current.getTracks().forEach(track => track.stop());
+                    streamRef.current = null;
+                }
                 await processCapture(blob);
-                stream.getTracks().forEach(track => track.stop());
             };
 
             mediaRecorder.start();
@@ -95,6 +105,12 @@ function CapturePageContent() {
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
+
+            // Stop microphone immediately to remove orange dot indicator
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
         }
     };
 
@@ -230,25 +246,27 @@ function CapturePageContent() {
     // Review state
     if (candidate) {
         return (
-            <div className="min-h-screen bg-black flex flex-col p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <IconButton icon={ChevronLeft} onClick={reset} />
-                    <span className="text-sm font-medium text-gray-400 uppercase tracking-widest">
-                        Review {candidate.type}
-                    </span>
-                    <div className="w-8" />
+            <div className="h-[100dvh] bg-black flex flex-col">
+                <div className="flex-none p-6 pb-2">
+                    <div className="flex items-center justify-between mb-4">
+                        <IconButton icon={ChevronLeft} onClick={reset} />
+                        <span className="text-sm font-medium text-gray-400 uppercase tracking-widest">
+                            Review {candidate.type}
+                        </span>
+                        <div className="w-8" />
+                    </div>
                 </div>
 
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-4">
                     {/* Original transcript */}
                     <div className="bg-white/5 rounded-lg p-3">
-                        <p className="text-xs text-gray-500 mb-1">You said:</p>
-                        <p className="text-gray-300 text-sm italic">"{originalText}"</p>
+                        <p className="text-xs text-gray-400 mb-1">You said:</p>
+                        <p className="text-gray-200 text-sm italic">"{originalText}"</p>
                     </div>
 
                     {/* Title */}
                     <div className="bg-white/5 rounded-lg p-4">
-                        <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                        <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
                             <Edit3 className="w-3 h-3" /> Title
                         </label>
                         <input
@@ -263,7 +281,7 @@ function CapturePageContent() {
                         <>
                             {/* Due Date */}
                             <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
                                     <Calendar className="w-3 h-3" /> Due Date
                                 </label>
                                 <input
@@ -273,13 +291,13 @@ function CapturePageContent() {
                                     className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
                                 {editDueDate && (
-                                    <p className="text-xs text-gray-500 mt-1">{formatDate(editDueDate)}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{formatDate(editDueDate)}</p>
                                 )}
                             </div>
 
                             {/* Project */}
                             <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
                                     <FolderOpen className="w-3 h-3" /> Project
                                 </label>
                                 <select
@@ -296,7 +314,7 @@ function CapturePageContent() {
 
                             {/* Priority */}
                             <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
                                     <Flag className="w-3 h-3" /> Priority
                                 </label>
                                 <div className="flex gap-2">
@@ -323,7 +341,7 @@ function CapturePageContent() {
                         <>
                             {/* Reminder Datetime */}
                             <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
                                     <Clock className="w-3 h-3" /> Remind me at
                                 </label>
                                 <input
@@ -333,7 +351,7 @@ function CapturePageContent() {
                                     className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
                                 {editDatetime && (
-                                    <p className="text-xs text-gray-500 mt-1">{formatDate(editDatetime)}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{formatDate(editDatetime)}</p>
                                 )}
                                 {!editDatetime && (
                                     <p className="text-xs text-red-400 mt-1">Reminder time is required</p>
@@ -345,19 +363,21 @@ function CapturePageContent() {
                     {error && <p className="text-xs text-red-400 text-center">{error}</p>}
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex gap-4 mt-6">
-                    <Button variant="secondary" className="flex-1" onClick={reset}>
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="primary"
-                        className="flex-1"
-                        onClick={saveCapture}
-                        disabled={isSaving || !editTitle.trim() || (candidate.type === 'REMINDER' && !editDatetime)}
-                    >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Save'}
-                    </Button>
+                {/* Action buttons - Fixed at bottom */}
+                <div className="flex-none p-6 pt-2 bg-black/90 backdrop-blur-sm">
+                    <div className="flex gap-4">
+                        <Button variant="secondary" className="flex-1" onClick={reset}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            className="flex-1"
+                            onClick={saveCapture}
+                            disabled={isSaving || !editTitle.trim() || (candidate.type === 'REMINDER' && !editDatetime)}
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Save'}
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
