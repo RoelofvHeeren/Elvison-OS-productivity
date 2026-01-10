@@ -35,7 +35,7 @@ export function InnerCard({
 }: GlassCardProps) {
     return (
         <div
-            className={`bg-black/20 rounded-lg border border-white/10 ${paddingClasses[padding]} ${className}`}
+            className={`bg-black/60 backdrop-blur-sm rounded-lg border border-white/10 ${paddingClasses[padding]} ${className}`}
         >
             {children}
         </div>
