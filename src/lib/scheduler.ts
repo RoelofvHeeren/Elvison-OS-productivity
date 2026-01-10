@@ -87,10 +87,10 @@ export function initScheduler() {
     });
 
     // ============================================
-    // 3. REMINDER MONITOR (Every 5 Minutes)
+    // 3. REMINDER MONITOR (Every Minute)
     // Checks for exact reminder times
     // ============================================
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule('* * * * *', async () => {
         try {
             const now = new Date();
 
