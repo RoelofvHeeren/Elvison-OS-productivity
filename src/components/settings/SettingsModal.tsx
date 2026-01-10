@@ -1,8 +1,8 @@
-'use client';
-
-import { X, Bell, Moon, Shield, Volume2, Monitor } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { X, Bell, Moon, Shield, Volume2, Monitor, Copy, Check } from 'lucide-react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useState, useEffect } from 'react';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -12,8 +12,54 @@ interface SettingsModalProps {
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const { settings, updateNotificationPreferences } = useSettings();
     const { requestPermission, showLocalNotification } = useNotifications();
+    const { data: session } = useSession();
+    const [widgetToken, setWidgetToken] = useState<string | null>(null);
+    const [copiedId, setCopiedId] = useState(false);
+    const [isLoadingToken, setIsLoadingToken] = useState(false);
+
+    // Fetch widget token
+    useEffect(() => {
+        const fetchToken = async () => {
+            try {
+                const res = await fetch('/api/user/widget-token');
+                if (res.ok) {
+                    const data = await res.json();
+                    setWidgetToken(data.widgetToken);
+                }
+            } catch (error) {
+                console.error('Failed to fetch widget token:', error);
+            }
+        };
+        if (isOpen) fetchToken();
+    }, [isOpen]);
 
     if (!isOpen) return null;
+
+    const handleCopyId = () => {
+        if (!widgetToken) return;
+        navigator.clipboard.writeText(widgetToken);
+        setCopiedId(true);
+        setTimeout(() => setCopiedId(false), 2000);
+    };
+
+    const handleResetToken = async () => {
+        if (!confirm('This will invalidate your current widget. You will need to download and install the new script. Continue?')) {
+            return;
+        }
+        setIsLoadingToken(true);
+        try {
+            const res = await fetch('/api/user/widget-token', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                setWidgetToken(data.widgetToken);
+                alert('Token reset! Please download the new script below.');
+            }
+        } catch (error) {
+            console.error('Failed to reset token:', error);
+        } finally {
+            setIsLoadingToken(false);
+        }
+    };
 
     const handleTestNotification = async (type: string) => {
         const granted = await requestPermission();
@@ -145,20 +191,52 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 </div>
                             </div>
 
-                            <div className="space-y-2 text-xs text-gray-300">
-                                <p>1. Install the <a href="https://scriptable.app" target="_blank" className="text-blue-400 underline">Scriptable App</a> on iOS.</p>
-                                <p>2. Copy the script below.</p>
-                                <p>3. Create a new script in Scriptable and paste the code.</p>
-                                <p>4. Add a Scriptable widget to your home screen.</p>
-                            </div>
+                            <div className="space-y-4 pt-2">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                                            Secret Widget Token
+                                        </label>
+                                        <button
+                                            onClick={handleResetToken}
+                                            disabled={isLoadingToken}
+                                            className="text-[10px] text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                                        >
+                                            {isLoadingToken ? 'Resetting...' : 'Reset Token'}
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 p-2 group">
+                                        <code className="flex-1 font-mono text-xs text-teal-400 break-all">
+                                            {widgetToken ? widgetToken : '••••••••-••••-••••-••••-••••••••••••'}
+                                        </code>
+                                        <button
+                                            onClick={handleCopyId}
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-gray-400 hover:text-teal-400 transition-colors"
+                                            title="Copy Token"
+                                        >
+                                            {copiedId ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 italic">
+                                        Keep this secret. This token grants access to your widget data.
+                                    </p>
+                                </div>
 
-                            <a
-                                href="/elvison-widget.js"
-                                target="_blank"
-                                className="flex items-center justify-center w-full rounded-lg bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20 transition-colors"
-                            >
-                                View/Download Script
-                            </a>
+                                <div className="space-y-2 text-xs text-gray-300 border-t border-white/5 pt-4">
+                                    <p>1. Install the <a href="https://scriptable.app" target="_blank" className="text-blue-400 underline">Scriptable App</a> on iOS.</p>
+                                    <p>2. Download your **personalized script** below.</p>
+                                    <p>3. Create a new script in Scriptable and paste the code.</p>
+                                    <p>4. Add the Scriptable widget to your home screen.</p>
+                                </div>
+
+                                <a
+                                    href={widgetToken ? `/api/widgets/script?token=${widgetToken}` : '#'}
+                                    className={`flex items-center justify-center w-full rounded-lg py-2.5 text-xs font-semibold text-white transition-all shadow-lg active:scale-[0.98] ${widgetToken ? 'bg-[#139187] hover:bg-[#139187]/80' : 'bg-gray-700 cursor-not-allowed'}`}
+                                    onClick={(e) => !widgetToken && e.preventDefault()}
+                                >
+                                    Download Personalized Script
+                                </a>
+                            </div>
                         </div>
                     </section>
 

@@ -6,13 +6,31 @@ const MOCK_USER_ID = 'user-1';
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('key');
+    const token = searchParams.get('token');
     const headerSecret = request.headers.get('x-widget-secret');
 
     const VALID_SECRET = process.env.WIDGET_SECRET || 'elvison-widget-secret';
 
     if (secret !== VALID_SECRET && headerSecret !== VALID_SECRET) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized: Invalid Secret' }, { status: 401 });
     }
+
+    if (!token) {
+        return NextResponse.json({ error: 'Unauthorized: Missing Token' }, { status: 401 });
+    }
+
+    // Lookup user by token
+    const user = await prisma.user.findUnique({
+        where: { widgetToken: token }
+    });
+
+    if (!user) {
+        // Fallback for MOCK_USER_ID if token is 'default' or similar during transition?
+        // No, let's be secure. 
+        return NextResponse.json({ error: 'Unauthorized: Invalid Token' }, { status: 401 });
+    }
+
+    const userId = user.id;
 
     try {
         const today = new Date();
@@ -21,7 +39,7 @@ export async function GET(request: Request) {
         // Fetch remaining (incomplete) tasks for today
         const todayTasks = await prisma.task.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 status: { not: 'DONE' },
                 doToday: true
             },
@@ -41,7 +59,7 @@ export async function GET(request: Request) {
         // Count remaining tasks
         const remainingTasksCount = await prisma.task.count({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 status: { not: 'DONE' },
                 doToday: true
             }
@@ -50,7 +68,7 @@ export async function GET(request: Request) {
         // Fetch Habits Progress
         const activeHabits = await prisma.habit.findMany({
             where: {
-                userId: MOCK_USER_ID,
+                userId: userId,
                 archived: false
             },
             include: {
