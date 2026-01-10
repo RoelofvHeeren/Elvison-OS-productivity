@@ -1,15 +1,17 @@
 
 import webpush from 'web-push';
 
-if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-    console.warn('VAPID keys not set. Push notifications will not work via server.');
-} else {
-    webpush.setVapidDetails(
-        'mailto:support@elvison.os',
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-        process.env.VAPID_PRIVATE_KEY
-    );
-}
+// HARDCODED VAPID KEYS FOR DEBUGGING
+const PUBLIC_KEY = 'BIJ4OI6UUZcvrEr8IJYb-9dGkFJ3qmBHQhUxvFFcu_cfIKXfwYs7gz-aPG0fVgTodMNuNqpB97KLYgRdTQvnJ4A';
+const PRIVATE_KEY = 'ygvs6Pn4qYoZAIFDU68MZ7cbobAhXD7Gg6KWXfQEO8g';
+
+console.log('[Init] Hardcoded VAPID keys being used');
+
+webpush.setVapidDetails(
+    'mailto:admin@elvison.os', // Changed email slightly
+    PUBLIC_KEY,
+    PRIVATE_KEY
+);
 
 export async function sendNotification(subscription: any, payload: string) {
     try {
