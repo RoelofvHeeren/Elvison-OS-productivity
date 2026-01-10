@@ -56,13 +56,19 @@ export function useNotifications() {
                 // Subscribe to push notifications
                 const registration = await navigator.serviceWorker.ready;
 
-                // In production, you'd use your VAPID public key here
-                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-                if (vapidPublicKey) {
-                    await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
-                    });
+                try {
+                    const response = await fetch('/api/auth/vapid-key');
+                    const data = await response.json();
+                    const vapidPublicKey = data.publicKey;
+
+                    if (vapidPublicKey) {
+                        await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                        });
+                    }
+                } catch (err) {
+                    console.error('[Notifications] Failed to fetch VAPID key during permission grant:', err);
                 }
 
                 console.log('[Notifications] Permission granted');
@@ -92,12 +98,19 @@ export function useNotifications() {
             let subscription = await registration.pushManager.getSubscription();
 
             if (!subscription) {
-                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-                if (vapidPublicKey) {
-                    subscription = await registration.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
-                    });
+                try {
+                    const response = await fetch('/api/auth/vapid-key');
+                    const data = await response.json();
+                    const vapidPublicKey = data.publicKey;
+
+                    if (vapidPublicKey) {
+                        subscription = await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                        });
+                    }
+                } catch (err) {
+                    console.error('[Notifications] Failed to fetch VAPID key or subscribe:', err);
                 }
             }
 
