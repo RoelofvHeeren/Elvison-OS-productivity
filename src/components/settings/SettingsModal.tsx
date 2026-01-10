@@ -32,35 +32,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 return;
             }
 
-            // Define notification messages
-            const notifications: Record<string, { title: string; body: string; data: { url: string } }> = {
-                daily_plan: {
-                    title: 'Daily Plan Not Set',
-                    body: 'No tasks scheduled for today. Tap to plan your day.',
-                    data: { url: '/tasks' }
-                },
-                task_due: {
-                    title: 'Task Due Soon',
-                    body: 'A task is approaching its due date.',
-                    data: { url: '/tasks' }
-                },
-                weekly_review: {
-                    title: 'Weekly Review Pending',
-                    body: "Time to review this week's progress and insights.",
-                    data: { url: '/weekly-review' }
-                },
-                reminder: {
-                    title: 'Reminder',
-                    body: 'You have a scheduled reminder.',
-                    data: { url: '/calendar' }
-                }
-            };
-
-            const notification = notifications[type];
-            if (!notification) {
-                alert('Invalid notification type');
-                return;
+            // Fetch real notification content from API
+            const previewRes = await fetch(`/api/notifications/preview?type=${type}`);
+            if (!previewRes.ok) {
+                throw new Error('Failed to generate notification preview');
             }
+            const notification = await previewRes.json();
 
             // Send to existing working endpoint
             const res = await fetch('/api/notifications/send', {
@@ -201,7 +178,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <div className="flex flex-col">
                                         <div className="flex items-baseline gap-2">
                                             <span className="font-medium text-white">Enable Notifications</span>
-                                            <span className="text-[10px] text-gray-500 font-mono">v1.7</span>
+                                            <span className="text-[10px] text-gray-500 font-mono">v1.8</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
