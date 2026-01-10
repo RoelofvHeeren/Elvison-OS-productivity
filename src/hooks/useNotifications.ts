@@ -56,8 +56,8 @@ export function useNotifications() {
                 // Subscribe to push notifications
                 const registration = await navigator.serviceWorker.ready;
 
-                // HARDCODED VAPID KEYS FOR DEBUGGING (Must match server)
-                const vapidPublicKey = 'BIJ4OI6UUZcvrEr8IJYb-9dGkFJ3qmBHQhUxvFFcu_cfIKXfwYs7gz-aPG0fVgTodMNuNqpB97KLYgRdTQvnJ4A';
+                // In production, you'd use your VAPID public key here
+                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
                 if (vapidPublicKey) {
                     await registration.pushManager.subscribe({
                         userVisibleOnly: true,
@@ -92,7 +92,7 @@ export function useNotifications() {
             let subscription = await registration.pushManager.getSubscription();
 
             if (!subscription) {
-                const vapidPublicKey = 'BIJ4OI6UUZcvrEr8IJYb-9dGkFJ3qmBHQhUxvFFcu_cfIKXfwYs7gz-aPG0fVgTodMNuNqpB97KLYgRdTQvnJ4A';
+                const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
                 if (vapidPublicKey) {
                     subscription = await registration.pushManager.subscribe({
                         userVisibleOnly: true,

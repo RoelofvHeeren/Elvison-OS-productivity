@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { prisma } from '@/lib/db';
 import { sendNotification } from '@/lib/notifications';
 
 interface NotificationPayload {
@@ -13,8 +14,11 @@ interface NotificationPayload {
 }
 
 export async function POST(request: NextRequest) {
+    let subscription: any;
     try {
-        const { subscription, notification } = await request.json();
+        const body = await request.json();
+        subscription = body.subscription;
+        const notification = body.notification;
 
         if (!subscription || !notification) {
             return NextResponse.json(
@@ -46,7 +50,18 @@ export async function POST(request: NextRequest) {
             success: true,
             message: 'Notification sent',
         });
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.statusCode === 404 || error?.statusCode === 410) {
+            console.log('[Push] Subscription expired or invalid, removing:', subscription.endpoint);
+            try {
+                await prisma.pushSubscription.deleteMany({
+                    where: { endpoint: subscription.endpoint },
+                });
+            } catch (deleteError) {
+                console.error('[Push] Failed to cleanup invalid subscription:', deleteError);
+            }
+        }
+
         console.error('[Push] Send error:', error);
         return NextResponse.json(
             { error: 'Failed to send notification' },

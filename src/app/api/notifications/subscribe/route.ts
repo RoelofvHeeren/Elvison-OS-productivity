@@ -71,7 +71,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        await prisma.pushSubscription.delete({
+        await prisma.pushSubscription.deleteMany({
             where: { endpoint },
         });
 
