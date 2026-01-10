@@ -20,6 +20,10 @@ interface RemindersPanelProps {
 export default function RemindersPanel({ onClose }: RemindersPanelProps) {
     const [reminders, setReminders] = useState<Reminder[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAdding, setIsAdding] = useState(false);
+    const [newTitle, setNewTitle] = useState('');
+    const [newDatetime, setNewDatetime] = useState('');
+    const [creating, setCreating] = useState(false);
 
     useEffect(() => {
         fetchReminders();
@@ -36,6 +40,34 @@ export default function RemindersPanel({ onClose }: RemindersPanelProps) {
             console.error('Failed to fetch reminders:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const createReminder = async () => {
+        if (!newTitle.trim() || !newDatetime) return;
+        setCreating(true);
+        try {
+            const res = await fetch('/api/reminders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: newTitle,
+                    datetime: new Date(newDatetime).toISOString()
+                }),
+            });
+            if (res.ok) {
+                const reminder = await res.json();
+                setReminders([...reminders, reminder].sort((a, b) =>
+                    new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
+                ));
+                setIsAdding(false);
+                setNewTitle('');
+                setNewDatetime('');
+            }
+        } catch (error) {
+            console.error('Failed to create reminder:', error);
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -120,17 +152,60 @@ export default function RemindersPanel({ onClose }: RemindersPanelProps) {
                     <h3 className="text-lg font-medium text-white">Reminders</h3>
                     <span className="text-sm text-gray-500">({reminders.length})</span>
                 </div>
-                <Button variant="secondary" size="sm" onClick={onClose}>
-                    Back to Calendar
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setIsAdding(!isAdding)}
+                    >
+                        {isAdding ? 'Cancel' : 'Add Reminder'}
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={onClose}>
+                        Close
+                    </Button>
+                </div>
             </div>
 
-            {reminders.length === 0 ? (
+            {isAdding && (
+                <InnerCard className="p-4 mb-4 border-white/20">
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-xs text-gray-500 mb-1 block">Title</label>
+                            <input
+                                type="text"
+                                value={newTitle}
+                                onChange={(e) => setNewTitle(e.target.value)}
+                                placeholder="What to remind you about?"
+                                className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-[#139187] outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-500 mb-1 block">When</label>
+                            <input
+                                type="datetime-local"
+                                value={newDatetime}
+                                onChange={(e) => setNewDatetime(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-[#139187] outline-none"
+                            />
+                        </div>
+                        <Button
+                            variant="primary"
+                            className="w-full"
+                            onClick={createReminder}
+                            disabled={!newTitle.trim() || !newDatetime || creating}
+                        >
+                            {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Reminder'}
+                        </Button>
+                    </div>
+                </InnerCard>
+            )}
+
+            {reminders.length === 0 && !isAdding ? (
                 <div className="text-center py-12">
                     <Bell className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                     <p className="text-gray-400">No active reminders</p>
                     <p className="text-sm text-gray-500 mt-1">
-                        Use the widget to set a reminder
+                        Use the widget or button above to set one
                     </p>
                 </div>
             ) : (
