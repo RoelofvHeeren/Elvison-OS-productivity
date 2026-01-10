@@ -178,7 +178,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     <div className="flex flex-col">
                                         <div className="flex items-baseline gap-2">
                                             <span className="font-medium text-white">Enable Notifications</span>
-                                            <span className="text-[10px] text-gray-500 font-mono">v1.8</span>
+                                            <span className="text-[10px] text-gray-500 font-mono">v1.9</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
