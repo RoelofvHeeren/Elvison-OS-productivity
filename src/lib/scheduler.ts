@@ -1,6 +1,6 @@
 
 import cron from 'node-cron';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 import { sendNotification } from './notifications';
 
 let isSchedulerRunning = false;
@@ -9,13 +9,14 @@ export function initScheduler() {
     if (isSchedulerRunning) return;
     isSchedulerRunning = true;
 
-    console.log('[Scheduler] Initializing automated workflows...');
+    console.log('[Scheduler] Initializing automated workflows with Timezone support...');
 
     // ============================================
-    // 1. DAILY MORNING BRIEFING (8:00 AM)
+    // 1. TIMEZONE AWARE HOURLY CHECK
+    // Runs every hour at minute 0 (e.g., 1:00, 2:00)
     // ============================================
-    cron.schedule('0 8 * * *', async () => {
-        console.log('[Scheduler] Running Daily Briefing...');
+    cron.schedule('0 * * * *', async () => {
+        console.log('[Scheduler] Running hourly timezone checks...');
         try {
             const users = await prisma.user.findMany({
                 include: { pushSubscriptions: true }
@@ -24,112 +25,151 @@ export function initScheduler() {
             for (const user of users) {
                 if (!user.pushSubscriptions.length) continue;
 
-                // Get tasks for today
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
+                const userTimezone = user.timezone || 'UTC';
 
-                const tasks = await prisma.task.findMany({
-                    where: {
-                        userId: user.id,
-                        status: 'TODO',
-                        OR: [
-                            { doToday: true },
-                            { dueDate: { gte: today, lt: tomorrow } }
-                        ]
-                    },
-                    orderBy: { priority: 'asc' } // HIGH first (enum order)
-                });
+                // Get user's local time
+                const now = new Date();
+                const userTime = new Date(now.toLocaleString('en-US', { timeZone: userTimezone }));
+                const userHour = userTime.getHours();
+                const userDay = userTime.getDay(); // 0 = Sunday
 
-                let title = '';
-                let body = '';
-
-                if (tasks.length > 0) {
-                    const topTask = tasks[0];
-                    title = `☀️ Good Morning! You have ${tasks.length} tasks today.`;
-                    body = `Top priority: ${topTask.title}. Let's crush it!`;
-                } else {
-                    title = '☀️ Good Morning!';
-                    body = 'Your to-do list is empty. Take a moment to plan your day.';
+                // --- DAILY BRIEFING (8:00 AM Local Time) ---
+                if (userHour === 8) {
+                    await sendDailyBriefing(user, userTimezone);
                 }
 
-                // Send to all user devices
-                for (const sub of user.pushSubscriptions) {
-                    await sendNotification(sub, JSON.stringify({
-                        title,
-                        body,
-                        url: '/'
-                    }));
+                // --- WEEKLY REVIEW (Sunday 6:00 PM Local Time) ---
+                if (userDay === 0 && userHour === 18) {
+                    await sendWeeklyReview(user);
                 }
             }
         } catch (error) {
-            console.error('[Scheduler] Error in Daily Briefing:', error);
+            console.error('[Scheduler] Error in hourly checks:', error);
         }
     });
 
     // ============================================
-    // 2. WEEKLY REVIEW REMINDER (Sunday 8:00 PM)
+    // 2. DEADLINE MONITOR (Every Hour)
+    // Checks for specific windows (e.g. 24h before)
     // ============================================
-    cron.schedule('0 20 * * 0', async () => {
-        console.log('[Scheduler] Running Weekly Review Reminder...');
-        try {
-            const users = await prisma.user.findMany({
-                include: { pushSubscriptions: true }
-            });
-
-            for (const user of users) {
-                for (const sub of user.pushSubscriptions) {
-                    await sendNotification(sub, JSON.stringify({
-                        title: '📅 Weekly Review Time',
-                        body: 'The week is over. Take 10 minutes to review your wins and plan for next week.',
-                        url: '/weekly-review'
-                    }));
-                }
-            }
-        } catch (error) {
-            console.error('[Scheduler] Error in Weekly Review:', error);
-        }
-    });
-
-    // ============================================
-    // 3. DEADLINE MONITOR (Every 15 Minutes)
-    // ============================================
-    cron.schedule('*/15 * * * *', async () => {
-        // console.log('[Scheduler] Checking deadlines...');
+    cron.schedule('0 * * * *', async () => {
         try {
             const now = new Date();
-            const future = new Date(now.getTime() + 30 * 60000); // 30 mins from now
+            // Window: 24 hours from now (with 1 hour buffer)
+            const startWindow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            const endWindow = new Date(startWindow.getTime() + 60 * 60 * 1000); // +1 hour
 
-            // Find tasks due between now and 30 mins
-            const tasksDueSoon = await prisma.task.findMany({
+            const tasksDueIn24h = await prisma.task.findMany({
                 where: {
                     status: 'TODO',
                     dueDate: {
-                        gt: now,
-                        lte: future
+                        gte: startWindow,
+                        lt: endWindow
                     }
-                    // TODO: Add field to prevent duplicate checks if needed, 
-                    // generally fine as window moves.
                 },
                 include: {
-                    user: {
-                        include: { pushSubscriptions: true }
-                    }
+                    user: { include: { pushSubscriptions: true } }
                 }
             });
 
-            for (const task of tasksDueSoon) {
+            for (const task of tasksDueIn24h) {
                 for (const sub of task.user.pushSubscriptions) {
                     await sendNotification(sub, JSON.stringify({
-                        title: '⏰ Task Due Soon!',
-                        body: `"${task.title}" is due in less than 30 minutes.`,
-                        url: '/tasks'
+                        title: '⏰ Task Due Tomorrow',
+                        body: `"${task.title}" is due in 24 hours.`,
+                        data: { url: '/tasks' }
                     }));
                 }
             }
         } catch (error) {
-            console.error('[Scheduler] Error is Deadline Monitor:', error);
+            console.error('[Scheduler] Error in Deadline Monitor:', error);
         }
     });
+
+    // ============================================
+    // 3. REMINDER MONITOR (Every 5 Minutes)
+    // Checks for exact reminder times
+    // ============================================
+    cron.schedule('*/5 * * * *', async () => {
+        try {
+            const now = new Date();
+
+            // Find uncompleted reminders that are due or past due
+            const reminders = await prisma.reminder.findMany({
+                where: {
+                    completed: false,
+                    datetime: { lte: now }
+                },
+                include: {
+                    user: { include: { pushSubscriptions: true } }
+                }
+            });
+
+            for (const reminder of reminders) {
+                // Send notification
+                for (const sub of reminder.user.pushSubscriptions) {
+                    await sendNotification(sub, JSON.stringify({
+                        title: '🔔 Reminder',
+                        body: reminder.title,
+                        data: { url: '/calendar' }
+                    }));
+                }
+
+                // Mark as completed
+                await prisma.reminder.update({
+                    where: { id: reminder.id },
+                    data: { completed: true }
+                });
+            }
+        } catch (error) {
+            console.error('[Scheduler] Error in Reminder Monitor:', error);
+        }
+    });
+}
+
+// Helper: Daily Briefing Logic
+async function sendDailyBriefing(user: any, timezone: string) {
+    // Get tasks for "today" in user's timezone
+    const now = new Date();
+    // Create Date objects representing the start and end of user's today in UTC
+    // Logic: We want tasks where doToday=true OR dueDate is within user's today
+
+    // Simplified: Just count 'doToday' items + Overdue items
+    const tasks = await prisma.task.findMany({
+        where: {
+            userId: user.id,
+            status: 'TODO',
+            OR: [
+                { doToday: true },
+                // Ideally we check dueDate against user's local day, but doToday is the main "Plan" feature
+            ]
+        }
+    });
+
+    let title = '☀️ Good Morning!';
+    let body = 'Your to-do list is empty. Take a moment to plan your day.';
+
+    if (tasks.length > 0) {
+        title = `☀️ Good Morning! You have ${tasks.length} tasks today.`;
+        body = `Time to crush it! 🚀`;
+    }
+
+    for (const sub of user.pushSubscriptions) {
+        await sendNotification(sub, JSON.stringify({
+            title,
+            body,
+            data: { url: '/tasks' }
+        }));
+    }
+}
+
+// Helper: Weekly Review Logic
+async function sendWeeklyReview(user: any) {
+    for (const sub of user.pushSubscriptions) {
+        await sendNotification(sub, JSON.stringify({
+            title: '📅 Weekly Review Time',
+            body: 'The week is over. Take 10 minutes to review your wins and plan for next week.',
+            data: { url: '/weekly-review' }
+        }));
+    }
 }

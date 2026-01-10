@@ -14,7 +14,7 @@ export async function GET() {
         // Fetch user info
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { name: true, email: true },
+            select: { name: true, email: true, timezone: true },
         });
 
         if (!user) {
@@ -114,6 +114,7 @@ export async function GET() {
             user: {
                 name: user.name || 'User',
                 email: user.email,
+                timezone: user.timezone || 'UTC',
             },
             habitStreak: maxStreak,
             weeklyTaskCompletion: weeklyCompletion,

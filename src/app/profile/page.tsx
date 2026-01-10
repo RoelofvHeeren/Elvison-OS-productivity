@@ -19,6 +19,7 @@ interface ProfileStats {
     user: {
         name: string;
         email: string;
+        timezone: string;
     };
     habitStreak: number;
     weeklyTaskCompletion: number | null;
@@ -34,6 +35,8 @@ export default function ProfilePage() {
     const [stats, setStats] = useState<ProfileStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
+
+    const [updatingTimezone, setUpdatingTimezone] = useState(false);
 
     useEffect(() => {
         fetchStats();
@@ -53,6 +56,29 @@ export default function ProfilePage() {
         }
     };
 
+    const handleTimezoneChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newTimezone = e.target.value;
+        setUpdatingTimezone(true);
+        try {
+            const res = await fetch('/api/user/timezone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timezone: newTimezone }),
+            });
+
+            if (res.ok) {
+                setStats(prev => prev ? {
+                    ...prev,
+                    user: { ...prev.user, timezone: newTimezone }
+                } : null);
+            }
+        } catch (error) {
+            console.error('Failed to update timezone:', error);
+        } finally {
+            setUpdatingTimezone(false);
+        }
+    };
+
     const handleLogout = async () => {
         setLoggingOut(true);
         await signOut({ callbackUrl: '/login' });
@@ -66,6 +92,9 @@ export default function ProfilePage() {
         );
     }
 
+    // Get all supported timezones
+    const supportedTimezones = Intl.supportedValuesOf('timeZone');
+
     return (
         <div className="space-y-6">
             <PageHeader
@@ -75,17 +104,47 @@ export default function ProfilePage() {
 
             {/* User Info Card */}
             <GlassCard className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#139187] to-[#0d6b64] flex items-center justify-center">
-                        <User className="h-8 w-8 text-white" />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#139187] to-[#0d6b64] flex items-center justify-center">
+                            <User className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-white">
+                                {stats?.user.name || 'User'}
+                            </h2>
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <Mail className="h-4 w-4" />
+                                <span>{stats?.user.email}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-xl font-bold text-white">
-                            {stats?.user.name || 'User'}
-                        </h2>
-                        <div className="flex items-center gap-2 text-gray-400">
-                            <Mail className="h-4 w-4" />
-                            <span>{stats?.user.email}</span>
+
+                    <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+                        <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
+                            <Calendar className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-xs text-gray-400 font-medium mb-1">Timezone</label>
+                            <div className="relative">
+                                <select
+                                    value={stats?.user.timezone || 'UTC'}
+                                    onChange={handleTimezoneChange}
+                                    disabled={updatingTimezone}
+                                    className="appearance-none bg-transparent text-sm text-white font-medium focus:outline-none cursor-pointer pr-6 min-w-[200px]"
+                                >
+                                    {supportedTimezones.map(tz => (
+                                        <option key={tz} value={tz} className="bg-[#1a1a1a] text-white">
+                                            {tz.replace(/_/g, ' ')}
+                                        </option>
+                                    ))}
+                                </select>
+                                {updatingTimezone && (
+                                    <div className="absolute right-0 top-0 bottom-0 flex items-center">
+                                        <Loader2 className="h-3 w-3 animate-spin text-[#139187]" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

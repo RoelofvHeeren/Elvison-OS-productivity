@@ -36,176 +36,193 @@ export function useNotifications() {
                     setState((prev) => ({ ...prev, subscription: sub }));
                 });
             });
-        }
+        });
+}
+
+// Auto-detect and update timezone
+const detectTimezone = async () => {
+    const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+        // We fire this off without waiting for it to complete to not block UI
+        await fetch('/api/user/timezone', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: localTimezone }),
+        });
+    } catch (e) {
+        console.error('[Notifications] Failed to update timezone:', e);
+    }
+};
+detectTimezone();
     }, []);
 
-    const requestPermission = useCallback(async (): Promise<boolean> => {
-        if (!state.isSupported) {
-            console.warn('[Notifications] Not supported in this browser');
-            return false;
-        }
+const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (!state.isSupported) {
+        console.warn('[Notifications] Not supported in this browser');
+        return false;
+    }
 
-        setIsLoading(true);
+    setIsLoading(true);
 
-        try {
-            const permission = await Notification.requestPermission();
+    try {
+        const permission = await Notification.requestPermission();
 
-            setState((prev) => ({ ...prev, permission }));
+        setState((prev) => ({ ...prev, permission }));
 
-            if (permission === 'granted') {
-                // Subscribe to push notifications
-                const registration = await navigator.serviceWorker.ready;
-
-                try {
-                    const response = await fetch('/api/auth/vapid-key');
-                    const data = await response.json();
-                    const vapidPublicKey = data.publicKey;
-
-                    if (vapidPublicKey) {
-                        await registration.pushManager.subscribe({
-                            userVisibleOnly: true,
-                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
-                        });
-                    }
-                } catch (err) {
-                    console.error('[Notifications] Failed to fetch VAPID key during permission grant:', err);
-                }
-
-                console.log('[Notifications] Permission granted');
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            console.error('[Notifications] Error requesting permission:', error);
-            return false;
-        } finally {
-            setIsLoading(false);
-        }
-    }, [state.isSupported]);
-
-    const subscribe = useCallback(async (): Promise<PushSubscription | null> => {
-        if (state.permission !== 'granted') {
-            const granted = await requestPermission();
-            if (!granted) return null;
-        }
-
-        try {
+        if (permission === 'granted') {
+            // Subscribe to push notifications
             const registration = await navigator.serviceWorker.ready;
 
-            // ALWAYS unsubscribe old subscription and create fresh one with current server key
-            let existingSubscription = await registration.pushManager.getSubscription();
-            if (existingSubscription) {
-                console.log('[Notifications] Unsubscribing old subscription before creating fresh one');
-                await existingSubscription.unsubscribe();
-            }
-
-            let subscription: PushSubscription | null = null;
             try {
                 const response = await fetch('/api/auth/vapid-key');
                 const data = await response.json();
                 const vapidPublicKey = data.publicKey;
-                console.log('[Notifications] Got VAPID key from server:', vapidPublicKey?.substring(0, 10) + '...');
 
                 if (vapidPublicKey) {
-                    subscription = await registration.pushManager.subscribe({
+                    await registration.pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
                     });
-                    console.log('[Notifications] Created fresh subscription with current key');
                 }
             } catch (err) {
-                console.error('[Notifications] Failed to fetch VAPID key or subscribe:', err);
+                console.error('[Notifications] Failed to fetch VAPID key during permission grant:', err);
             }
 
-            if (subscription) {
-                // Save subscription to server
-                await fetch('/api/notifications/subscribe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(subscription.toJSON()),
-                });
-
-                setState((prev) => ({ ...prev, subscription }));
-            }
-
-            return subscription;
-        } catch (error) {
-            console.error('[Notifications] Subscribe error:', error);
-            return null;
+            console.log('[Notifications] Permission granted');
+            return true;
         }
-    }, [state.permission, requestPermission]);
 
-    const unsubscribe = useCallback(async (): Promise<boolean> => {
-        if (!state.subscription) return true;
+        return false;
+    } catch (error) {
+        console.error('[Notifications] Error requesting permission:', error);
+        return false;
+    } finally {
+        setIsLoading(false);
+    }
+}, [state.isSupported]);
 
+const subscribe = useCallback(async (): Promise<PushSubscription | null> => {
+    if (state.permission !== 'granted') {
+        const granted = await requestPermission();
+        if (!granted) return null;
+    }
+
+    try {
+        const registration = await navigator.serviceWorker.ready;
+
+        // ALWAYS unsubscribe old subscription and create fresh one with current server key
+        let existingSubscription = await registration.pushManager.getSubscription();
+        if (existingSubscription) {
+            console.log('[Notifications] Unsubscribing old subscription before creating fresh one');
+            await existingSubscription.unsubscribe();
+        }
+
+        let subscription: PushSubscription | null = null;
         try {
-            await state.subscription.unsubscribe();
+            const response = await fetch('/api/auth/vapid-key');
+            const data = await response.json();
+            const vapidPublicKey = data.publicKey;
+            console.log('[Notifications] Got VAPID key from server:', vapidPublicKey?.substring(0, 10) + '...');
 
-            // Remove from server
+            if (vapidPublicKey) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as any,
+                });
+                console.log('[Notifications] Created fresh subscription with current key');
+            }
+        } catch (err) {
+            console.error('[Notifications] Failed to fetch VAPID key or subscribe:', err);
+        }
+
+        if (subscription) {
+            // Save subscription to server
             await fetch('/api/notifications/subscribe', {
-                method: 'DELETE',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ endpoint: state.subscription.endpoint }),
+                body: JSON.stringify(subscription.toJSON()),
             });
 
-            setState((prev) => ({ ...prev, subscription: null }));
-            return true;
-        } catch (error) {
-            console.error('[Notifications] Unsubscribe error:', error);
-            return false;
-        }
-    }, [state.subscription]);
-
-    const showLocalNotification = useCallback(async (
-        title: string,
-        options?: NotificationOptions
-    ): Promise<boolean> => {
-        if (!settings.notifications.enabled) {
-            console.log('[Notifications] Notifications disabled in settings');
-            return false;
+            setState((prev) => ({ ...prev, subscription }));
         }
 
-        if (state.permission !== 'granted') {
-            const granted = await requestPermission();
-            if (!granted) return false;
-        }
+        return subscription;
+    } catch (error) {
+        console.error('[Notifications] Subscribe error:', error);
+        return null;
+    }
+}, [state.permission, requestPermission]);
 
+const unsubscribe = useCallback(async (): Promise<boolean> => {
+    if (!state.subscription) return true;
+
+    try {
+        await state.subscription.unsubscribe();
+
+        // Remove from server
+        await fetch('/api/notifications/subscribe', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: state.subscription.endpoint }),
+        });
+
+        setState((prev) => ({ ...prev, subscription: null }));
+        return true;
+    } catch (error) {
+        console.error('[Notifications] Unsubscribe error:', error);
+        return false;
+    }
+}, [state.subscription]);
+
+const showLocalNotification = useCallback(async (
+    title: string,
+    options?: NotificationOptions
+): Promise<boolean> => {
+    if (!settings.notifications.enabled) {
+        console.log('[Notifications] Notifications disabled in settings');
+        return false;
+    }
+
+    if (state.permission !== 'granted') {
+        const granted = await requestPermission();
+        if (!granted) return false;
+    }
+
+    try {
+        // Try Service Worker first (for better background handling)
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, {
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/icon-72x72.png',
+            vibrate: [100, 50, 100],
+            ...options,
+        } as any);
+        return true;
+    } catch (error) {
+        console.warn('[Notifications] SW Notification failed, trying standard API:', error);
+
+        // Fallback to standard Notification API
         try {
-            // Try Service Worker first (for better background handling)
-            const registration = await navigator.serviceWorker.ready;
-            await registration.showNotification(title, {
+            new Notification(title, {
                 icon: '/icons/icon-192x192.png',
-                badge: '/icons/icon-72x72.png',
-                vibrate: [100, 50, 100],
                 ...options,
-            } as any);
+            });
             return true;
-        } catch (error) {
-            console.warn('[Notifications] SW Notification failed, trying standard API:', error);
-
-            // Fallback to standard Notification API
-            try {
-                new Notification(title, {
-                    icon: '/icons/icon-192x192.png',
-                    ...options,
-                });
-                return true;
-            } catch (fallbackError) {
-                console.error('[Notifications] Standard Notification API also failed:', fallbackError);
-                return false;
-            }
+        } catch (fallbackError) {
+            console.error('[Notifications] Standard Notification API also failed:', fallbackError);
+            return false;
         }
-    }, [settings.notifications.enabled, state.permission, requestPermission]);
+    }
+}, [settings.notifications.enabled, state.permission, requestPermission]);
 
-    return {
-        ...state,
-        isLoading,
-        requestPermission,
-        subscribe,
-        unsubscribe,
-        showLocalNotification,
-    };
+return {
+    ...state,
+    isLoading,
+    requestPermission,
+    subscribe,
+    unsubscribe,
+    showLocalNotification,
+};
 }
 
 // Helper function to convert VAPID key
