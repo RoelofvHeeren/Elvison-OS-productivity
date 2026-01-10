@@ -93,7 +93,7 @@ export default function TaskItem({
                                         {task.project.name}
                                     </span>
                                 )}
-                                {task.dueDate && (
+                                {task.dueDate && new Date(task.dueDate).getFullYear() > 2000 && (
                                     <span className="flex items-center gap-1 text-xs text-gray-400">
                                         <Calendar className="w-3 h-3" />
                                         {new Date(task.dueDate).toLocaleDateString('en-US', {
@@ -118,28 +118,31 @@ export default function TaskItem({
                                 onClick={() => setShowMenu(!showMenu)}
                             />
                             {showMenu && (
-                                <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 py-1 min-w-[120px]">
-                                    <button
-                                        onClick={() => {
-                                            onEdit(task);
-                                            setShowMenu(false);
-                                        }}
-                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-white/5"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            onDelete(task.id);
-                                            setShowMenu(false);
-                                        }}
-                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-white/5"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete
-                                    </button>
-                                </div>
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                                    <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 py-1 min-w-[120px]">
+                                        <button
+                                            onClick={() => {
+                                                onEdit(task);
+                                                setShowMenu(false);
+                                            }}
+                                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-white/5"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                onDelete(task.id);
+                                                setShowMenu(false);
+                                            }}
+                                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-white/5"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>

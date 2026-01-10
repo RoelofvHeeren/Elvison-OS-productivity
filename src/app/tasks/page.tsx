@@ -296,8 +296,8 @@ export default function TasksPage() {
                     <button
                         onClick={() => setViewMode('list')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'list'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-white/70 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <LayoutList className="w-4 h-4" />
@@ -306,8 +306,8 @@ export default function TasksPage() {
                     <button
                         onClick={() => setViewMode('daily')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'daily'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-white/70 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <Calendar className="w-4 h-4" />
@@ -316,8 +316,8 @@ export default function TasksPage() {
                     <button
                         onClick={() => setViewMode('weekly')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'weekly'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-white/70 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         <CalendarDays className="w-4 h-4" />
@@ -449,7 +449,6 @@ export default function TasksPage() {
                     priority: editingTask.priority,
                     dueDate: editingTask.dueDate || '',
                     dueTime: editingTask.dueTime || '',
-                    doToday: editingTask.doToday,
                     projectId: editingTask.project?.id || null,
                     subtasks: editingTask.subtasks,
                 } : undefined}

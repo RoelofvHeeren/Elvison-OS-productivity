@@ -4,7 +4,7 @@ import { useState } from 'react';
 import GlassCard, { InnerCard } from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import { Input, Textarea, Select, Toggle, Checkbox } from '@/components/ui/FormElements';
+import { Input, Textarea, Select, Checkbox } from '@/components/ui/FormElements';
 import { Plus, X, GripVertical } from 'lucide-react';
 
 interface TaskFormData {
@@ -13,7 +13,6 @@ interface TaskFormData {
     priority: 'HIGH' | 'MEDIUM' | 'LOW';
     dueDate: string;
     dueTime: string;
-    doToday: boolean;
     subtasks: { id: string; title: string; completed: boolean }[];
 }
 
@@ -31,7 +30,6 @@ const defaultData: TaskFormData = {
     priority: 'MEDIUM',
     dueDate: '',
     dueTime: '',
-    doToday: false,
     subtasks: [],
 };
 
@@ -135,7 +133,7 @@ export default function TaskForm({
                 </div>
 
                 {/* Due Date & Time */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                         label="Due Date"
                         type="date"
@@ -149,13 +147,6 @@ export default function TaskForm({
                         onChange={(e) => updateField('dueTime', e.target.value)}
                     />
                 </div>
-
-                {/* Do Today Toggle */}
-                <Toggle
-                    label="Do Today"
-                    checked={formData.doToday}
-                    onChange={(checked) => updateField('doToday', checked)}
-                />
 
                 {/* Subtasks */}
                 <div className="space-y-2">

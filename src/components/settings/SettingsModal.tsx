@@ -261,13 +261,19 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
                                             {/* Status Badge */}
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${Notification.permission === 'granted'
-                                                ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                                                : Notification.permission === 'denied'
-                                                    ? 'border-red-500/30 text-red-400 bg-red-500/10'
-                                                    : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded border ${typeof Notification !== 'undefined' && Notification.permission === 'granted'
+                                                    ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                                                    : typeof Notification !== 'undefined' && Notification.permission === 'denied'
+                                                        ? 'border-red-500/30 text-red-400 bg-red-500/10'
+                                                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                                                 }`}>
-                                                {Notification.permission === 'granted' ? 'Active' : Notification.permission === 'denied' ? 'Blocked' : 'Needs Permission'}
+                                                {typeof Notification === 'undefined'
+                                                    ? 'Unavailable'
+                                                    : Notification.permission === 'granted'
+                                                        ? 'Active'
+                                                        : Notification.permission === 'denied'
+                                                            ? 'Blocked'
+                                                            : 'Needs Permission'}
                                             </span>
                                         </div>
                                     </div>
