@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { oauth2Client } from '@/lib/calendar';
 import { prisma } from '@/lib/db';
-
-const MOCK_USER_ID = 'user-1';
+import { auth } from '@/auth';
 
 export async function GET(request: Request) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return NextResponse.redirect(new URL('/login', request.url).toString());
+    }
+
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
 
@@ -17,7 +21,7 @@ export async function GET(request: Request) {
 
         // Update user with tokens
         await prisma.user.update({
-            where: { id: MOCK_USER_ID },
+            where: { id: session.user.id },
             data: {
                 googleAccessToken: tokens.access_token,
                 googleRefreshToken: tokens.refresh_token,
@@ -25,8 +29,8 @@ export async function GET(request: Request) {
             },
         });
 
-        // Redirect back to dashboard or calendar page
-        return NextResponse.redirect(new URL('/', request.url).toString());
+        // Redirect back to calendar page
+        return NextResponse.redirect(new URL('/calendar', request.url).toString());
     } catch (error) {
         console.error('Failed to get tokens:', error);
         return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
