@@ -71,9 +71,6 @@ export default function TaskWeeklyOverview({
         return tasks.filter((task) => {
             // Tasks with dueDate matching this day
             if (task.dueDate && task.dueDate.startsWith(dateStr)) return true;
-            // "Do Today" tasks for today only
-            const today = new Date().toISOString().split('T')[0];
-            if (task.doToday && dateStr === today) return true;
             return false;
         });
     };

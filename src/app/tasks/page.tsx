@@ -87,9 +87,10 @@ export default function TasksPage() {
             return false;
         }
 
+        const todayDateStr = new Date().toISOString().split('T')[0];
         switch (activeTab) {
             case 'today':
-                return task.doToday && task.status !== 'DONE';
+                return task.dueDate && task.dueDate.startsWith(todayDateStr) && task.status !== 'DONE';
             case 'upcoming':
                 return task.dueDate && task.status !== 'DONE';
             case 'completed':
@@ -99,7 +100,10 @@ export default function TasksPage() {
         }
     });
 
-    const completedTodayTasks = tasks.filter(task => task.doToday && task.status === 'DONE');
+    const todayDateStrForCompleted = new Date().toISOString().split('T')[0];
+    const completedTodayTasks = tasks.filter(task =>
+        task.dueDate && task.dueDate.startsWith(todayDateStrForCompleted) && task.status === 'DONE'
+    );
 
     const handleVoiceCapture = async (text: string) => {
         try {
@@ -338,7 +342,7 @@ export default function TasksPage() {
             ) : viewMode === 'daily' ? (
                 <DayTaskCard
                     date={new Date()}
-                    tasks={tasks.filter(t => t.doToday || (t.dueDate && t.dueDate.startsWith(new Date().toISOString().split('T')[0])))}
+                    tasks={tasks.filter(t => t.dueDate && t.dueDate.startsWith(new Date().toISOString().split('T')[0]))}
                     onToggleTask={handleToggleStatus}
                     togglingId={togglingId}
                     className="max-w-md mx-auto"
@@ -366,17 +370,20 @@ export default function TasksPage() {
 
                         {/* Tabs */}
                         <TabNav
-                            tabs={tabs.map((t) => ({
-                                ...t,
-                                count:
-                                    t.id === 'all'
-                                        ? tasks.length
-                                        : t.id === 'today'
-                                            ? tasks.filter((task) => task.doToday && task.status !== 'DONE').length
-                                            : t.id === 'completed'
-                                                ? tasks.filter((task) => task.status === 'DONE').length
-                                                : undefined,
-                            }))}
+                            tabs={tabs.map((t) => {
+                                const todayStr = new Date().toISOString().split('T')[0];
+                                return {
+                                    ...t,
+                                    count:
+                                        t.id === 'all'
+                                            ? tasks.filter((task) => task.status !== 'DONE').length
+                                            : t.id === 'today'
+                                                ? tasks.filter((task) => task.dueDate && task.dueDate.startsWith(todayStr) && task.status !== 'DONE').length
+                                                : t.id === 'completed'
+                                                    ? tasks.filter((task) => task.status === 'DONE').length
+                                                    : undefined,
+                                };
+                            })}
                             activeTab={activeTab}
                             onTabChange={setActiveTab}
                         >
