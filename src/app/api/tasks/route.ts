@@ -11,6 +11,7 @@ export const GET = auth(async (req) => {
     const { searchParams } = new URL(req.url);
     const doToday = searchParams.get('doToday');
     const status = searchParams.get('status');
+    const date = searchParams.get('date');
 
     try {
         const tasks = await prisma.task.findMany({
@@ -18,6 +19,12 @@ export const GET = auth(async (req) => {
                 userId: userId,
                 ...(doToday === 'true' && { doToday: true }),
                 ...(status && { status: status as any }),
+                ...(date && {
+                    dueDate: {
+                        gte: new Date(`${date}T00:00:00.000Z`),
+                        lt: new Date(`${date}T23:59:59.999Z`),
+                    },
+                }),
             },
             include: {
                 project: {

@@ -93,7 +93,7 @@ function CapturePageContent() {
                 await processCapture(blob);
             };
 
-            mediaRecorder.start();
+            mediaRecorder.start(200); // Record in 200ms chunks to ensure data availability
             setIsRecording(true);
             setError(null);
         } catch (err: any) {
@@ -105,18 +105,19 @@ function CapturePageContent() {
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
-
-            // Stop microphone immediately to remove orange dot indicator
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-                streamRef.current = null;
-            }
+            // Stream cleanup is handled in onstop to ensure all data is captured
         }
     };
 
     const processCapture = async (audioBlob: Blob) => {
         setIsProcessing(true);
         setError(null);
+
+        if (audioBlob.size === 0) {
+            setError('Recording was empty. Please try again.');
+            setIsProcessing(false);
+            return;
+        }
 
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.webm');

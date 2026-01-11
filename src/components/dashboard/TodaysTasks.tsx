@@ -23,7 +23,8 @@ export default function TodaysTasks() {
 
     const fetchTasks = async () => {
         try {
-            const res = await fetch('/api/tasks?doToday=true');
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const res = await fetch(`/api/tasks?date=${todayStr}`);
             if (res.ok) {
                 const data = await res.json();
                 // Sort: Pending first, then Completed

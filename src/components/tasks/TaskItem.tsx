@@ -100,7 +100,10 @@ export default function TaskItem({
                                             month: 'short',
                                             day: 'numeric',
                                         })}
-                                        {task.dueTime && ` at ${task.dueTime}`}
+                                        {task.dueTime && ` at ${new Date(task.dueTime).toLocaleTimeString('en-US', {
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                        })}`}
                                     </span>
                                 )}
                                 {task.doToday && !isDone && (
