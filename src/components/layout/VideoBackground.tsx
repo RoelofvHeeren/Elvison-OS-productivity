@@ -24,36 +24,32 @@ export default function VideoBackground() {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleTimeUpdate = () => {
-      if (!video.duration) return;
+    const handleEnded = () => {
+      isReversing.current = true;
+      video.pause();
 
-      // If playing forward and reached the end
-      if (!isReversing.current && video.currentTime >= video.duration - 0.1) {
-        isReversing.current = true;
-        video.pause();
+      const reversePlay = () => {
+        if (!video || !isReversing.current) return;
 
-        const reversePlay = () => {
-          if (!video || !isReversing.current) return;
+        // Smoother 30fps reverse playback
+        video.currentTime = Math.max(0, video.currentTime - 0.04);
 
-          video.currentTime = Math.max(0, video.currentTime - 0.033); // ~30fps
+        if (video.currentTime <= 0.1) {
+          isReversing.current = false;
+          video.currentTime = 0;
+          video.play().catch(console.error);
+        } else {
+          animationFrameId.current = requestAnimationFrame(reversePlay);
+        }
+      };
 
-          if (video.currentTime <= 0.1) {
-            isReversing.current = false;
-            video.currentTime = 0;
-            video.play().catch(console.error);
-          } else {
-            animationFrameId.current = requestAnimationFrame(reversePlay);
-          }
-        };
-
-        reversePlay();
-      }
+      reversePlay();
     };
 
-    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('ended', handleEnded);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('ended', handleEnded);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
