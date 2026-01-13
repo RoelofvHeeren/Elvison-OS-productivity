@@ -15,11 +15,12 @@ export const POST = auth(async (req) => {
             return NextResponse.json({ error: 'Not authenticated with Google' }, { status: 401 });
         }
 
-        // 1. Fetch events from Google (last 30 days and next 60 days)
+        // 1. Fetch events from Google
+        // Expanded range: last 90 days and next 180 days to catch more deletions
         const timeMin = new Date();
-        timeMin.setDate(timeMin.getDate() - 30);
+        timeMin.setDate(timeMin.getDate() - 90);
         const timeMax = new Date();
-        timeMax.setDate(timeMax.getDate() + 60);
+        timeMax.setDate(timeMax.getDate() + 180);
 
         const response = await calendar.events.list({
             calendarId: 'primary',
@@ -27,81 +28,86 @@ export const POST = auth(async (req) => {
             timeMax: timeMax.toISOString(),
             singleEvents: true,
             orderBy: 'startTime',
+            showDeleted: false, // Don't fetch already deleted ones
         });
 
         const googleEvents = response.data.items || [];
 
-        // 2. Sync to local database
-        const googleEventIds = new Set(googleEvents.map(e => e.id).filter(Boolean));
+        // Filter out 'cancelled' events and those missing requirements
+        const activeGoogleEvents = googleEvents.filter(e =>
+            e.status !== 'cancelled' &&
+            e.id &&
+            e.summary &&
+            (e.start?.dateTime || e.start?.date) &&
+            (e.end?.dateTime || e.end?.date)
+        );
 
-        const syncResults = await Promise.all(googleEvents.map(async (event) => {
-            if (!event.id || !event.summary || !event.start?.dateTime || !event.end?.dateTime) return null;
+        // 2. Sync to local database
+        const googleEventIds = new Set(activeGoogleEvents.map(e => e.id));
+
+        const syncResults = await Promise.all(activeGoogleEvents.map(async (event) => {
+            const start = new Date(event.start?.dateTime || event.start?.date!);
+            const end = new Date(event.end?.dateTime || event.end?.date!);
 
             return prisma.calendarEvent.upsert({
-                where: { externalId: event.id },
+                where: { externalId: event.id! },
                 update: {
-                    title: event.summary,
+                    title: event.summary!,
                     description: event.description || null,
-                    start: new Date(event.start.dateTime || event.start.date!),
-                    end: new Date(event.end.dateTime || event.end.date!),
+                    start,
+                    end,
                     location: event.location || null,
-                    allDay: !event.start.dateTime,
+                    allDay: !event.start?.dateTime,
+                    source: 'GOOGLE', // Ensure it's marked as GOOGLE
                 },
                 create: {
-                    userId: userId,
-                    externalId: event.id,
-                    title: event.summary,
+                    userId,
+                    externalId: event.id!,
+                    title: event.summary!,
                     description: event.description || null,
-                    start: new Date(event.start.dateTime || event.start.date!),
-                    end: new Date(event.end.dateTime || event.end.date!),
+                    start,
+                    end,
                     location: event.location || null,
-                    allDay: !event.start.dateTime,
+                    allDay: !event.start?.dateTime,
+                    source: 'GOOGLE',
                 },
             });
         }));
 
-        // 2.5 DELETE events that were deleted in Google Calendar
-        // We look for events in our DB that are:
-        // - In the sync time range (approx -30d to +60d)
-        // - Source is GOOGLE
-        // - ExternalId is NOT in googleEventIds
-
+        // 3. Cleanup stale local events
+        // Events that exist locally with source='GOOGLE' but are NOT in the active Google list
         await prisma.calendarEvent.deleteMany({
             where: {
-                userId: userId,
+                userId,
                 source: 'GOOGLE',
+                externalId: {
+                    notIn: Array.from(googleEventIds) as string[],
+                    not: null,
+                },
+                // Only delete within the synced range to avoid wiping history outside it
                 start: {
                     gte: timeMin,
-                    lte: timeMax
+                    lte: timeMax,
                 },
-                externalId: {
-                    notIn: Array.from(googleEventIds) as string[]
-                }
-            }
+            },
         });
 
-        // 3. Push tasks with deadlines to Google Calendar (if not already synced)
+        // 4. Push tasks with deadlines to Google Calendar
         const tasksToSync = await prisma.task.findMany({
             where: {
-                userId: userId,
+                userId,
                 dueDate: { not: null },
                 calendarEventId: null,
+                status: { not: 'DONE' },
             },
         });
 
         for (const task of tasksToSync) {
             try {
-                // Construct Start Time
                 const eventDate = new Date(task.dueDate!);
-                // Check if task has a specific time set (stored in dueTime usually, but here we might need to fetch it or rely on existing field)
-                // Wait, the `task` object here comes from `tasksToSync` query above.
-                // We need to ensure `dueTime` is included in the query or logic.
-                // Standardizing: 
-                // If dueTime is present, use it. 
-                // If not, default to 09:00.
-
                 if (task.dueTime) {
-                    eventDate.setHours(task.dueTime.getHours(), task.dueTime.getMinutes(), 0, 0);
+                    const dueTime = new Date(task.dueTime);
+                    eventDate.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
                 } else {
                     eventDate.setHours(9, 0, 0, 0);
                 }
@@ -109,10 +115,10 @@ export const POST = auth(async (req) => {
                 const googleEvent = await calendar.events.insert({
                     calendarId: 'primary',
                     requestBody: {
-                        summary: `Task: ${task.title}`,
+                        summary: `📌 ${task.title}`,
                         description: `Scheduled from Elvison OS`,
                         start: { dateTime: eventDate.toISOString() },
-                        end: { dateTime: new Date(eventDate.getTime() + 30 * 60000).toISOString() }, // 30 min duration
+                        end: { dateTime: new Date(eventDate.getTime() + 30 * 60000).toISOString() },
                     },
                 });
 
@@ -129,11 +135,17 @@ export const POST = auth(async (req) => {
 
         return NextResponse.json({
             success: true,
-            syncedEvents: syncResults.filter(Boolean).length,
+            syncedEvents: syncResults.length,
             syncedTasks: tasksToSync.length
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to sync calendar:', error);
-        return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
+
+        // 401/Invalid credentials error from Google
+        if (error.code === 401 || error.message?.includes('invalid_grant')) {
+            return NextResponse.json({ error: 'Authentication expired', needsAuth: true }, { status: 401 });
+        }
+
+        return NextResponse.json({ error: 'Sync failed', details: error.message }, { status: 500 });
     }
 });

@@ -69,32 +69,61 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { title, description, start, end, attendees } = body;
+        const { title, description, start, end, attendees, location } = body;
 
-        const calendar = await setGoogleCredentials(userId);
-        if (!calendar) {
-            return NextResponse.json({ error: 'Google Calendar not connected' }, { status: 401 });
+        let googleEventId = null;
+        let syncError = null;
+
+        // 1. Try to sync with Google if connected
+        try {
+            const calendar = await setGoogleCredentials(userId);
+            if (calendar) {
+                const event = {
+                    summary: title,
+                    description: description,
+                    location: location || null,
+                    start: {
+                        dateTime: new Date(start).toISOString(),
+                    },
+                    end: {
+                        dateTime: new Date(end).toISOString(),
+                    },
+                    attendees: attendees ? attendees.map((email: string) => ({ email })) : [],
+                };
+
+                const response = await calendar.events.insert({
+                    calendarId: 'primary',
+                    requestBody: event,
+                    sendUpdates: 'all', // This sends the email invites
+                });
+                googleEventId = response.data.id;
+            }
+        } catch (error: any) {
+            console.error('Google sync failed during creation:', error);
+            syncError = error.message || 'Sync failed';
+            // We continue anyway to save locally
         }
 
-        const event = {
-            summary: title,
-            description: description,
-            start: {
-                dateTime: new Date(start).toISOString(),
-            },
-            end: {
-                dateTime: new Date(end).toISOString(),
-            },
-            attendees: attendees ? attendees.map((email: string) => ({ email })) : [],
-        };
-
-        const response = await calendar.events.insert({
-            calendarId: 'primary',
-            requestBody: event,
-            sendUpdates: 'all', // This sends the email invites
+        // 2. Save locally regardless of sync status
+        const localEvent = await prisma.calendarEvent.create({
+            data: {
+                userId,
+                title,
+                description,
+                location,
+                start: new Date(start),
+                end: new Date(end),
+                externalId: googleEventId,
+                source: googleEventId ? 'GOOGLE' : 'LOCAL',
+            }
         });
 
-        return NextResponse.json(response.data);
+        return NextResponse.json({
+            success: true,
+            event: localEvent,
+            synced: !!googleEventId,
+            syncError
+        });
     } catch (error) {
         console.error('Failed to create calendar event:', error);
         return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });
