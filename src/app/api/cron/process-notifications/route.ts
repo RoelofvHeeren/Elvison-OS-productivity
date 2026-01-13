@@ -38,20 +38,27 @@ export async function GET(req: Request) {
             }
         });
 
+        console.log(`[Cron] Found ${reminders.length} pending reminders. Query time: ${now.toISOString()}`);
+
         for (const reminder of reminders) {
+            console.log(`[Cron] Processing reminder ${reminder.id} for user ${reminder.userId}. Title: "${reminder.title}", Subs: ${reminder.user.pushSubscriptions.length}`);
+
             let sent = false;
             for (const sub of reminder.user.pushSubscriptions) {
                 try {
+                    console.log(`[Cron] Attempting push to sub ${sub.id.substring(0, 8)}...`);
                     await sendNotification(sub, JSON.stringify({
                         title: '🔔 Reminder',
                         body: reminder.title,
                         data: { url: '/calendar' }
                     }));
+                    console.log(`[Cron] Push success for sub ${sub.id}`);
                     sent = true;
                 } catch (e: any) {
-                    console.error(`[Cron] Remind Error (User ${reminder.userId}):`, e);
+                    console.error(`[Cron] Remind Error (User ${reminder.userId}, Sub ${sub.id}):`, e);
                     if (e.statusCode === 410) {
                         // Cleanup invalid sub
+                        console.log(`[Cron] Deleting expired subscription ${sub.id}`);
                         await prisma.pushSubscription.delete({ where: { id: sub.id } });
                     }
                 }
@@ -60,11 +67,14 @@ export async function GET(req: Request) {
             // Only mark complete if we attempted sending or if user has no subs (to prevent stuck reminders)
             // Actually, if user has NO subs, we should mark as complete otherwise it loops forever.
             if (sent || reminder.user.pushSubscriptions.length === 0) {
+                console.log(`[Cron] Marking reminder ${reminder.id} as completed.`);
                 await prisma.reminder.update({
                     where: { id: reminder.id },
                     data: { completed: true }
                 });
                 results.remindersSent++;
+            } else {
+                console.log(`[Cron] Failed to send reminder ${reminder.id} (no successful pushes). NOT marking complete.`);
             }
         }
 
