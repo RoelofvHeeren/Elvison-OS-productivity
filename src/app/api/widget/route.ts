@@ -1,19 +1,23 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { toZonedTime } from 'date-fns-tz';
 
 // Helper to get effective user
 async function getUserId() {
     const user = await prisma.user.findFirst();
-    if (user) return user.id;
-    return 'user-1'; // Fallback
+    if (user) return { id: user.id, timezone: user.timezone || 'UTC' };
+    return { id: 'user-1', timezone: 'UTC' }; // Fallback
 }
 
 export async function GET() {
     try {
-        const userId = await getUserId();
+        const { id: userId, timezone } = await getUserId();
+
+        // Use user's timezone to determine "now" and "today"
         const now = new Date();
-        const hour = now.getHours();
+        const zonedNow = toZonedTime(now, timezone);
+        const hour = zonedNow.getHours();
 
         // 1. Greeting
         let greeting = 'Good Evening';
@@ -21,17 +25,29 @@ export async function GET() {
         else if (hour < 18) greeting = 'Good Afternoon';
 
         // 2. Task Stats (Today)
-        const startOfDay = new Date(now);
+        // Calculate start/end of day in USER's timezone
+        const startOfDay = new Date(zonedNow);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(startOfDay);
         endOfDay.setDate(endOfDay.getDate() + 1);
+
+        // Note: We compare the TASK's dueDate (which is stored as UTC) against the range
+        // that represents "Today" in the user's timezone.
+        // However, Prisma/DB dates are UTC. We need to match the logic used in TodaysTasks.
+        // It's cleaner to use the exact same logic: 
+        // If task.dueDate is between startOfDay and endOfDay, it falls on "Today".
 
         const tasksToday = await prisma.task.findMany({
             where: {
                 userId,
                 OR: [
                     { doToday: true },
-                    { dueDate: { gte: startOfDay, lt: endOfDay } }
+                    {
+                        dueDate: {
+                            gte: startOfDay,
+                            lt: endOfDay
+                        }
+                    }
                 ]
             }
         });
@@ -55,7 +71,12 @@ export async function GET() {
             where: { userId, archived: false },
             include: {
                 logs: {
-                    where: { date: startOfDay }
+                    where: {
+                        date: {
+                            gte: startOfDay,
+                            lt: endOfDay
+                        }
+                    }
                 }
             }
         });

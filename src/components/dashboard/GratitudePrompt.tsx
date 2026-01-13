@@ -104,7 +104,7 @@ export default function GratitudePrompt() {
                     onChange={(e) => setEntry(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="What are you grateful for?"
-                    className="flex-1 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
+                    className="flex-1 bg-[var(--glass-base)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent-primary)]"
                     disabled={saving}
                 />
                 <button

@@ -33,6 +33,7 @@ export async function GET(request: Request) {
             where: {
                 userId: userId,
                 dueDate: { not: null },
+                status: { not: 'DONE' },
                 ...(start && end && {
                     dueDate: {
                         gte: new Date(start),

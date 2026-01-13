@@ -23,8 +23,14 @@ export default function TodaysTasks() {
 
     const fetchTasks = async () => {
         try {
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            const res = await fetch(`/api/tasks?date=${todayStr}`);
+            // Calculate today's range in local time
+            const now = new Date();
+            const start = new Date(now);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(now);
+            end.setHours(23, 59, 59, 999);
+
+            const res = await fetch(`/api/tasks?scope=today&from=${start.toISOString()}&to=${end.toISOString()}`);
             if (res.ok) {
                 const data = await res.json();
                 // Sort: Pending first, then Completed

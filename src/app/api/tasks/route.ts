@@ -12,20 +12,44 @@ export const GET = auth(async (req) => {
     const doToday = searchParams.get('doToday');
     const status = searchParams.get('status');
     const date = searchParams.get('date');
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    const scope = searchParams.get('scope');
 
     try {
-        const tasks = await prisma.task.findMany({
-            where: {
-                userId: userId,
-                ...(doToday === 'true' && { doToday: true }),
-                ...(status && { status: status as any }),
-                ...(date && {
+        let whereClause: any = {
+            userId: userId,
+            ...(status && { status: status as any }),
+        };
+
+        if (scope === 'today' && from && to) {
+            whereClause.OR = [
+                { doToday: true },
+                {
                     dueDate: {
-                        gte: new Date(`${date}T00:00:00.000Z`),
-                        lt: new Date(`${date}T23:59:59.999Z`),
-                    },
-                }),
-            },
+                        gte: new Date(from),
+                        lte: new Date(to),
+                    }
+                }
+            ];
+        } else {
+            if (doToday === 'true') whereClause.doToday = true;
+
+            if (from && to) {
+                whereClause.dueDate = {
+                    gte: new Date(from),
+                    lte: new Date(to),
+                };
+            } else if (date) {
+                whereClause.dueDate = {
+                    gte: new Date(`${date}T00:00:00.000Z`),
+                    lt: new Date(`${date}T23:59:59.999Z`),
+                };
+            }
+        }
+
+        const tasks = await prisma.task.findMany({
+            where: whereClause,
             include: {
                 project: {
                     select: { id: true, name: true },

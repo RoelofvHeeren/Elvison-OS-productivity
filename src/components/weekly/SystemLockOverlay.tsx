@@ -46,7 +46,7 @@ export default function SystemLockOverlay({ onBypass }: SystemLockOverlayProps) 
                     </div>
 
                     <div>
-                        <h2 className="text-2xl font-bold text-white mb-2">System Locked</h2>
+                        <h2 className="text-2xl font-bold text-[var(--text-main)] mb-2">System Locked</h2>
                         <p className="text-gray-300">
                             It is time for your Weekly Review. The system is locked until you complete it.
                         </p>

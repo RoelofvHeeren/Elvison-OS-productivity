@@ -70,7 +70,7 @@ export default function CalendarWidget() {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <CalendarIcon className="w-5 h-5 text-[#139187]" />
-                        <h3 className="font-semibold text-white">Today's Schedule</h3>
+                        <h3 className="font-semibold text-[var(--text-main)]">Today's Schedule</h3>
                     </div>
                     <div className="flex items-center gap-1">
                         <button
@@ -83,7 +83,7 @@ export default function CalendarWidget() {
                         <button
                             onClick={syncCalendar}
                             disabled={loading}
-                            className={`p-1.5 hover:bg-white/5 rounded transition-colors ${loading ? 'animate-spin text-gray-500' : 'text-gray-400 hover:text-white'}`}
+                            className={`p-1.5 hover:bg-[var(--glass-base)] rounded transition-colors ${loading ? 'animate-spin text-[var(--text-muted)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
                             title="Sync with Google Calendar"
                         >
                             <RefreshCw className="w-4 h-4" />

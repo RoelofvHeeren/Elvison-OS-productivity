@@ -32,6 +32,8 @@ export const POST = auth(async (req) => {
         const googleEvents = response.data.items || [];
 
         // 2. Sync to local database
+        const googleEventIds = new Set(googleEvents.map(e => e.id).filter(Boolean));
+
         const syncResults = await Promise.all(googleEvents.map(async (event) => {
             if (!event.id || !event.summary || !event.start?.dateTime || !event.end?.dateTime) return null;
 
@@ -57,6 +59,26 @@ export const POST = auth(async (req) => {
                 },
             });
         }));
+
+        // 2.5 DELETE events that were deleted in Google Calendar
+        // We look for events in our DB that are:
+        // - In the sync time range (approx -30d to +60d)
+        // - Source is GOOGLE
+        // - ExternalId is NOT in googleEventIds
+
+        await prisma.calendarEvent.deleteMany({
+            where: {
+                userId: userId,
+                source: 'GOOGLE',
+                start: {
+                    gte: timeMin,
+                    lte: timeMax
+                },
+                externalId: {
+                    notIn: Array.from(googleEventIds) as string[]
+                }
+            }
+        });
 
         // 3. Push tasks with deadlines to Google Calendar (if not already synced)
         const tasksToSync = await prisma.task.findMany({

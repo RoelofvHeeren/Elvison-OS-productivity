@@ -179,7 +179,28 @@ export default function AppearanceSettingsPage() {
 
             <div className="flex justify-end gap-4">
                 <Button variant="ghost" onClick={resetTheme}>Reset to Defaults</Button>
-                <Button variant="primary" onClick={() => { }}>Save Preferences</Button>
+                <Button
+                    variant="primary"
+                    onClick={async () => {
+                        try {
+                            const res = await fetch('/api/user/settings', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ themePreferences: preferences })
+                            });
+                            if (res.ok) {
+                                alert('Theme preferences saved!');
+                            } else {
+                                throw new Error('Failed to save');
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            alert('Failed to save preferences');
+                        }
+                    }}
+                >
+                    Save Preferences
+                </Button>
             </div>
         </div>
     );
