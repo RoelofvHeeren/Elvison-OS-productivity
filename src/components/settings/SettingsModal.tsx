@@ -195,26 +195,31 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
                     {/* General Section */}
-                    {/* <section className="space-y-3">
+                    <section className="space-y-3">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                             General
                         </h3>
                         <div className="space-y-2">
-                             Placeholder for Theme/Display settings 
-                             <div className="flex items-center justify-between rounded-xl bg-white/5 p-3">
+                            <button
+                                onClick={() => {
+                                    onClose();
+                                    window.location.href = '/settings/appearance';
+                                }}
+                                className="w-full flex items-center justify-between rounded-xl bg-white/5 p-3 hover:bg-white/10 transition-colors text-left"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-teal-400">
                                         <Monitor className="h-4 w-4" />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-white">Appearance</span>
-                                        <span className="text-xs text-gray-500">Dark Mode</span>
+                                        <span className="text-xs text-gray-500">Customize theme & background</span>
                                     </div>
                                 </div>
-                                <span className="text-xs text-gray-600">Locked</span>
-                            </div> 
+                                <span className="text-xs text-teal-400 font-medium">Open</span>
+                            </button>
                         </div>
-                    </section> */}
+                    </section>
 
                     {/* Weekly Review Schedule */}
                     <section className="space-y-3">
