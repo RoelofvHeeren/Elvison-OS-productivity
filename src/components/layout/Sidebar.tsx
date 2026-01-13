@@ -17,7 +17,6 @@ import {
     Settings,
     User,
 } from 'lucide-react';
-import SettingsModal from '../settings/SettingsModal';
 
 const navItems = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -33,7 +32,6 @@ const navItems = [
 
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const pathname = usePathname();
 
     return (
@@ -97,16 +95,18 @@ export default function Sidebar() {
                     {!collapsed && <span>Profile</span>}
                 </Link>
 
-                <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1`}
-                    aria-label="Settings"
+                <Link
+                    href="/settings"
+                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 ${pathname === '/settings'
+                        ? 'bg-black text-white shadow-3d translate-x-1'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1'
+                        }`}
                 >
                     <Settings
                         className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 text-[#139187]`}
                     />
                     {!collapsed && <span>Settings</span>}
-                </button>
+                </Link>
 
                 <button
                     onClick={() => setCollapsed(!collapsed)}
@@ -120,8 +120,6 @@ export default function Sidebar() {
                     )}
                 </button>
             </div>
-
-            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
         </aside>
     );
 }
