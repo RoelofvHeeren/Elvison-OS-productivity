@@ -42,9 +42,36 @@ export default function WeeklyReviewPage() {
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Activity Data State
+    const [activityData, setActivityData] = useState<any>(null);
+    const [groupedTasks, setGroupedTasks] = useState<Record<string, any[]>>({});
+
     useEffect(() => {
         fetchHistory();
+        fetchActivity();
     }, []);
+
+    const fetchActivity = async () => {
+        try {
+            const res = await fetch('/api/weekly-review/activity');
+            if (res.ok) {
+                const data = await res.json();
+                setActivityData(data);
+
+                // Group tasks by day
+                const grouped: Record<string, any[]> = {};
+                data.tasks.forEach((task: any) => {
+                    const date = new Date(task.updatedAt);
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                    if (!grouped[dayName]) grouped[dayName] = [];
+                    grouped[dayName].push(task);
+                });
+                setGroupedTasks(grouped);
+            }
+        } catch (error) {
+            console.error('Failed to fetch activity', error);
+        }
+    };
 
     const fetchHistory = async () => {
         try {
@@ -217,62 +244,125 @@ export default function WeeklyReviewPage() {
             </div>
 
             {activeTab === 'review' && (
-                <GlassCard>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <CalendarCheck className="w-6 h-6 text-[#139187]" />
-                            Weekly Review
-                        </h2>
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Main Review Form */}
+                    <div className="lg:col-span-2">
+                        <GlassCard>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <CalendarCheck className="w-6 h-6 text-[#139187]" />
+                                    Weekly Review
+                                </h2>
+                            </div>
 
-                    <div className="space-y-6">
-                        {renderListInput('Wins', wins, setWins, 'What went well this week?')}
-                        {renderListInput('Challenges', challenges, setChallenges, 'What was difficult?')}
-                        {renderListInput('Insights', insights, setInsights, 'What did you learn?')}
+                            <div className="space-y-6">
+                                {renderListInput('Wins', wins, setWins, 'What went well this week?')}
+                                {renderListInput('Challenges', challenges, setChallenges, 'What was difficult?')}
+                                {renderListInput('Insights', insights, setInsights, 'What did you learn?')}
 
-                        <div>
-                            <label className="text-sm text-gray-400 block mb-2">Week Notes</label>
-                            <p className="text-xs text-gray-500 mb-2">
-                                Describe how the week went in your own words.
-                            </p>
-                            <Textarea
-                                value={weekNotes}
-                                onChange={(e) => setWeekNotes(e.target.value)}
-                                placeholder="Reflections..."
-                                rows={5}
-                            />
-                        </div>
+                                <div>
+                                    <label className="text-sm text-gray-400 block mb-2">Week Notes</label>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                        Describe how the week went in your own words.
+                                    </p>
+                                    <Textarea
+                                        value={weekNotes}
+                                        onChange={(e) => setWeekNotes(e.target.value)}
+                                        placeholder="Reflections..."
+                                        rows={5}
+                                    />
+                                </div>
 
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="text-sm text-gray-400">AI Summary</label>
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm text-gray-400">AI Summary</label>
+                                        <Button
+                                            variant="accent"
+                                            size="sm"
+                                            icon={Sparkles}
+                                            onClick={handleGenerateAISummary}
+                                            loading={isGeneratingSummary}
+                                        >
+                                            Generate Summary
+                                        </Button>
+                                    </div>
+                                    {aiSummary && (
+                                        <InnerCard padding="sm">
+                                            <p className="text-gray-300 text-sm">{aiSummary}</p>
+                                        </InnerCard>
+                                    )}
+                                </div>
+
                                 <Button
-                                    variant="accent"
-                                    size="sm"
-                                    icon={Sparkles}
-                                    onClick={handleGenerateAISummary}
-                                    loading={isGeneratingSummary}
+                                    onClick={handleCompleteReview}
+                                    className="w-full"
+                                    icon={CheckCircle}
+                                    loading={isSubmitting}
                                 >
-                                    Generate Summary
+                                    Complete Review
                                 </Button>
                             </div>
-                            {aiSummary && (
-                                <InnerCard padding="sm">
-                                    <p className="text-gray-300 text-sm">{aiSummary}</p>
-                                </InnerCard>
-                            )}
-                        </div>
-
-                        <Button
-                            onClick={handleCompleteReview}
-                            className="w-full"
-                            icon={CheckCircle}
-                            loading={isSubmitting}
-                        >
-                            Complete Review
-                        </Button>
+                        </GlassCard>
                     </div>
-                </GlassCard>
+
+                    {/* Activity Sidebar */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <GlassCard className="h-full max-h-[calc(100vh-200px)] overflow-y-auto">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <History className="w-5 h-5 text-gray-400" />
+                                Week in Review
+                            </h3>
+
+                            {/* Notes Section */}
+                            {activityData?.notes && activityData.notes.length > 0 && (
+                                <div className="mb-6">
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#139187] mb-3">
+                                        Notes Created
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {activityData.notes.map((note: any) => (
+                                            <div key={note.id} className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                                <p className="text-sm font-medium text-white mb-1">{note.title}</p>
+                                                <p className="text-xs text-gray-400 line-clamp-2">{note.content}</p>
+                                                <p className="text-[10px] text-gray-500 mt-2 text-right">
+                                                    {formatDate(note.createdAt)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Tasks Section */}
+                            <div>
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#139187] mb-3">
+                                    Completed Tasks
+                                </h4>
+                                <div className="space-y-4">
+                                    {Object.entries(groupedTasks).map(([day, tasks]: [string, any[]]) => (
+                                        <div key={day}>
+                                            <h5 className="text-xs font-medium text-gray-400 mb-2 sticky top-0 bg-[#0F0F11]/95 py-1 z-10">
+                                                {day}
+                                            </h5>
+                                            <div className="space-y-2 pl-2 border-l border-white/10">
+                                                {tasks.map((task) => (
+                                                    <div key={task.id} className="text-sm">
+                                                        <p className="text-gray-300 decoration-gray-600">
+                                                            {task.title}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {Object.keys(groupedTasks).length === 0 && (
+                                        <p className="text-xs text-gray-500 italic">No completed tasks found.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </GlassCard>
+                    </div>
+                </div>
             )}
 
             {activeTab === 'history' && (

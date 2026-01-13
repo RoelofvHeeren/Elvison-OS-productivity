@@ -5,6 +5,7 @@ import VideoBackground from "@/components/layout/VideoBackground";
 import AppLayout from "@/components/layout/AppLayout";
 import AuthProvider from "@/components/providers/AuthProvider";
 import { WeeklyReviewLockProvider } from "@/providers/WeeklyReviewLockProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -61,9 +62,11 @@ export default function RootLayout({
       >
         <VideoBackground />
         <AuthProvider>
-          <WeeklyReviewLockProvider>
-            <AppLayout>{children}</AppLayout>
-          </WeeklyReviewLockProvider>
+          <ThemeProvider>
+            <WeeklyReviewLockProvider>
+              <AppLayout>{children}</AppLayout>
+            </WeeklyReviewLockProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

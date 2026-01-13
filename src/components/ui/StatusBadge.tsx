@@ -10,7 +10,7 @@ const statusClasses: Record<StatusType, { text: string; dot: string }> = {
     success: { text: 'text-green-400', dot: 'bg-green-400' },
     warning: { text: 'text-orange-400', dot: 'bg-orange-400' },
     error: { text: 'text-red-400', dot: 'bg-red-400' },
-    info: { text: 'text-[#139187]', dot: 'bg-[#139187]' },
+    info: { text: 'text-[var(--accent-primary)]', dot: 'bg-[var(--accent-primary)]' },
     default: { text: 'text-gray-400', dot: 'bg-gray-400' },
 };
 

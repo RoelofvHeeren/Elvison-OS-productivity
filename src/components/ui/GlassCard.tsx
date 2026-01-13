@@ -20,7 +20,7 @@ export default function GlassCard({
 }: GlassCardProps) {
     return (
         <div
-            className={`bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl ${paddingClasses[padding]} ${className}`}
+            className={`bg-[var(--glass-base)] backdrop-filter backdrop-blur-[var(--glass-blur)] border border-[var(--glass-border)] rounded-2xl ${paddingClasses[padding]} ${className}`}
         >
             {children}
         </div>
@@ -35,7 +35,7 @@ export function InnerCard({
 }: GlassCardProps) {
     return (
         <div
-            className={`bg-black/60 backdrop-blur-sm rounded-lg border border-white/10 ${paddingClasses[padding]} ${className}`}
+            className={`bg-black/40 backdrop-blur-sm rounded-lg border border-[var(--glass-border)] ${paddingClasses[padding]} ${className}`}
         >
             {children}
         </div>
