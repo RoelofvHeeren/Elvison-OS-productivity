@@ -3,21 +3,21 @@
 /* Elvison OS Design System - Based on STYLING_GUIDE.md */
 
 @theme inline {
-  /* Primary Colors */
-  --color-teal-accent: #139187;
-  --color-primary: #000000;
-  --color-primary-dim: #1a1a1a;
-  --color-primary-glow: #333333;
+  /* Primary Colors - Dynamic */
+  --color-teal-accent: var(--accent-primary);
+  --color-primary: var(--bg-primary);
+  --color-primary-dim: var(--bg-secondary);
+  --color-primary-glow: var(--bg-tertiary);
 
-  /* Surface Colors */
-  --color-main: #ffffff;
-  --color-surface: #f5f5f5;
-  --color-muted: #666666;
-  --color-outline: #e0e0e0;
+  /* Surface Colors - Dynamic */
+  --color-main: var(--text-main);
+  --color-surface: var(--bg-surface);
+  --color-muted: var(--text-muted);
+  --color-outline: var(--border-color);
 
-  /* Glass Effects */
-  --color-glass: rgba(255, 255, 255, 0.95);
-  --color-glass-border: rgba(0, 0, 0, 0.1);
+  /* Glass Effects - Dynamic */
+  --color-glass: var(--glass-base);
+  --color-glass-border: var(--glass-border);
 
   /* Fonts */
   --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
@@ -26,8 +26,29 @@
 }
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
+  /* Theme System: Default Dark Mode */
+  --accent-primary: #139187;
+  --accent-secondary: #0d6b63;
+  --accent-glow: rgba(19, 145, 135, 0.4);
+
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #333333;
+  --bg-surface: #f5f5f5;
+  --bg-overlay-opacity: 0.4;
+
+  --text-main: #ffffff;
+  --text-muted: #666666;
+  --text-inverse: #000000;
+
+  --border-color: #e0e0e0;
+
+  --glass-base: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+
+  --background: var(--bg-primary);
+  --foreground: var(--text-main);
 }
 
 /* Base Styles */

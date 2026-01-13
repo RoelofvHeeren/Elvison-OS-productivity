@@ -28,6 +28,8 @@ model User {
   // Weekly Review Settings
   reviewDayOfWeek Int @default(0) // 0 = Sunday
   reviewTimeHour  Int @default(18) // 18:00 (6 PM)
+  themePreferences Json?   // Stores visual customization settings
+
 
   googleAccessToken  String?
   googleRefreshToken String?

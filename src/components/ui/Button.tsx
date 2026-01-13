@@ -15,14 +15,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
     primary:
-        'bg-gradient-to-r from-[#139187] to-[#0d6b63] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5',
+        'bg-[var(--accent-primary)] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5',
+    // Note: Removed gradient for now to support dynamic coloring more easily, or we can use dynamic gradients later
     secondary:
-        'bg-black/60 backdrop-blur-sm hover:bg-white/10 text-white border border-white/10',
+        'bg-black/60 backdrop-blur-sm hover:bg-[var(--glass-base)] text-[var(--text-main)] border border-[var(--glass-border)]',
     accent:
-        'bg-[#139187]/20 hover:bg-[#139187]/30 text-[#139187] border border-[#139187]/30',
+        'bg-[var(--accent-primary)]/20 hover:bg-[var(--accent-primary)]/30 text-[var(--accent-primary)] border border-[var(--accent-primary)]/30',
     danger:
         'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30',
-    ghost: 'hover:bg-white/5 text-white/70 hover:text-white',
+    ghost: 'hover:bg-[var(--glass-base)] text-[var(--text-muted)] hover:text-[var(--text-main)]',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
