@@ -69,13 +69,28 @@ export const POST = auth(async (req) => {
 
         for (const task of tasksToSync) {
             try {
+                // Construct Start Time
+                const eventDate = new Date(task.dueDate!);
+                // Check if task has a specific time set (stored in dueTime usually, but here we might need to fetch it or rely on existing field)
+                // Wait, the `task` object here comes from `tasksToSync` query above.
+                // We need to ensure `dueTime` is included in the query or logic.
+                // Standardizing: 
+                // If dueTime is present, use it. 
+                // If not, default to 09:00.
+
+                if (task.dueTime) {
+                    eventDate.setHours(task.dueTime.getHours(), task.dueTime.getMinutes(), 0, 0);
+                } else {
+                    eventDate.setHours(9, 0, 0, 0);
+                }
+
                 const googleEvent = await calendar.events.insert({
                     calendarId: 'primary',
                     requestBody: {
                         summary: `Task: ${task.title}`,
                         description: `Scheduled from Elvison OS`,
-                        start: { dateTime: task.dueDate!.toISOString() },
-                        end: { dateTime: new Date(task.dueDate!.getTime() + 30 * 60000).toISOString() }, // 30 min duration
+                        start: { dateTime: eventDate.toISOString() },
+                        end: { dateTime: new Date(eventDate.getTime() + 30 * 60000).toISOString() }, // 30 min duration
                     },
                 });
 

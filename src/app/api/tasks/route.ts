@@ -60,13 +60,24 @@ export const POST = auth(async (req) => {
 
         const { title, priority, dueDate, dueTime, doToday, projectId, subtasks } = body;
 
+        // Default logic: If dueDate is set but dueTime is NOT, default to 09:00:00
+        let finalDueTime: Date | null = null;
+        if (dueDate) {
+            if (dueTime) {
+                finalDueTime = new Date(`1970-01-01T${dueTime}:00`);
+            } else {
+                // User didn't pick a time, default to 09:00 AM
+                finalDueTime = new Date(`1970-01-01T09:00:00`);
+            }
+        }
+
         const task = await prisma.task.create({
             data: {
                 userId: userId,
                 title,
                 priority: priority || 'MEDIUM',
                 dueDate: dueDate ? new Date(dueDate) : null,
-                dueTime: dueTime ? new Date(`1970-01-01T${dueTime}:00`) : null,
+                dueTime: finalDueTime,
                 doToday: doToday || false,
                 projectId: projectId || null,
                 subtasks: subtasks?.length > 0 ? {
@@ -81,6 +92,48 @@ export const POST = auth(async (req) => {
                 subtasks: { orderBy: { order: 'asc' } },
             },
         });
+
+        // --- IMMEDIATE GOOGLE CALENDAR SYNC ---
+        if (task.dueDate) {
+            try {
+                // Dynamically import to avoid circular dep issues if any, though standard import is fine usually
+                const { setGoogleCredentials } = await import('@/lib/calendar');
+                const calendar = await setGoogleCredentials(userId);
+
+                if (calendar) {
+                    // Construct Start Time
+                    const eventDate = new Date(task.dueDate);
+                    // If we have a time, set it. Otherwise rely on the 09:00 default we just enforced.
+                    if (task.dueTime) {
+                        eventDate.setHours(task.dueTime.getHours(), task.dueTime.getMinutes(), 0, 0);
+                    } else {
+                        eventDate.setHours(9, 0, 0, 0);
+                    }
+
+                    const googleEvent = await calendar.events.insert({
+                        calendarId: 'primary',
+                        requestBody: {
+                            summary: `Task: ${task.title}`,
+                            description: `Scheduled from Elvison OS`,
+                            start: { dateTime: eventDate.toISOString() },
+                            end: { dateTime: new Date(eventDate.getTime() + 30 * 60000).toISOString() }, // 30 min duration
+                        },
+                    });
+
+                    if (googleEvent.data.id) {
+                        await prisma.task.update({
+                            where: { id: task.id },
+                            data: { calendarEventId: googleEvent.data.id },
+                        });
+                        console.log(`[API] Synced task ${task.id} to GCal: ${googleEvent.data.id}`);
+                    }
+                }
+            } catch (syncError) {
+                console.error('[API] Failed to sync new task to Google Calendar:', syncError);
+                // Don't fail the request, just log it. The background sync can catch it later.
+            }
+        }
+        // --------------------------------------
 
         console.log('[API] Task created successfully:', task.id);
         return NextResponse.json(task, { status: 201 });
