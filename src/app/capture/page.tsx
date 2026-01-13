@@ -260,74 +260,74 @@ function CapturePageContent() {
 
                 <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-4">
                     {/* Original transcript */}
-                    <div className="bg-white/5 rounded-lg p-3">
-                        <p className="text-xs text-gray-400 mb-1">You said:</p>
-                        <p className="text-gray-200 text-sm italic">"{originalText}"</p>
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-3 border border-white/10">
+                        <p className="text-xs text-white font-semibold mb-1">You said:</p>
+                        <p className="text-white text-sm italic">"{originalText}"</p>
                     </div>
 
                     {/* Title */}
-                    <div className="bg-white/5 rounded-lg p-4">
-                        <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
-                            <Edit3 className="w-3 h-3" /> Title
+                    <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                        <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                            <Edit3 className="w-3 h-3 text-[#139187]" /> Title
                         </label>
                         <input
                             type="text"
                             value={editTitle}
                             onChange={(e) => setEditTitle(e.target.value)}
-                            className="w-full bg-transparent text-white text-lg font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                            className="w-full bg-transparent text-white text-lg font-bold border-b border-white/20 focus:border-[#139187] outline-none py-1"
                         />
                     </div>
 
                     {candidate.type === 'TASK' && (
                         <>
                             {/* Due Date */}
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
-                                    <Calendar className="w-3 h-3" /> Due Date
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Calendar className="w-3 h-3 text-[#139187]" /> Due Date
                                 </label>
                                 <input
                                     type="datetime-local"
                                     value={editDueDate ? editDueDate.slice(0, 16) : ''}
                                     onChange={(e) => setEditDueDate(e.target.value ? new Date(e.target.value).toISOString() : '')}
-                                    className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
                                 {editDueDate && (
-                                    <p className="text-xs text-gray-400 mt-1">{formatDate(editDueDate)}</p>
+                                    <p className="text-xs text-white font-medium mt-1">{formatDate(editDueDate)}</p>
                                 )}
                             </div>
 
                             {/* Project */}
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
-                                    <FolderOpen className="w-3 h-3" /> Project
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <FolderOpen className="w-3 h-3 text-[#139187]" /> Project
                                 </label>
                                 <select
                                     value={editProjectId}
                                     onChange={(e) => setEditProjectId(e.target.value)}
-                                    className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 >
-                                    <option value="" className="bg-black">No Project</option>
+                                    <option value="" className="bg-black text-white">No Project</option>
                                     {projects.map(p => (
-                                        <option key={p.id} value={p.id} className="bg-black">{p.name}</option>
+                                        <option key={p.id} value={p.id} className="bg-black text-white">{p.name}</option>
                                     ))}
                                 </select>
                             </div>
 
                             {/* Priority */}
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
-                                    <Flag className="w-3 h-3" /> Priority
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Flag className="w-3 h-3 text-[#139187]" /> Priority
                                 </label>
                                 <div className="flex gap-2">
                                     {(['LOW', 'MEDIUM', 'HIGH'] as const).map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setEditPriority(p)}
-                                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${editPriority === p
+                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${editPriority === p
                                                 ? p === 'HIGH' ? 'bg-red-500 text-white'
                                                     : p === 'MEDIUM' ? 'bg-yellow-500 text-black'
                                                         : 'bg-green-500 text-white'
-                                                : 'bg-white/10 text-gray-400'
+                                                : 'bg-white/10 text-white hover:bg-white/20'
                                                 }`}
                                         >
                                             {p}
@@ -341,18 +341,18 @@ function CapturePageContent() {
                     {candidate.type === 'REMINDER' && (
                         <>
                             {/* Reminder Datetime */}
-                            <div className="bg-white/5 rounded-lg p-4">
-                                <label className="text-xs text-gray-400 mb-2 flex items-center gap-2">
-                                    <Clock className="w-3 h-3" /> Remind me at
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Clock className="w-3 h-3 text-[#139187]" /> Remind me at
                                 </label>
                                 <input
                                     type="datetime-local"
                                     value={editDatetime ? editDatetime.slice(0, 16) : ''}
                                     onChange={(e) => setEditDatetime(e.target.value ? new Date(e.target.value).toISOString() : '')}
-                                    className="w-full bg-transparent text-white border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
                                 {editDatetime && (
-                                    <p className="text-xs text-gray-400 mt-1">{formatDate(editDatetime)}</p>
+                                    <p className="text-xs text-white font-medium mt-1">{formatDate(editDatetime)}</p>
                                 )}
                                 {!editDatetime && (
                                     <p className="text-xs text-red-400 mt-1">Reminder time is required</p>
@@ -361,11 +361,11 @@ function CapturePageContent() {
                         </>
                     )}
 
-                    {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+                    {error && <p className="text-xs text-red-400 text-center font-bold">{error}</p>}
                 </div>
 
                 {/* Action buttons - Fixed at bottom */}
-                <div className="flex-none p-6 pt-2 bg-black/90 backdrop-blur-sm">
+                <div className="flex-none p-6 pt-2 bg-black/90 backdrop-blur-xl border-t border-white/10">
                     <div className="flex gap-4">
                         <Button variant="secondary" className="flex-1" onClick={reset}>
                             Cancel
@@ -389,7 +389,7 @@ function CapturePageContent() {
         <div className="min-h-screen bg-black flex flex-col p-6">
             <div className="flex items-center justify-between mb-4">
                 <IconButton icon={ChevronLeft} onClick={() => router.push('/')} />
-                <span className="text-sm font-medium text-gray-400 uppercase tracking-widest">
+                <span className="text-sm font-bold text-white uppercase tracking-widest">
                     Quick Capture
                 </span>
                 <div className="w-8" />
@@ -404,9 +404,9 @@ function CapturePageContent() {
                     <button
                         key={key}
                         onClick={() => router.replace(`/capture?mode=${key}`)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${mode === key
-                            ? 'text-white shadow-lg'
-                            : 'text-gray-500 bg-white/5 hover:text-gray-300'
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${mode === key
+                            ? 'text-white shadow-lg scale-105'
+                            : 'text-white/70 bg-white/10 hover:bg-white/20 hover:text-white'
                             }`}
                         style={mode === key ? { backgroundColor: color } : {}}
                     >
@@ -418,13 +418,13 @@ function CapturePageContent() {
             <div className="flex-1 flex flex-col items-center justify-center space-y-12">
                 <div className="text-center space-y-2 h-16">
                     {isProcessing ? (
-                        <p className="text-xl font-medium text-purple-400 animate-pulse">Processing...</p>
+                        <p className="text-xl font-bold text-purple-400 animate-pulse">Processing...</p>
                     ) : isRecording ? (
-                        <p className="text-xl font-medium text-red-500 animate-pulse">Listening...</p>
+                        <p className="text-xl font-bold text-red-500 animate-pulse">Listening...</p>
                     ) : (
-                        <p className="text-xl font-medium text-gray-500">Tap to Record</p>
+                        <p className="text-xl font-bold text-white">Tap to Record</p>
                     )}
-                    {error && <p className="text-xs text-red-400">{error}</p>}
+                    {error && <p className="text-xs text-red-400 font-bold">{error}</p>}
                 </div>
 
                 <div className="relative group">

@@ -5,36 +5,33 @@ import PageHeader from '@/components/layout/PageHeader';
 import GlassCard, { InnerCard } from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import { Textarea, Input } from '@/components/ui/FormElements';
+import { useWeeklyReviewLock } from '@/providers/WeeklyReviewLockProvider';
+import { formatDate } from '@/lib/utils';
 import {
     CalendarCheck,
     Lock,
-    Unlock,
     CheckCircle,
-    AlertCircle,
     Sparkles,
-    ArrowRight,
     Plus,
     X,
+    History
 } from 'lucide-react';
 
-// Check if it's Sunday (Review) or Monday (Planning)
-function getReviewDay() {
-    const day = new Date().getDay();
-    if (day === 0) return 'review'; // Sunday
-    if (day === 1) return 'planning'; // Monday
-    return null;
+interface WeeklyReviewHistory {
+    id: string;
+    weekStart: string;
+    wins: string[];
+    challenges: string[];
+    insights: string[];
+    weekNotes: string;
+    aiSummary: string;
+    createdAt: string;
 }
 
-// Mock data for incomplete review/plan
-const mockReviewStatus = {
-    reviewCompleted: false,
-    planningCompleted: false,
-};
-
 export default function WeeklyReviewPage() {
-    const [reviewDay, setReviewDay] = useState<'review' | 'planning' | null>(null);
-    const [isLocked, setIsLocked] = useState(false);
-    const [reviewStatus, setReviewStatus] = useState(mockReviewStatus);
+    const { isLocked, checkStatus } = useWeeklyReviewLock();
+    const [activeTab, setActiveTab] = useState<'review' | 'history'>('review');
+    const [history, setHistory] = useState<WeeklyReviewHistory[]>([]);
 
     // Review Form State
     const [wins, setWins] = useState<string[]>(['']);
@@ -43,28 +40,82 @@ export default function WeeklyReviewPage() {
     const [weekNotes, setWeekNotes] = useState('');
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-
-    // Planning Form State
-    const [priorities, setPriorities] = useState<string[]>(['', '', '']);
-    const [focusAreas, setFocusAreas] = useState<string[]>(['']);
-    const [aiSuggestions, setAiSuggestions] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        const day = getReviewDay();
-        setReviewDay(day);
+        fetchHistory();
+    }, []);
 
-        // Check if locked
-        if (day === 'review' && !reviewStatus.reviewCompleted) {
-            setIsLocked(true);
-        } else if (day === 'planning' && !reviewStatus.planningCompleted) {
-            setIsLocked(true);
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch('/api/weekly-review/history');
+            if (res.ok) {
+                const data = await res.json();
+                setHistory(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch history', error);
         }
-    }, [reviewStatus]);
+    };
 
-    const addItem = (
-        items: string[],
-        setItems: React.Dispatch<React.SetStateAction<string[]>>
-    ) => {
+    const handleGenerateAISummary = async () => {
+        setIsGeneratingSummary(true);
+        try {
+            const res = await fetch('/api/weekly-review/ai-summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    wins: wins.filter(w => w.trim()),
+                    challenges: challenges.filter(c => c.trim()),
+                    insights: insights.filter(i => i.trim()),
+                    weekNotes
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setAiSummary(data.summary + (data.suggestions ? `\n\nTips: ${data.suggestions}` : ''));
+            }
+        } catch (error) {
+            console.error('Failed to generate summary', error);
+        } finally {
+            setIsGeneratingSummary(false);
+        }
+    };
+
+    const handleCompleteReview = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/weekly-review/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    wins: wins.filter(w => w.trim()),
+                    challenges: challenges.filter(c => c.trim()),
+                    insights: insights.filter(i => i.trim()),
+                    weekNotes,
+                    aiSummary
+                })
+            });
+
+            if (res.ok) {
+                await checkStatus();
+                setWins(['']);
+                setChallenges(['']);
+                setInsights(['']);
+                setWeekNotes('');
+                setAiSummary('');
+                fetchHistory();
+                setActiveTab('history');
+            }
+        } catch (error) {
+            console.error('Error saving review', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const addItem = (items: string[], setItems: React.Dispatch<React.SetStateAction<string[]>>) => {
         setItems([...items, '']);
     };
 
@@ -89,27 +140,6 @@ export default function WeeklyReviewPage() {
         setItems(newItems);
     };
 
-    const handleGenerateAISummary = async () => {
-        setIsGeneratingSummary(true);
-        // Simulate AI call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setAiSummary(
-            'This week showed strong progress in business development with 3 client meetings converted. Key challenge was time management around the product launch. Consider batching similar tasks and protecting deep work hours next week.'
-        );
-        setIsGeneratingSummary(false);
-    };
-
-    const handleCompleteReview = () => {
-        setReviewStatus((prev) => ({ ...prev, reviewCompleted: true }));
-        setIsLocked(false);
-    };
-
-    const handleCompletePlanning = () => {
-        setReviewStatus((prev) => ({ ...prev, planningCompleted: true }));
-        setIsLocked(false);
-    };
-
-    // Render list input helper
     const renderListInput = (
         label: string,
         items: string[],
@@ -150,48 +180,49 @@ export default function WeeklyReviewPage() {
     return (
         <>
             <PageHeader
-                title="Weekly Review & Planning"
-                description={
-                    reviewDay === 'review'
-                        ? 'Sunday: Complete your weekly review'
-                        : reviewDay === 'planning'
-                            ? 'Monday: Plan your week ahead'
-                            : 'Weekly reflection and planning rituals'
-                }
+                title="Weekly Review"
+                description="Reflect on your progress and plan for the week ahead."
                 icon={CalendarCheck}
             />
 
-            {/* Lock Status Banner */}
             {isLocked && (
-                <GlassCard className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/30">
+                <GlassCard className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/30 mb-6">
                     <div className="flex items-center gap-3">
-                        <Lock className="w-6 h-6 text-red-400" />
+                        <div className="p-2 rounded-full bg-red-500/20">
+                            <Lock className="w-5 h-5 text-red-400" />
+                        </div>
                         <div>
-                            <p className="font-semibold text-white">
-                                App Locked Until {reviewDay === 'review' ? 'Review' : 'Planning'} Complete
-                            </p>
+                            <p className="font-semibold text-white">System Locked</p>
                             <p className="text-sm text-gray-400">
-                                Complete your {reviewDay === 'review' ? 'weekly review' : 'weekly planning'} to unlock the app.
+                                Complete your weekly review to unlock the rest of the application.
                             </p>
                         </div>
                     </div>
                 </GlassCard>
             )}
 
-            {/* Weekly Review Form (Sunday) */}
-            {(reviewDay === 'review' || !reviewDay) && (
+            <div className="flex gap-4 mb-6 border-b border-white/10 pb-1">
+                <button
+                    onClick={() => setActiveTab('review')}
+                    className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'review' ? 'text-[#139187] border-b-2 border-[#139187]' : 'text-gray-400 hover:text-white'}`}
+                >
+                    Current Review
+                </button>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'history' ? 'text-[#139187] border-b-2 border-[#139187]' : 'text-gray-400 hover:text-white'}`}
+                >
+                    History
+                </button>
+            </div>
+
+            {activeTab === 'review' && (
                 <GlassCard>
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
                             <CalendarCheck className="w-6 h-6 text-[#139187]" />
                             Weekly Review
                         </h2>
-                        {reviewStatus.reviewCompleted && (
-                            <span className="flex items-center gap-1 text-green-400 text-sm">
-                                <CheckCircle className="w-4 h-4" />
-                                Completed
-                            </span>
-                        )}
                     </div>
 
                     <div className="space-y-6">
@@ -199,23 +230,19 @@ export default function WeeklyReviewPage() {
                         {renderListInput('Challenges', challenges, setChallenges, 'What was difficult?')}
                         {renderListInput('Insights', insights, setInsights, 'What did you learn?')}
 
-                        {/* Week Notes - Free form description */}
                         <div>
-                            <label className="text-sm text-gray-400 block mb-2">
-                                Week Notes
-                            </label>
+                            <label className="text-sm text-gray-400 block mb-2">Week Notes</label>
                             <p className="text-xs text-gray-500 mb-2">
-                                Describe how the week went in your own words. You can speak or type.
+                                Describe how the week went in your own words.
                             </p>
                             <Textarea
                                 value={weekNotes}
                                 onChange={(e) => setWeekNotes(e.target.value)}
-                                placeholder="How did the week go overall? What stood out? Any reflections..."
+                                placeholder="Reflections..."
                                 rows={5}
                             />
                         </div>
 
-                        {/* AI Summary */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <label className="text-sm text-gray-400">AI Summary</label>
@@ -229,14 +256,10 @@ export default function WeeklyReviewPage() {
                                     Generate Summary
                                 </Button>
                             </div>
-                            {aiSummary ? (
+                            {aiSummary && (
                                 <InnerCard padding="sm">
                                     <p className="text-gray-300 text-sm">{aiSummary}</p>
                                 </InnerCard>
-                            ) : (
-                                <p className="text-xs text-gray-500">
-                                    AI will summarize your review and provide insights
-                                </p>
                             )}
                         </div>
 
@@ -244,6 +267,7 @@ export default function WeeklyReviewPage() {
                             onClick={handleCompleteReview}
                             className="w-full"
                             icon={CheckCircle}
+                            loading={isSubmitting}
                         >
                             Complete Review
                         </Button>
@@ -251,74 +275,64 @@ export default function WeeklyReviewPage() {
                 </GlassCard>
             )}
 
-            {/* Weekly Planning Form (Monday) */}
-            {(reviewDay === 'planning' || !reviewDay) && (
-                <GlassCard>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <ArrowRight className="w-6 h-6 text-[#139187]" />
-                            Weekly Planning
-                        </h2>
-                        {reviewStatus.planningCompleted && (
-                            <span className="flex items-center gap-1 text-green-400 text-sm">
-                                <CheckCircle className="w-4 h-4" />
-                                Completed
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="space-y-6">
-                        {/* Top 3 Priorities */}
-                        <div>
-                            <label className="text-sm text-gray-400 block mb-2">
-                                Top 3 Priorities This Week
-                            </label>
-                            <div className="space-y-2">
-                                {priorities.map((priority, index) => (
-                                    <div key={index} className="flex gap-2 items-center">
-                                        <span className="w-8 h-8 rounded-full bg-[#139187]/20 text-[#139187] flex items-center justify-center font-bold text-sm">
-                                            {index + 1}
-                                        </span>
-                                        <Input
-                                            value={priority}
-                                            onChange={(e) =>
-                                                updateItem(index, e.target.value, priorities, setPriorities)
-                                            }
-                                            placeholder={`Priority ${index + 1}`}
-                                        />
+            {activeTab === 'history' && (
+                <div className="space-y-4">
+                    {history.length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">No past reviews found.</p>
+                    ) : (
+                        history.map((review) => (
+                            <GlassCard key={review.id} className="hover:border-white/20 transition-colors">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white">
+                                            Week of {formatDate(review.weekStart)}
+                                        </h3>
+                                        <p className="text-xs text-gray-400">
+                                            Completed - {formatDate(review.createdAt)}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                    <div className="p-2 rounded-full bg-green-500/10 text-green-400">
+                                        <CheckCircle className="w-4 h-4" />
+                                    </div>
+                                </div>
 
-                        {renderListInput('Focus Areas', focusAreas, setFocusAreas, 'What to focus on?')}
+                                {review.aiSummary && (
+                                    <InnerCard className="mb-4 bg-white/5 border-white/5">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Sparkles className="w-3 h-3 text-[#139187]" />
+                                            <span className="text-xs font-medium text-gray-300">AI Summary</span>
+                                        </div>
+                                        <p className="text-sm text-gray-400 italic">
+                                            &ldquo;{review.aiSummary}&rdquo;
+                                        </p>
+                                    </InnerCard>
+                                )}
 
-                        {/* AI Suggestions */}
-                        <InnerCard>
-                            <div className="flex items-center gap-2 mb-2">
-                                <Sparkles className="w-4 h-4 text-[#139187]" />
-                                <span className="text-sm text-gray-400">AI Suggestions</span>
-                            </div>
-                            <p className="text-sm text-gray-300">
-                                Based on your goals and last week&apos;s review, consider prioritizing the client proposal
-                                and blocking 2 hours daily for deep work on the product launch.
-                            </p>
-                        </InnerCard>
-
-                        <Button
-                            onClick={handleCompletePlanning}
-                            className="w-full"
-                            icon={CheckCircle}
-                        >
-                            Complete Planning
-                        </Button>
-                    </div>
-                </GlassCard>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-400">
+                                    <div>
+                                        <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Wins</span>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {review.wins.map((w, i) => <li key={i}>{w}</li>)}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Challenges</span>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {review.challenges.map((w, i) => <li key={i}>{w}</li>)}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Insights</span>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {review.insights.map((w, i) => <li key={i}>{w}</li>)}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        ))
+                    )}
+                </div>
             )}
-
-            <p className="text-xs text-gray-500 text-center">
-                AI assists with summaries and suggestions only. You make all decisions.
-            </p>
         </>
     );
 }

@@ -66,8 +66,8 @@ export default function VoiceCapture({ onCapture, onAIProcess, isProcessing }: V
                         onClick={handleVoiceToggle}
                         disabled={isProcessing}
                         className={`p-3 rounded-xl transition-all ${isListening
-                                ? 'bg-[#139187] text-white shadow-lg scale-110'
-                                : 'bg-black/20 text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-[#139187] text-white shadow-lg scale-110'
+                            : 'bg-black/60 backdrop-blur-sm text-white/70 hover:bg-white/10 hover:text-white'
                             } disabled:opacity-50`}
                     >
                         {isListening ? (
@@ -85,7 +85,7 @@ export default function VoiceCapture({ onCapture, onAIProcess, isProcessing }: V
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                     placeholder="Type or speak to capture a task..."
-                    className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 outline-none focus:border-[#139187] transition-colors"
+                    className="flex-1 bg-black/60 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/50 outline-none focus:border-[#139187] transition-colors"
                     disabled={isProcessing}
                 />
 
@@ -101,7 +101,7 @@ export default function VoiceCapture({ onCapture, onAIProcess, isProcessing }: V
             </div>
 
             {!isSupported && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-red-400">
                     Voice input not supported in this browser
                 </p>
             )}

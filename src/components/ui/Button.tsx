@@ -17,12 +17,12 @@ const variantClasses: Record<ButtonVariant, string> = {
     primary:
         'bg-gradient-to-r from-[#139187] to-[#0d6b63] text-white font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5',
     secondary:
-        'bg-black/20 hover:bg-white/5 text-gray-300 border border-white/10',
+        'bg-black/60 backdrop-blur-sm hover:bg-white/10 text-white border border-white/10',
     accent:
         'bg-[#139187]/20 hover:bg-[#139187]/30 text-[#139187] border border-[#139187]/30',
     danger:
         'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30',
-    ghost: 'hover:bg-white/5 text-gray-400',
+    ghost: 'hover:bg-white/5 text-white/70 hover:text-white',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -78,7 +78,7 @@ export function IconButton({
 }: Omit<ButtonProps, 'children'> & { icon: LucideIcon }) {
     return (
         <button
-            className={`p-2 hover:bg-white/5 rounded-lg text-gray-400 transition-colors ${className}`}
+            className={`p-2 hover:bg-white/5 rounded-lg text-white/70 hover:text-white transition-colors ${className}`}
             {...props}
         >
             <Icon className="w-4 h-4" />

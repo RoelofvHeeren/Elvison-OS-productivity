@@ -16,6 +16,47 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [widgetToken, setWidgetToken] = useState<string | null>(null);
     const [copiedId, setCopiedId] = useState(false);
     const [isLoadingToken, setIsLoadingToken] = useState(false);
+    const [reviewDay, setReviewDay] = useState(0);
+    const [reviewHour, setReviewHour] = useState(18);
+    const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+
+    // Fetch settings
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/user/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    setReviewDay(data.reviewDayOfWeek);
+                    setReviewHour(data.reviewTimeHour);
+                }
+            } catch (error) {
+                console.error('Failed to fetch settings:', error);
+            }
+        };
+        if (isOpen) fetchSettings();
+    }, [isOpen]);
+
+    const handleSaveSchedule = async () => {
+        setIsSavingSchedule(true);
+        try {
+            const res = await fetch('/api/user/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reviewDayOfWeek: reviewDay,
+                    reviewTimeHour: reviewHour
+                })
+            });
+            if (res.ok) {
+                alert('Schedule updated!');
+            }
+        } catch (error) {
+            console.error('Failed to save schedule:', error);
+        } finally {
+            setIsSavingSchedule(false);
+        }
+    };
 
     // Fetch widget token
     useEffect(() => {
@@ -175,6 +216,65 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                     </section> */}
 
+                    {/* Weekly Review Schedule */}
+                    <section className="space-y-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            Weekly Review Schedule
+                        </h3>
+                        <div className="rounded-xl bg-white/5 p-4 space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/20 text-red-400">
+                                    <Shield className="h-5 w-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-medium text-white">System Lock</span>
+                                    <span className="text-xs text-gray-400">Set when the weekly review lock activates</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">Day of Week</label>
+                                    <select
+                                        value={reviewDay}
+                                        onChange={(e) => setReviewDay(Number(e.target.value))}
+                                        className="w-full bg-black/20 border border-white/10 rounded-lg text-sm text-white p-2 focus:border-[#139187] outline-none"
+                                    >
+                                        <option value={0}>Sunday</option>
+                                        <option value={1}>Monday</option>
+                                        <option value={2}>Tuesday</option>
+                                        <option value={3}>Wednesday</option>
+                                        <option value={4}>Thursday</option>
+                                        <option value={5}>Friday</option>
+                                        <option value={6}>Saturday</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">Time</label>
+                                    <select
+                                        value={reviewHour}
+                                        onChange={(e) => setReviewHour(Number(e.target.value))}
+                                        className="w-full bg-black/20 border border-white/10 rounded-lg text-sm text-white p-2 focus:border-[#139187] outline-none"
+                                    >
+                                        {Array.from({ length: 24 }).map((_, i) => (
+                                            <option key={i} value={i}>
+                                                {i === 0 ? '12 AM' : i === 12 ? '12 PM' : i > 12 ? `${i - 12} PM` : `${i} AM`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleSaveSchedule}
+                                disabled={isSavingSchedule}
+                                className="w-full rounded-lg bg-[#139187] py-2 text-xs font-semibold text-white hover:bg-[#139187]/80 disabled:opacity-50 transition-colors"
+                            >
+                                {isSavingSchedule ? 'Saving...' : 'Update Schedule'}
+                            </button>
+                        </div>
+                    </section>
+
                     {/* Widgets Section */}
                     <section className="space-y-3">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -262,10 +362,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             <span className="text-xs text-gray-400">Receive alerts and updates</span>
                                             {/* Status Badge */}
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded border ${typeof Notification !== 'undefined' && Notification.permission === 'granted'
-                                                    ? 'border-green-500/30 text-green-400 bg-green-500/10'
-                                                    : typeof Notification !== 'undefined' && Notification.permission === 'denied'
-                                                        ? 'border-red-500/30 text-red-400 bg-red-500/10'
-                                                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
+                                                ? 'border-green-500/30 text-green-400 bg-green-500/10'
+                                                : typeof Notification !== 'undefined' && Notification.permission === 'denied'
+                                                    ? 'border-red-500/30 text-red-400 bg-red-500/10'
+                                                    : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                                                 }`}>
                                                 {typeof Notification === 'undefined'
                                                     ? 'Unavailable'

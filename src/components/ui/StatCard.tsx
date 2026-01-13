@@ -24,10 +24,10 @@ export default function StatCard({
     }
 
     return (
-        <div className="bg-black/20 rounded-lg p-4 border border-white/10">
+        <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4 border border-white/10">
             {Icon && <Icon className="w-5 h-5 text-[#139187] mb-2" />}
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+            <p className="text-xs text-white/70 uppercase tracking-wider">{label}</p>
         </div>
     );
 }

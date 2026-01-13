@@ -25,6 +25,10 @@ model User {
   updatedAt DateTime @updatedAt
   widgetToken String?  @unique @default(uuid())
 
+  // Weekly Review Settings
+  reviewDayOfWeek Int @default(0) // 0 = Sunday
+  reviewTimeHour  Int @default(18) // 18:00 (6 PM)
+
   googleAccessToken  String?
   googleRefreshToken String?
   googleTokenExpiry  DateTime?
