@@ -27,6 +27,7 @@ export const POST = auth(async (req) => {
         let text = formData.get('text') as string | null;
         const mode = formData.get('mode') as string || 'task';
         const action = formData.get('action') as string || 'parse'; // 'parse' or 'save'
+        const timezone = formData.get('timezone') as string || 'UTC';
 
         // If action is 'save', we receive the approved data and save it
         if (action === 'save') {
@@ -113,8 +114,15 @@ export const POST = auth(async (req) => {
         CONTEXT:
         - Mode: ${mode.toUpperCase()}
         - Expected Type: ${modeType}
-        - Today's Date: ${new Date().toISOString()} (User is in user-local timezone, treat relative dates like "tomorrow" relative to this)
+        - User Timezone: ${timezone}
+        - Current Time (in user timezone): ${new Date().toLocaleString('en-US', { timeZone: timezone })}
+        - Today's Date: ${new Date().toISOString()} (UTC base)
         - Active Projects: ${projectList || 'None'}
+
+        CRITICAL DATE/TIME RULES:
+        1. interpret all relative time ("tomorrow", "at 5pm") based on the "Current Time (in user timezone)" provided above.
+        2. RETURN ALL DATES (dueDate, datetime) AS ISO 8601 STRINGS CONVERTED TO UTC, but preserving the user's intended absolute moment in time.
+           - Example: If user says "5pm" and they are in New York (UTC-5), return the ISO string for 22:00 UTC.
 
         ${modeType === 'TASK' ? `
         INSTRUCTIONS FOR TASK:

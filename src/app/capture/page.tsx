@@ -123,6 +123,7 @@ function CapturePageContent() {
         formData.append('audio', audioBlob, 'recording.webm');
         formData.append('mode', mode);
         formData.append('action', 'parse');
+        formData.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
 
         try {
             const response = await fetch('/api/capture/process', {
