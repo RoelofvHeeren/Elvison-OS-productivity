@@ -9,7 +9,7 @@ export interface ThemePreferences {
     backgroundType: 'video' | 'image' | 'solid';
     backgroundValue: string; // URL or Hex
     contrastMode: 'normal' | 'high';
-    colorSchema: 'dark' | 'light' | 'auto';
+    colorSchema: 'dark' | 'light' | 'auto'; // Controls light/dark mode preference
 }
 
 interface ThemeContextType {

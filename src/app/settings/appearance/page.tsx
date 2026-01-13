@@ -39,7 +39,7 @@ export default function AppearanceSettingsPage() {
             backgroundType: type,
             backgroundValue: value,
             colorSchema: schema as 'dark' | 'light'
-        });
+        } as any); // Force cast to avoid build type overlap issues
     };
 
     return (
