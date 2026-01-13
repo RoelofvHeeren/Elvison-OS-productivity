@@ -32,6 +32,11 @@ export const GET = auth(async (req) => {
                     }
                 }
             ];
+            // Fix: Explicitly exclude completed tasks for the dashboard view
+            // unless the user specifically asked for 'DONE' status (which dashboard doesn't)
+            if (status !== 'DONE') {
+                whereClause.status = { not: 'DONE' };
+            }
         } else {
             if (doToday === 'true') whereClause.doToday = true;
 
