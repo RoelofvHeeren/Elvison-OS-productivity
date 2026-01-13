@@ -8,6 +8,8 @@ export default function VideoBackground() {
   const [canPlay, setCanPlay] = useState(true);
   const hasAttemptedPlay = useRef(false);
   const { isLightMode } = useTheme();
+  const isReversing = useRef(false);
+  const animationFrameId = useRef<number | null>(null);
 
   // Reset play attempt when theme changes
   useEffect(() => {
@@ -15,6 +17,47 @@ export default function VideoBackground() {
     if (videoRef.current) {
       videoRef.current.load();
     }
+  }, [isLightMode]);
+
+  // Manual reverse playback effect
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      if (!video.duration) return;
+
+      // If playing forward and reached the end
+      if (!isReversing.current && video.currentTime >= video.duration - 0.1) {
+        isReversing.current = true;
+        video.pause();
+
+        const reversePlay = () => {
+          if (!video || !isReversing.current) return;
+
+          video.currentTime = Math.max(0, video.currentTime - 0.033); // ~30fps
+
+          if (video.currentTime <= 0.1) {
+            isReversing.current = false;
+            video.currentTime = 0;
+            video.play().catch(console.error);
+          } else {
+            animationFrameId.current = requestAnimationFrame(reversePlay);
+          }
+        };
+
+        reversePlay();
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
   }, [isLightMode]);
 
   useEffect(() => {
@@ -86,22 +129,6 @@ export default function VideoBackground() {
       muted
       playsInline
       controls={false}
-      onEnded={() => {
-        if (videoRef.current) {
-          videoRef.current.playbackRate = -1;
-          videoRef.current.play().catch(console.error);
-        }
-      }}
-      onTimeUpdate={() => {
-        if (videoRef.current) {
-          const video = videoRef.current;
-          // If we are playing backwards and reach near the start
-          if (video.playbackRate < 0 && video.currentTime < 0.2) {
-            video.playbackRate = 1;
-            video.play().catch(console.error);
-          }
-        }
-      }}
       style={{
         position: 'fixed',
         top: 0,
