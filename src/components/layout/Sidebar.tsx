@@ -38,7 +38,7 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`sticky top-0 h-screen shrink-0 flex flex-col border-r-2 border-[#139187] bg-white px-4 py-6 shadow-luxury z-50 transition-all duration-500 ${collapsed ? 'w-20' : 'w-64'
+            className={`sticky top-0 h-screen shrink-0 flex flex-col border-r-2 border-[#139187] bg-[var(--glass-base)] backdrop-filter backdrop-blur-[var(--glass-blur)] px-4 py-6 shadow-luxury z-50 transition-all duration-500 ${collapsed ? 'w-20' : 'w-64'
                 }`}
         >
             {/* Logo */}
@@ -51,7 +51,7 @@ export default function Sidebar() {
                     />
                 </div>
                 {!collapsed && (
-                    <span className="font-serif text-2xl font-bold tracking-tight text-black">
+                    <span className="font-serif text-2xl font-bold tracking-tight text-[var(--text-main)]">
                         Elvison
                     </span>
                 )}
@@ -68,8 +68,8 @@ export default function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={`group relative flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-300 ${isActive
-                                ? 'bg-black text-white shadow-3d translate-x-1'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-black hover:translate-x-1'
+                                ? 'bg-[var(--accent-primary)] text-white shadow-3d translate-x-1'
+                                : 'text-[var(--text-muted)] hover:bg-[var(--glass-border)] hover:text-[var(--text-main)] hover:translate-x-1'
                                 }`}
                         >
                             <Icon

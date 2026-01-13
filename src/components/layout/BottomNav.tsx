@@ -45,7 +45,7 @@ export default function BottomNav() {
 
             {/* More Menu */}
             {showMore && (
-                <div className="fixed bottom-20 left-4 right-4 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-2 z-50 animate-slide-up">
+                <div className="fixed bottom-20 left-4 right-4 bg-[var(--glass-base)] backdrop-blur-xl rounded-2xl border border-[var(--glass-border)] p-2 z-50 animate-slide-up">
                     {moreNavItems.map((item) => (
                         <Link
                             key={item.href}

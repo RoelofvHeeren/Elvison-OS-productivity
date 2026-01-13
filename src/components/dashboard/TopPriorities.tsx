@@ -92,7 +92,7 @@ export default function TopPriorities() {
         <GlassCard>
             <div className="flex items-center gap-3 mb-4">
                 <Target className="w-6 h-6 text-[#139187]" />
-                <h2 className="text-xl font-bold text-white">Top 3 Priorities</h2>
+                <h2 className="text-xl font-bold text-[var(--text-main)]">Top 3 Priorities</h2>
             </div>
 
             {priorities.length === 0 ? (
@@ -116,7 +116,7 @@ export default function TopPriorities() {
                                                 value={editValue}
                                                 onChange={(e) => setEditValue(e.target.value)}
                                                 onKeyDown={(e) => handleKeyDown(e, task.id)}
-                                                className="flex-1 bg-black/30 border border-[#139187] rounded px-2 py-1 text-white text-sm outline-none"
+                                                className="flex-1 bg-[var(--glass-base)] border border-[#139187] rounded px-2 py-1 text-[var(--text-main)] text-sm outline-none"
                                                 autoFocus
                                             />
                                             <button
@@ -134,7 +134,7 @@ export default function TopPriorities() {
                                         </div>
                                     ) : (
                                         <>
-                                            <p className="text-white font-medium">{task.title}</p>
+                                            <p className="text-[var(--text-main)] font-medium">{task.title}</p>
                                             {task.project && (
                                                 <p className="text-sm text-gray-400">{task.project}</p>
                                             )}
@@ -155,7 +155,7 @@ export default function TopPriorities() {
                                     {editingId !== task.id && (
                                         <button
                                             onClick={() => startEdit(task)}
-                                            className="p-1 text-gray-500 hover:text-white hover:bg-white/5 rounded transition-colors"
+                                            className="p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)] rounded transition-colors"
                                             title="Edit priority"
                                         >
                                             <Edit className="w-4 h-4" />

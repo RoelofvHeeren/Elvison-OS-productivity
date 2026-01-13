@@ -157,7 +157,7 @@ export default function TaskForm({
                             {formData.subtasks.map((subtask) => (
                                 <div
                                     key={subtask.id}
-                                    className="flex items-center gap-2 bg-black/20 rounded-lg px-3 py-2"
+                                    className="flex items-center gap-2 bg-[var(--glass-base)] rounded-lg px-3 py-2"
                                 >
                                     <GripVertical className="w-4 h-4 text-gray-500 cursor-grab" />
                                     <span className="flex-1 text-sm text-gray-300">{subtask.title}</span>
@@ -180,7 +180,7 @@ export default function TaskForm({
                             onChange={(e) => setNewSubtask(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
                             placeholder="Add a subtask..."
-                            className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
+                            className="flex-1 bg-[var(--glass-base)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent-primary)]"
                         />
                         <Button
                             type="button"

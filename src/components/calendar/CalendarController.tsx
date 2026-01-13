@@ -61,7 +61,7 @@ export default function CalendarController({ view, setView, currentDate, setCurr
                     <Button variant="secondary" size="sm" onClick={() => setCurrentDate(new Date())}>
                         Today
                     </Button>
-                    <div className="flex border border-white/10 rounded-lg bg-black/20 overflow-hidden">
+                    <div className="flex border border-[var(--glass-border)] rounded-lg bg-[var(--glass-base)] overflow-hidden">
                         <button onClick={handlePrev} className="p-2 hover:bg-white/5 transition-colors border-r border-white/10">
                             <ChevronLeft className="w-5 h-5 text-gray-400" />
                         </button>
@@ -69,7 +69,7 @@ export default function CalendarController({ view, setView, currentDate, setCurr
                             <ChevronRight className="w-5 h-5 text-gray-400" />
                         </button>
                     </div>
-                    <h2 className="text-base font-bold text-white min-w-[150px] px-2 truncate">
+                    <h2 className="text-base font-bold text-[var(--text-main)] min-w-[150px] px-2 truncate">
                         {formatDateRange()}
                     </h2>
                 </div>
@@ -86,7 +86,7 @@ export default function CalendarController({ view, setView, currentDate, setCurr
                         New Event
                     </Button>
 
-                    <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
+                    <div className="flex bg-[var(--glass-base)] p-1 rounded-xl border border-[var(--glass-border)]">
                         {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
                             <button
                                 key={v}

@@ -73,12 +73,12 @@ export default function MobileHeader() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsMenuOpen(true)}
-                        className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+                        className="flex items-center justify-center h-10 w-10 rounded-xl bg-[var(--glass-border)] text-[var(--text-main)] hover:bg-[var(--accent-primary)]/10 transition-colors"
                         aria-label="Open menu"
                     >
                         <Menu className="h-5 w-5" />
                     </button>
-                    <span className="font-serif text-xl font-bold text-white">
+                    <span className="font-serif text-xl font-bold text-[var(--text-main)]">
                         {pageTitle}
                     </span>
                 </div>
@@ -86,7 +86,7 @@ export default function MobileHeader() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="flex items-center justify-center h-10 w-10 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+                        className="flex items-center justify-center h-10 w-10 rounded-xl bg-[var(--glass-border)] text-[var(--text-main)] hover:bg-[var(--accent-primary)]/10 transition-colors"
                         aria-label="Settings"
                     >
                         <Settings className="h-5 w-5" />

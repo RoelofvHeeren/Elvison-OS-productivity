@@ -99,7 +99,7 @@ export default function TodaysTasks() {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <CheckSquare className="w-6 h-6 text-[#139187]" />
-                    <h2 className="text-xl font-bold text-white">Today&apos;s Tasks</h2>
+                    <h2 className="text-xl font-bold text-[var(--text-main)]">Today&apos;s Tasks</h2>
                 </div>
                 <span className="text-sm text-gray-400">
                     {completedCount}/{totalCount} completed
@@ -107,7 +107,7 @@ export default function TodaysTasks() {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-black/30 rounded-full h-2 mb-4">
+            <div className="w-full bg-[var(--glass-border)] rounded-full h-2 mb-4">
                 <div
                     className="bg-gradient-to-r from-[#139187] to-[#0d6b63] h-2 rounded-full transition-all duration-500"
                     style={{ width: totalCount > 0 ? `${(completedCount / totalCount) * 100}%` : '0%' }}
@@ -127,8 +127,8 @@ export default function TodaysTasks() {
                             onClick={() => toggleTask(task.id, task.status)}
                             disabled={togglingId === task.id}
                             className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left ${task.status === 'DONE'
-                                ? 'bg-black/10 opacity-60'
-                                : 'bg-black/20 hover:bg-black/30'
+                                ? 'bg-[var(--glass-border)] opacity-60'
+                                : 'bg-[var(--glass-base)] hover:bg-[var(--glass-border)]'
                                 } ${togglingId === task.id ? 'opacity-50' : ''}`}
                         >
                             {/* Status Icon */}
@@ -145,7 +145,7 @@ export default function TodaysTasks() {
                             {/* Task Info */}
                             <div className="flex-1 min-w-0">
                                 <p
-                                    className={`font-medium ${task.status === 'DONE' ? 'text-gray-500 line-through' : 'text-white'
+                                    className={`font-medium ${task.status === 'DONE' ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-main)]'
                                         }`}
                                 >
                                     {task.title}

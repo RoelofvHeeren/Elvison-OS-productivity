@@ -62,10 +62,10 @@ export default function DayHabitCard({
             {/* Date Header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-white'}`}>
+                    <h3 className={`text-lg font-bold ${isToday ? 'text-[#139187]' : 'text-[var(--text-main)]'}`}>
                         {isToday ? 'Today' : dayName}
                     </h3>
-                    <p className="text-xs text-white font-semibold uppercase tracking-wide">{dateFormatted}</p>
+                    <p className="text-xs text-[var(--text-main)] font-semibold uppercase tracking-wide">{dateFormatted}</p>
                 </div>
                 {isToday && (
                     <span className="px-2 py-0.5 bg-[#139187] text-white text-xs font-bold rounded-full">
@@ -80,7 +80,7 @@ export default function DayHabitCard({
             </div>
 
             {/* Habit Count */}
-            <p className="text-center text-sm text-white font-semibold mb-4">
+            <p className="text-center text-sm text-[var(--text-main)] font-semibold mb-4">
                 {completedCount}/{totalCount} habits
             </p>
 
@@ -101,10 +101,6 @@ export default function DayHabitCard({
                                 onClick={() => !isFuture && onToggleHabit(habit.id, dateStr)}
                                 disabled={isToggling || isFuture}
                                 className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${isFuture
-                                    ? 'bg-black/10 opacity-50 cursor-not-allowed'
-                                    : isCompleted
-                                        ? 'bg-black/10'
-                                        : 'bg-black/20 hover:bg-black/30'
                                     } ${isToggling ? 'opacity-50' : ''}`}
                             >
                                 <div className="flex items-center gap-3">
@@ -124,7 +120,7 @@ export default function DayHabitCard({
                                             <Minus className="w-3 h-3 text-white" />
                                         </div>
                                     )}
-                                    <span className={`text-sm font-bold ${isCompleted ? 'text-gray-400' : 'text-white'}`}>
+                                    <span className={`text-sm font-bold ${isCompleted ? 'text-[var(--text-muted)]' : 'text-[var(--text-main)]'}`}>
                                         {habit.name}
                                     </span>
                                 </div>
