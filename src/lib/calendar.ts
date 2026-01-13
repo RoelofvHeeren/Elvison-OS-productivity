@@ -10,14 +10,17 @@ const getRedirectUri = () => {
     return 'http://localhost:3000/api/auth/google/callback';
 };
 
-export const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    getRedirectUri()
-);
+export function getOAuth2Client() {
+    return new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        getRedirectUri()
+    );
+}
 
 export function getGoogleAuthUrl() {
-    return oauth2Client.generateAuthUrl({
+    const client = getOAuth2Client();
+    return client.generateAuthUrl({
         access_type: 'offline',
         scope: [
             'https://www.googleapis.com/auth/calendar',
@@ -38,14 +41,15 @@ export async function setGoogleCredentials(userId: string) {
         return null;
     }
 
-    oauth2Client.setCredentials({
+    const client = getOAuth2Client();
+    client.setCredentials({
         access_token: user.googleAccessToken,
         refresh_token: user.googleRefreshToken || undefined,
         expiry_date: user.googleTokenExpiry?.getTime() || undefined,
     });
 
     // Check if token needs refresh
-    oauth2Client.on('tokens', async (tokens) => {
+    client.on('tokens', async (tokens) => {
         if (tokens.refresh_token) {
             await prisma.user.update({
                 where: { id: userId },

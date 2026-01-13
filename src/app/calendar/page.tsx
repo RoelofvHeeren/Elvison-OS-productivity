@@ -90,7 +90,7 @@ export default function CalendarPage() {
                 </Button>
             </PageHeader>
 
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 pt-6">
                 {/* Unified Container */}
                 <GlassCard className="flex-1 flex flex-col !p-0 overflow-hidden bg-black/20 backdrop-blur-xl">
                     {showReminders ? (

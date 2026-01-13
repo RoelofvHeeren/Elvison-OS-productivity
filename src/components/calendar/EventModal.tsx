@@ -40,8 +40,8 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
         setLoading(true);
 
         try {
-            const startStr = `${startDate}T${startTime}:00`;
-            const endStr = `${endDate}T${endTime}:00`;
+            const startStr = new Date(`${startDate}T${startTime}:00`).toISOString();
+            const endStr = new Date(`${endDate}T${endTime}:00`).toISOString();
 
             const res = await fetch('/api/calendar', {
                 method: 'POST',

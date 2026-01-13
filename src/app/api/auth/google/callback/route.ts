@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { oauth2Client } from '@/lib/calendar';
+import { getOAuth2Client } from '@/lib/calendar';
 import { prisma } from '@/lib/db';
 import { auth } from '@/auth';
 
@@ -17,7 +17,8 @@ export async function GET(request: Request) {
     }
 
     try {
-        const { tokens } = await oauth2Client.getToken(code);
+        const client = getOAuth2Client();
+        const { tokens } = await client.getToken(code);
 
         // Update user with tokens
         await prisma.user.update({
