@@ -9,6 +9,7 @@ export interface ThemePreferences {
     backgroundType: 'video' | 'image' | 'solid';
     backgroundValue: string; // URL or Hex
     contrastMode: 'normal' | 'high';
+    colorSchema: 'dark' | 'light' | 'auto';
 }
 
 interface ThemeContextType {
@@ -23,6 +24,7 @@ const DEFAULT_THEME: ThemePreferences = {
     backgroundType: 'video',
     backgroundValue: '/Background video.mp4',
     contrastMode: 'normal',
+    colorSchema: 'dark',
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -72,29 +74,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             document.body.style.backgroundColor = '#000000';
         }
 
-        // Contrast Logic: Determine if we need dark text
-        // Simple heuristic: if solid background is light, switch text to dark
-        // For video/image, we rely on the overlay opacity
-        if (preferences.backgroundType === 'solid') {
-            const isLight = isLightColor(preferences.backgroundValue);
-            if (isLight) {
-                root.style.setProperty('--text-main', '#000000');
-                root.style.setProperty('--text-muted', '#4b5563');
-                root.style.setProperty('--glass-base', 'rgba(0, 0, 0, 0.05)');
-                root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.1)');
-            } else {
-                // Revert to dark mode defaults
-                root.style.setProperty('--text-main', '#ffffff');
-                root.style.setProperty('--text-muted', '#666666');
-                root.style.setProperty('--glass-base', 'rgba(255, 255, 255, 0.05)');
-                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.1)');
+        // Color Schema Logic
+        let isLightIdx = false;
+
+        if (preferences.colorSchema === 'auto') {
+            if (preferences.backgroundType === 'solid') {
+                isLightIdx = isLightColor(preferences.backgroundValue);
             }
+            // Default validation fallback for video/image in auto mode is 'dark'
         } else {
-            // For video/image, enforce dark mode text (white) because we have overlays
+            isLightIdx = preferences.colorSchema === 'light';
+        }
+
+        if (isLightIdx) {
+            // LIGHT MODE VARIABLES
+            root.style.setProperty('--text-main', '#000000'); // Sharp Black
+            root.style.setProperty('--text-muted', '#4b5563'); // Gray-600
+            root.style.setProperty('--text-inverse', '#ffffff');
+
+            // Milky Glass Effect for Light Mode
+            root.style.setProperty('--glass-base', 'rgba(255, 255, 255, 0.65)');
+            root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.08)');
+            root.style.setProperty('--glass-blur', '16px'); // Stronger blur for milky effect
+        } else {
+            // DARK MODE VARIABLES (Default)
             root.style.setProperty('--text-main', '#ffffff');
-            root.style.setProperty('--text-muted', '#666666');
+            root.style.setProperty('--text-muted', '#a1a1aa'); // Zinc-400
+            root.style.setProperty('--text-inverse', '#000000');
+
+            // Classic Dark Glass
             root.style.setProperty('--glass-base', 'rgba(255, 255, 255, 0.05)');
             root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.1)');
+            root.style.setProperty('--glass-blur', '12px');
         }
 
     }, [preferences]);
