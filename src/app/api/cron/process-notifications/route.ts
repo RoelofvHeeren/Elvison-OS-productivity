@@ -79,14 +79,79 @@ export async function GET(req: Request) {
         }
 
         // ========================
-        // 2. Process Daily/Weekly/Deadlines
+        // 2. Process Daily/Weekly/Deadlines (HOURLY CHECK)
         // ========================
-        // To save compute, we can just process active users
-        // ... (Similar logic to scheduler.ts but optimized for oneshot execution)
+        // We only run this logic if it's top of the hour (minute 0) to avoid spam/load
+        // Note: Cron runs every minute. 
+        if (now.getMinutes() === 0) {
+            console.log('[Cron] Running Hourly Checks (Daily/Weekly/Deadlines)...');
 
-        // For now, let's focus on Reminders as that is the critical "on time" feature.
-        // We can add the others if needed, but the client-poller handles them well when app opens.
-        // The user specifically asked for "notifications when app is NOT open".
+            // Fetch users with active subscriptions
+            const users = await prisma.user.findMany({
+                include: { pushSubscriptions: true }
+            });
+
+            for (const user of users) {
+                if (!user.pushSubscriptions.length) continue;
+
+                const userTimezone = user.timezone || 'UTC';
+                const userTime = new Date(now.toLocaleString('en-US', { timeZone: userTimezone }));
+                const userHour = userTime.getHours();
+                const userDay = userTime.getDay(); // 0 = Sunday
+
+                // --- DAILY BRIEFING (8:00 AM Local) ---
+                if (userHour === 8) {
+                    const tasks = await prisma.task.findMany({
+                        where: { userId: user.id, status: 'TODO', doToday: true }
+                    });
+                    if (tasks.length > 0) {
+                        for (const sub of user.pushSubscriptions) {
+                            await sendNotification(sub, JSON.stringify({
+                                title: `☀️ Good Morning!`, // Simple title to avoid length issues
+                                body: `You have ${tasks.length} tasks planned for today.`,
+                                data: { url: '/tasks' }
+                            })).catch(e => console.error('[Cron] Daily Briefing Error:', e));
+                        }
+                        results.dailySent++;
+                    }
+                }
+
+                // --- WEEKLY REVIEW (Sunday 6:00 PM Local) ---
+                if (userDay === 0 && userHour === 18) {
+                    for (const sub of user.pushSubscriptions) {
+                        await sendNotification(sub, JSON.stringify({
+                            title: '📅 Weekly Review Time',
+                            body: 'Take 10 minutes to review your wins and plan next week.',
+                            data: { url: '/weekly-review' }
+                        })).catch(e => console.error('[Cron] Weekly Review Error:', e));
+                    }
+                    results.weeklySent++;
+                }
+            }
+
+            // --- DEADLINE MONITOR (24h Warning) ---
+            const startWindow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            const endWindow = new Date(startWindow.getTime() + 60 * 60 * 1000); // 1 hour window
+
+            const dueTasks = await prisma.task.findMany({
+                where: {
+                    status: 'TODO',
+                    dueDate: { gte: startWindow, lt: endWindow }
+                },
+                include: { user: { include: { pushSubscriptions: true } } }
+            });
+
+            for (const task of dueTasks) {
+                for (const sub of task.user.pushSubscriptions) {
+                    await sendNotification(sub, JSON.stringify({
+                        title: '⏰ Task Due Tomorrow',
+                        body: `"${task.title}" is due in 24 hours.`,
+                        data: { url: '/tasks' }
+                    })).catch(e => console.error('[Cron] Deadline Error:', e));
+                }
+                results.deadlineSent++;
+            }
+        }
 
         return NextResponse.json({ success: true, processed: results });
     } catch (error: any) {

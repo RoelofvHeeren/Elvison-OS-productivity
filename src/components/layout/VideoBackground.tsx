@@ -84,9 +84,24 @@ export default function VideoBackground() {
       ref={videoRef}
       autoPlay
       muted
-      loop
       playsInline
       controls={false}
+      onEnded={() => {
+        if (videoRef.current) {
+          videoRef.current.playbackRate = -1;
+          videoRef.current.play().catch(console.error);
+        }
+      }}
+      onTimeUpdate={() => {
+        if (videoRef.current) {
+          const video = videoRef.current;
+          // If we are playing backwards and reach near the start
+          if (video.playbackRate < 0 && video.currentTime < 0.2) {
+            video.playbackRate = 1;
+            video.play().catch(console.error);
+          }
+        }
+      }}
       style={{
         position: 'fixed',
         top: 0,
