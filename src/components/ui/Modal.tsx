@@ -10,6 +10,7 @@ interface ModalProps {
     description?: string;
     children: ReactNode;
     footer?: ReactNode;
+    className?: string;
 }
 
 export default function Modal({
@@ -19,6 +20,7 @@ export default function Modal({
     description,
     children,
     footer,
+    className = '',
 }: ModalProps) {
     // Handle escape key
     useEffect(() => {
@@ -48,7 +50,7 @@ export default function Modal({
             />
 
             {/* Modal Content */}
-            <div className="relative bg-[#0F1115]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className={`relative bg-[#0F1115]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-full max-h-[90vh] overflow-y-auto shadow-2xl ${className || 'max-w-md'}`}>
                 {/* Close Button */}
                 <button
                     onClick={onClose}

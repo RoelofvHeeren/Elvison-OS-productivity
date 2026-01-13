@@ -75,7 +75,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Create New Event">
+        <Modal isOpen={isOpen} onClose={onClose} title="Create New Event" className="max-w-xl">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Title */}
                 <div className="space-y-2">
@@ -93,19 +93,19 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                 </div>
 
                 {/* Date & Time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-[#139187]" /> Start
                         </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
                             <input
                                 type="date"
                                 required
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
                                 style={{ colorScheme: 'dark' }}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full"
+                                className="min-w-0 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                             <input
                                 type="time"
@@ -113,7 +113,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
                                 style={{ colorScheme: 'dark' }}
-                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full sm:w-32"
+                                className="w-28 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                         </div>
                     </div>
@@ -121,14 +121,14 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                         <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-emerald-500" /> End
                         </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
                             <input
                                 type="date"
                                 required
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
                                 style={{ colorScheme: 'dark' }}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full"
+                                className="min-w-0 w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                             <input
                                 type="time"
@@ -136,7 +136,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
                                 style={{ colorScheme: 'dark' }}
-                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full sm:w-32"
+                                className="w-28 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />
                         </div>
                     </div>
