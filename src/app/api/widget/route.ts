@@ -10,6 +10,8 @@ async function getUserId() {
     return { id: 'user-1', timezone: 'UTC' }; // Fallback
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const { id: userId, timezone } = await getUserId();
@@ -31,15 +33,10 @@ export async function GET() {
         const endOfDay = new Date(startOfDay);
         endOfDay.setDate(endOfDay.getDate() + 1);
 
-        // Note: We compare the TASK's dueDate (which is stored as UTC) against the range
-        // that represents "Today" in the user's timezone.
-        // However, Prisma/DB dates are UTC. We need to match the logic used in TodaysTasks.
-        // It's cleaner to use the exact same logic: 
-        // If task.dueDate is between startOfDay and endOfDay, it falls on "Today".
-
         const tasksToday = await prisma.task.findMany({
             where: {
                 userId,
+                status: { not: 'DONE' }, // Ensure we only count pending tasks
                 OR: [
                     { doToday: true },
                     {
