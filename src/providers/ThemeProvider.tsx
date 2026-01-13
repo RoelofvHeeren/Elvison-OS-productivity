@@ -17,6 +17,7 @@ interface ThemeContextType {
     updatePreferences: (newPrefs: Partial<ThemePreferences>) => Promise<void>;
     resetTheme: () => void;
     isLoading: boolean;
+    isLightMode: boolean;
 }
 
 const DEFAULT_THEME: ThemePreferences = {

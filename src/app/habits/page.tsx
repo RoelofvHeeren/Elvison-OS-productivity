@@ -430,7 +430,7 @@ export default function HabitsPage() {
                                                             ? 'bg-green-500/20 text-green-400'
                                                             : day.isFuture
                                                                 ? 'bg-black/10 text-gray-700 cursor-not-allowed'
-                                                                : 'bg-black/20 text-gray-600 hover:bg-white/5'
+                                                                : 'bg-[var(--glass-base)] text-[var(--text-muted)] hover:bg-[var(--glass-border)]'
                                                             }`}
                                                     >
                                                         {completed ? (

@@ -7,7 +7,7 @@ export default function VideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [canPlay, setCanPlay] = useState(true);
   const hasAttemptedPlay = useRef(false);
-  const { theme } = useTheme();
+  const { isLightMode } = useTheme();
 
   // Reset play attempt when theme changes
   useEffect(() => {
@@ -15,7 +15,7 @@ export default function VideoBackground() {
     if (videoRef.current) {
       videoRef.current.load();
     }
-  }, [theme]);
+  }, [isLightMode]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -69,18 +69,15 @@ export default function VideoBackground() {
     return () => {
       cleanupPromise?.then(cleanup => cleanup?.());
     };
-  }, [theme]); // Re-run when theme changes
+  }, [isLightMode]); // Re-run when theme changes
 
   // Hide the video entirely if we can't play it (avoids broken play button)
   if (!canPlay) {
     return null;
   }
 
-  const videoSrc = theme === 'light' ? '/light-mode-desktop.mp4' : '/background.mp4';
-  // Adjust opacity for light mode to ensure text contrast if needed, 
-  // but usually light mode video should be handled by the video itself.
-  // However, forcing valid opacity for light mode might be good.
-  const opacity = theme === 'light' ? 0.4 : 0.6;
+  const videoSrc = isLightMode ? '/light-mode-desktop.mp4' : '/background.mp4';
+  const opacity = isLightMode ? 0.4 : 0.6;
 
   return (
     <video
