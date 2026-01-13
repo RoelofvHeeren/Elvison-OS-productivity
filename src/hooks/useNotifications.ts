@@ -29,11 +29,19 @@ export function useNotifications() {
             permission: isSupported ? Notification.permission : 'denied',
         }));
 
-        // Get existing subscription
+        // Get existing subscription and SYNC to server (critical for multiple devices/DB wipes)
         if (isSupported && Notification.permission === 'granted') {
             navigator.serviceWorker.ready.then((registration) => {
                 registration.pushManager.getSubscription().then((sub) => {
-                    setState((prev) => ({ ...prev, subscription: sub }));
+                    if (sub) {
+                        setState((prev) => ({ ...prev, subscription: sub }));
+                        // Force sync to ensure DB has it
+                        fetch('/api/notifications/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(sub.toJSON()),
+                        }).catch(err => console.error('[Notifications] Failed to sync existing sub:', err));
+                    }
                 });
             });
         }
