@@ -204,7 +204,7 @@ export default function GoalsPage() {
                                     <div className="flex-1">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <h3 className="text-lg font-semibold text-white">
+                                                <h3 className="text-lg font-semibold text-[var(--text-main)]">
                                                     {goal.title}
                                                 </h3>
                                                 <span
@@ -219,7 +219,7 @@ export default function GoalsPage() {
                                             <div className="flex items-center gap-1">
                                                 <button
                                                     onClick={() => openForm(goal)}
-                                                    className="p-1.5 text-gray-500 hover:text-white hover:bg-white/5 rounded transition-colors"
+                                                    className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)] rounded transition-colors"
                                                     title="Edit Goal"
                                                 >
                                                     <Edit className="w-4 h-4" />
@@ -240,7 +240,7 @@ export default function GoalsPage() {
                                                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
                                                         Success Criteria
                                                     </p>
-                                                    <p className="text-sm text-gray-300 flex items-start gap-2">
+                                                    <p className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
                                                         <Check className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
                                                         {goal.successCriteria}
                                                     </p>
@@ -252,7 +252,7 @@ export default function GoalsPage() {
                                                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">
                                                         Why This Matters
                                                     </p>
-                                                    <p className="text-sm text-gray-400 italic">&ldquo;{goal.why}&rdquo;</p>
+                                                    <p className="text-sm text-[var(--text-muted)] italic">&ldquo;{goal.why}&rdquo;</p>
                                                 </div>
                                             )}
 
@@ -265,7 +265,7 @@ export default function GoalsPage() {
                                                         {goal.linkedProjects.map((project) => (
                                                             <span
                                                                 key={project}
-                                                                className="inline-flex items-center gap-1 px-2 py-1 bg-white/5 rounded text-xs text-gray-300"
+                                                                className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--glass-base)] rounded text-xs text-[var(--text-secondary)]"
                                                             >
                                                                 <LinkIcon className="w-3 h-3" />
                                                                 {project}

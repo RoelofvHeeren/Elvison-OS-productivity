@@ -53,6 +53,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
     }, [session]);
 
+    const [isLightMode, setIsLightMode] = useState(false);
+
     // Apply CSS variables whenever preferences change
     useEffect(() => {
         const root = document.documentElement;
@@ -61,7 +63,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.style.setProperty('--accent-primary', preferences.accentColor);
 
         // Calculate and apply accent variants (simple darkening for secondary)
-        // Note: In a production app, use a color manipulation library like 'tinycolor2'
         root.style.setProperty('--accent-glow', `${preferences.accentColor}66`); // 40% opacity
 
         // Apply Background (Handled by Layout/VideoBackground component, but set var here)
@@ -75,18 +76,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Color Schema Logic
-        let isLightIdx = false;
+        let isLight = false;
 
         if (preferences.colorSchema === 'auto') {
             if (preferences.backgroundType === 'solid') {
-                isLightIdx = isLightColor(preferences.backgroundValue);
+                isLight = isLightColor(preferences.backgroundValue);
             }
             // Default validation fallback for video/image in auto mode is 'dark'
         } else {
-            isLightIdx = preferences.colorSchema === 'light';
+            isLight = preferences.colorSchema === 'light';
         }
 
-        if (isLightIdx) {
+        setIsLightMode(isLight);
+
+        if (isLight) {
             // LIGHT MODE VARIABLES
             root.style.setProperty('--text-main', '#000000'); // Sharp Black
             root.style.setProperty('--text-muted', '#4b5563'); // Gray-600
@@ -123,7 +126,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <ThemeContext.Provider value={{ preferences, updatePreferences, resetTheme, isLoading }}>
+        <ThemeContext.Provider value={{ preferences, updatePreferences, resetTheme, isLoading, isLightMode }}>
             {children}
         </ThemeContext.Provider>
     );

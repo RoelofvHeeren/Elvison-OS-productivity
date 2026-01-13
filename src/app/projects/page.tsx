@@ -258,7 +258,7 @@ export default function ProjectsPage() {
                                         <div>
                                             <button
                                                 onClick={() => setViewingProject(project)}
-                                                className="text-lg font-semibold text-white hover:text-[#139187] transition-colors text-left"
+                                                className="text-lg font-semibold text-[var(--text-main)] hover:text-[#139187] transition-colors text-left"
                                             >
                                                 {project.name}
                                             </button>
@@ -275,7 +275,7 @@ export default function ProjectsPage() {
                                             label={project.status}
                                         />
                                     </div>
-                                    <p className="text-sm text-gray-400 mt-2">{project.objective}</p>
+                                    <p className="text-sm text-[var(--text-muted)] mt-2">{project.objective}</p>
                                 </div>
 
                                 <div className="p-4 space-y-3">
@@ -287,7 +287,7 @@ export default function ProjectsPage() {
                                                 {project.completedTasks}/{project.tasksCount} tasks
                                             </span>
                                         </div>
-                                        <div className="w-full bg-black/30 rounded-full h-2">
+                                        <div className="w-full bg-[var(--glass-border)] rounded-full h-2">
                                             <div
                                                 className="bg-gradient-to-r from-[#139187] to-[#0d6b63] h-2 rounded-full"
                                                 style={{
@@ -302,7 +302,7 @@ export default function ProjectsPage() {
 
                                     {/* Dates */}
                                     {project.startDate && project.targetEndDate && (
-                                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                                        <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="w-3 h-3" />
                                                 {new Date(project.startDate).toLocaleDateString('en-US', {
@@ -323,13 +323,13 @@ export default function ProjectsPage() {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex border-t border-white/5">
+                                <div className="flex border-t border-[var(--glass-border)]">
                                     <button
                                         onClick={() => {
                                             setSelectedProject(project);
                                             setViewMode('tasks');
                                         }}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)] transition-colors"
                                     >
                                         <CheckSquare className="w-4 h-4" />
                                         Tasks ({project.tasksCount})
@@ -339,14 +339,14 @@ export default function ProjectsPage() {
                                             setSelectedProject(project);
                                             setViewMode('notes');
                                         }}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors border-l border-white/5"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)] transition-colors border-l border-[var(--glass-border)]"
                                     >
                                         <FileText className="w-4 h-4" />
                                         Notes ({project.notesCount})
                                     </button>
                                     <button
                                         onClick={() => openForm(project)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors border-l border-white/5"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)] transition-colors border-l border-[var(--glass-border)]"
                                     >
                                         <Edit className="w-4 h-4" />
                                         Edit

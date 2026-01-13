@@ -234,8 +234,8 @@ export default function HabitsPage() {
                     <button
                         onClick={() => setViewMode('table')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'table'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)]'
                             }`}
                     >
                         <LayoutList className="w-4 h-4" />
@@ -244,8 +244,8 @@ export default function HabitsPage() {
                     <button
                         onClick={() => setViewMode('daily')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'daily'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)]'
                             }`}
                     >
                         <Calendar className="w-4 h-4" />
@@ -254,8 +254,8 @@ export default function HabitsPage() {
                     <button
                         onClick={() => setViewMode('weekly')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'weekly'
-                                ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
-                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#139187] text-white shadow-lg shadow-[#139187]/20 relative z-10'
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass-base)]'
                             }`}
                     >
                         <CalendarDays className="w-4 h-4" />
@@ -285,7 +285,7 @@ export default function HabitsPage() {
                                             className="w-4 h-4 rounded-full"
                                             style={{ backgroundColor: habit.color }}
                                         />
-                                        <h4 className="font-medium text-white">{habit.name}</h4>
+                                        <h4 className="font-medium text-[var(--text-main)]">{habit.name}</h4>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="flex items-center gap-1 text-orange-400">
@@ -313,7 +313,7 @@ export default function HabitsPage() {
                                             return (
                                                 <div
                                                     key={i}
-                                                    className={`w-4 h-4 rounded-sm flex-shrink-0 ${log?.completed ? 'bg-green-500/60' : 'bg-white/10'
+                                                    className={`w-4 h-4 rounded-sm flex-shrink-0 ${log?.completed ? 'bg-green-500/60' : 'bg-[var(--glass-base)]/50'
                                                         }`}
                                                     title={dateStr}
                                                 />
@@ -324,8 +324,8 @@ export default function HabitsPage() {
 
                                 {/* Completion Rate */}
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-400">30-day rate</span>
-                                    <span className="text-white font-medium">
+                                    <span className="text-[var(--text-muted)]">30-day rate</span>
+                                    <span className="text-[var(--text-main)] font-medium">
                                         {habit.completionRate}%
                                     </span>
                                 </div>
@@ -354,7 +354,7 @@ export default function HabitsPage() {
                 /* Table View - Original Weekly Table */
                 <GlassCard>
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-white">
+                        <h3 className="font-semibold text-[var(--text-main)]">
                             {weekOffset === 0 ? 'This Week' : weekOffset === -1 ? 'Last Week' : getWeekLabel(weekOffset, weekDays)}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -408,14 +408,14 @@ export default function HabitsPage() {
                             </thead>
                             <tbody>
                                 {habits.map((habit) => (
-                                    <tr key={habit.id} className="border-t border-white/5">
+                                    <tr key={habit.id} className="border-t border-[var(--glass-border)]">
                                         <td className="py-3 pr-4">
                                             <div className="flex items-center gap-2">
                                                 <div
                                                     className="w-3 h-3 rounded-full"
                                                     style={{ backgroundColor: habit.color }}
                                                 />
-                                                <span className="text-sm text-white">{habit.name}</span>
+                                                <span className="text-sm text-[var(--text-main)]">{habit.name}</span>
                                             </div>
                                         </td>
                                         {weekDays.map((day) => {

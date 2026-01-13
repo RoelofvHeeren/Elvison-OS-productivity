@@ -1,11 +1,21 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@/providers/ThemeProvider';
 
 export default function VideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [canPlay, setCanPlay] = useState(true);
   const hasAttemptedPlay = useRef(false);
+  const { theme } = useTheme();
+
+  // Reset play attempt when theme changes
+  useEffect(() => {
+    hasAttemptedPlay.current = false;
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [theme]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -59,12 +69,18 @@ export default function VideoBackground() {
     return () => {
       cleanupPromise?.then(cleanup => cleanup?.());
     };
-  }, []);
+  }, [theme]); // Re-run when theme changes
 
   // Hide the video entirely if we can't play it (avoids broken play button)
   if (!canPlay) {
     return null;
   }
+
+  const videoSrc = theme === 'light' ? '/light-mode-desktop.mp4' : '/background.mp4';
+  // Adjust opacity for light mode to ensure text contrast if needed, 
+  // but usually light mode video should be handled by the video itself.
+  // However, forcing valid opacity for light mode might be good.
+  const opacity = theme === 'light' ? 0.4 : 0.6;
 
   return (
     <video
@@ -82,12 +98,13 @@ export default function VideoBackground() {
         height: '100%',
         objectFit: 'cover',
         zIndex: 0,
-        opacity: 0.6,
+        opacity: opacity,
         pointerEvents: 'none',
+        transition: 'opacity 1s ease-in-out',
       }}
       aria-hidden="true"
     >
-      <source src="/background.mp4" type="video/mp4" />
+      <source src={videoSrc} type="video/mp4" />
     </video>
   );
 }

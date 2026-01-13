@@ -100,7 +100,7 @@ export default function HabitWeeklyOverview({
             {/* Week Navigation & Header */}
             <GlassCard>
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-[var(--text-main)]">
                         {weekOffset === 0 ? 'This Week' : weekOffset === -1 ? 'Last Week' : getWeekLabel(weekOffset, weekDays)}
                     </h3>
                     <div className="flex items-center gap-2">
@@ -108,9 +108,9 @@ export default function HabitWeeklyOverview({
                             onClick={() => onWeekChange(weekOffset - 1)}
                             className="p-1 hover:bg-white/5 rounded transition-colors"
                         >
-                            <ChevronLeft className="w-4 h-4 text-white" />
+                            <ChevronLeft className="w-4 h-4 text-[var(--text-main)]" />
                         </button>
-                        <span className="text-sm text-white font-semibold">
+                        <span className="text-sm text-[var(--text-main)] font-semibold">
                             {getWeekLabel(weekOffset, weekDays)}
                         </span>
                         <button
@@ -118,7 +118,7 @@ export default function HabitWeeklyOverview({
                             disabled={weekOffset >= 0}
                             className="p-1 hover:bg-white/5 rounded disabled:opacity-30 transition-colors"
                         >
-                            <ChevronRight className="w-4 h-4 text-white" />
+                            <ChevronRight className="w-4 h-4 text-[var(--text-main)]" />
                         </button>
                     </div>
                 </div>
@@ -130,10 +130,10 @@ export default function HabitWeeklyOverview({
 
                         return (
                             <div key={day.dateStr} className="flex flex-col items-center">
-                                <span className={`text-xs mb-1 font-bold uppercase tracking-wide ${day.isToday ? 'text-[#139187]' : 'text-white'}`}>
+                                <span className={`text-xs mb-1 font-bold uppercase tracking-wide ${day.isToday ? 'text-[#139187]' : 'text-[var(--text-main)]'}`}>
                                     {day.dayName}
                                 </span>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 ${day.isToday ? 'bg-[#139187]/20 text-[#139187]' : 'text-white'
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 ${day.isToday ? 'bg-[#139187]/20 text-[#139187]' : 'text-[var(--text-main)]'
                                     }`}>
                                     {day.dayNum}
                                 </div>
@@ -141,7 +141,7 @@ export default function HabitWeeklyOverview({
                                     percentage={day.isFuture ? 0 : percentage}
                                     size={36}
                                 />
-                                <span className="text-[10px] text-white font-semibold mt-1">
+                                <span className="text-[10px] text-[var(--text-main)] font-semibold mt-1">
                                     {day.isFuture ? '-' : `${completed}/${total}`}
                                 </span>
                             </div>
@@ -152,7 +152,7 @@ export default function HabitWeeklyOverview({
 
             {/* Progress Graph */}
             <GlassCard>
-                <h4 className="text-sm font-medium text-white mb-3">Weekly Completion Trend</h4>
+                <h4 className="text-sm font-medium text-[var(--text-main)] mb-3">Weekly Completion Trend</h4>
                 <ProgressGraph data={graphData} height={100} />
             </GlassCard>
 
