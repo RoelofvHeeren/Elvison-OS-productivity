@@ -38,10 +38,10 @@ export default function DashboardStats() {
     if (loading) {
         return (
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10 h-[100px] flex items-center justify-center">
+                <div className="bg-[var(--glass-base)] rounded-lg p-4 border border-[var(--glass-border)] h-[100px] flex items-center justify-center">
                     <Loader2 className="w-5 h-5 text-[#139187] animate-spin" />
                 </div>
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10 h-[100px] flex items-center justify-center">
+                <div className="bg-[var(--glass-base)] rounded-lg p-4 border border-[var(--glass-border)] h-[100px] flex items-center justify-center">
                     <Loader2 className="w-5 h-5 text-[#139187] animate-spin" />
                 </div>
             </div>
