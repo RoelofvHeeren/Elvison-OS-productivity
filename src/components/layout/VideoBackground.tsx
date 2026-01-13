@@ -24,15 +24,28 @@ export default function VideoBackground() {
     const video = videoRef.current;
     if (!video) return;
 
+    let lastTime: number | null = null;
+
     const handleEnded = () => {
       isReversing.current = true;
       video.pause();
+      lastTime = null;
 
-      const reversePlay = () => {
+      const reversePlay = (timestamp: number) => {
         if (!video || !isReversing.current) return;
 
-        // Smoother 30fps reverse playback
-        video.currentTime = Math.max(0, video.currentTime - 0.04);
+        if (!lastTime) {
+          lastTime = timestamp;
+          animationFrameId.current = requestAnimationFrame(reversePlay);
+          return;
+        }
+
+        const delta = (timestamp - lastTime) / 1000; // Convert to seconds
+        lastTime = timestamp;
+
+        // Move currentTime backward by the elapsed time (1x speed)
+        // We use a small multiplier if we want to fine-tune the speed
+        video.currentTime = Math.max(0, video.currentTime - delta);
 
         if (video.currentTime <= 0.1) {
           isReversing.current = false;
@@ -43,7 +56,7 @@ export default function VideoBackground() {
         }
       };
 
-      reversePlay();
+      animationFrameId.current = requestAnimationFrame(reversePlay);
     };
 
     video.addEventListener('ended', handleEnded);
