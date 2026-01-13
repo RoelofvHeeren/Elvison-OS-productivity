@@ -98,20 +98,22 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                         <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-[#139187]" /> Start
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="date"
                                 required
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                style={{ colorScheme: 'dark' }}
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full"
                             />
                             <input
                                 type="time"
                                 required
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                className="w-32 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                style={{ colorScheme: 'dark' }}
+                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full sm:w-32"
                             />
                         </div>
                     </div>
@@ -119,20 +121,22 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                         <label className="text-sm font-medium text-gray-400 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-emerald-500" /> End
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <input
                                 type="date"
                                 required
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                style={{ colorScheme: 'dark' }}
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full"
                             />
                             <input
                                 type="time"
                                 required
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                className="w-32 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
+                                style={{ colorScheme: 'dark' }}
+                                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187] w-full sm:w-32"
                             />
                         </div>
                     </div>
