@@ -60,9 +60,9 @@ export default function RootLayout({
         className={`${plusJakarta.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
         style={{ fontFamily: 'var(--font-sans)' }}
       >
-        <VideoBackground />
         <AuthProvider>
           <ThemeProvider>
+            <VideoBackground />
             <WeeklyReviewLockProvider>
               <AppLayout>{children}</AppLayout>
             </WeeklyReviewLockProvider>
