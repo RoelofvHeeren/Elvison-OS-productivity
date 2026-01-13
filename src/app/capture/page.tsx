@@ -226,7 +226,7 @@ function CapturePageContent() {
                 </div>
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-white mb-2">Saved!</h1>
-                    <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                    <p className="text-white/70 text-sm max-w-xs mx-auto">
                         {candidate?.type === 'TASK' ? `Task: "${editTitle}"`
                             : candidate?.type === 'REMINDER' ? `Reminder: "${editTitle}"`
                                 : 'Note saved'}
@@ -251,7 +251,7 @@ function CapturePageContent() {
                 <div className="flex-none p-6 pb-2">
                     <div className="flex items-center justify-between mb-4">
                         <IconButton icon={ChevronLeft} onClick={reset} />
-                        <span className="text-sm font-medium text-gray-400 uppercase tracking-widest">
+                        <span className="text-sm font-bold text-white/70 uppercase tracking-widest">
                             Review {candidate.type}
                         </span>
                         <div className="w-8" />
@@ -362,22 +362,22 @@ function CapturePageContent() {
                     )}
 
                     {error && <p className="text-xs text-red-400 text-center font-bold">{error}</p>}
-                </div>
 
-                {/* Action buttons - Fixed at bottom */}
-                <div className="flex-none p-6 pt-2 bg-black/90 backdrop-blur-xl border-t border-white/10">
-                    <div className="flex gap-4">
-                        <Button variant="secondary" className="flex-1" onClick={reset}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="primary"
-                            className="flex-1"
-                            onClick={saveCapture}
-                            disabled={isSaving || !editTitle.trim() || (candidate.type === 'REMINDER' && !editDatetime)}
-                        >
-                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Save'}
-                        </Button>
+                    {/* Action buttons - In flow */}
+                    <div className="pt-4 pb-8">
+                        <div className="flex gap-4">
+                            <Button variant="secondary" className="flex-1" onClick={reset}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="primary"
+                                className="flex-1"
+                                onClick={saveCapture}
+                                disabled={isSaving || !editTitle.trim() || (candidate.type === 'REMINDER' && !editDatetime)}
+                            >
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve & Save'}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
