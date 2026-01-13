@@ -60,7 +60,7 @@ export default function TaskItem({
         <InnerCard
             padding="none"
             className={`border-l-4 ${priorityColors[task.priority]} ${isDone ? 'opacity-60' : ''
-                }`}
+                } ${showMenu ? 'relative z-[100]' : 'relative'}`}
         >
             <div className="flex items-start gap-3 p-4">
                 {/* Status Toggle */}
