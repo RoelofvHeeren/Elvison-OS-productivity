@@ -15,6 +15,8 @@ export const POST = auth(async (req) => {
             return NextResponse.json({ error: 'Title and datetime required' }, { status: 400 });
         }
 
+        console.log('[API] Creating reminder:', { title, datetime, parsed: new Date(datetime) });
+
         const reminder = await prisma.reminder.create({
             data: {
                 userId: req.auth.user.id,
@@ -23,6 +25,7 @@ export const POST = auth(async (req) => {
                 type: 'CUSTOM'
             }
         });
+        console.log('[API] Reminder created:', reminder);
 
         return NextResponse.json(reminder, { status: 201 });
     } catch (error) {

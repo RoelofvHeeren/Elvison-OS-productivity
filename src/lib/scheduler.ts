@@ -105,6 +105,13 @@ export function initScheduler() {
                 }
             });
 
+            if (reminders.length > 0) {
+                console.log(`[Scheduler] Found ${reminders.length} due reminders.`);
+                reminders.forEach(r => console.log(`- Sending reminder: ${r.title} (Time: ${r.datetime})`));
+            } else {
+                // console.log('[Scheduler] No reminders due.');
+            }
+
             for (const reminder of reminders) {
                 // Send notification
                 for (const sub of reminder.user.pushSubscriptions) {
