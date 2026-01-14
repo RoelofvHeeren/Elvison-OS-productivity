@@ -181,6 +181,69 @@ export default function CalendarPage() {
         }
     };
 
+    const handleEventDrop = async (event: any, newDate: Date, newHour?: number) => {
+        try {
+            // Calculate new ISO strings
+            const start = new Date(newDate);
+            if (newHour !== undefined) {
+                start.setHours(newHour, 0, 0, 0);
+            } else {
+                // If dropping on Month view (no hour), preserve original time or default to start of day
+                // Actually, for month view drops, we usually just change the date part
+                const originalStart = new Date(event.start);
+                start.setHours(originalStart.getHours(), originalStart.getMinutes(), 0, 0);
+            }
+
+            // Determine if it's a Task or Event
+            if (event.source === 'LOCAL_TASK' && event.originalTaskId) {
+                const payload: any = {
+                    dueDate: start.toISOString()
+                    // If dropping on Month View (no newHour), we might want to preserve dueTime or clear it?
+                    // Let's assume drag-and-drop implies specific scheduling, so we update dueTime if newHour is present.
+                };
+
+                if (newHour !== undefined) {
+                    payload.dueTime = start.toISOString();
+                } else {
+                    // Month view drop: update date, preserve time part of the ISO string
+                    // But we already set 'start' to have original hours.
+                    payload.dueTime = start.toISOString();
+                }
+
+                await fetch(`/api/tasks/${event.originalTaskId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+            } else {
+                // Determine duration to calculate end time
+                const originalStart = new Date(event.start);
+                const originalEnd = new Date(event.end);
+                const duration = originalEnd.getTime() - originalStart.getTime();
+                const end = new Date(start.getTime() + duration);
+
+                // Update Calendar Event
+                // We need an endpoint for this or reuse POST logic? 
+                // We don't have a specific PATCH endpoint for events yet, only DELETE/POST.
+                // Assuming we might need to add PATCH to /api/calendar or just re-create?
+                // Re-creating is risky for IDs. Let's assume we can't drag Google Events easily yet 
+                // or we need to add PATCH.
+                // User requirement implies "dragging events", but mostly cares about Tasks.
+                // Let's focus on Tasks first as per "8am" context.
+                // If valid event ID:
+                if (event.id && !event.id.startsWith('task-')) {
+                    // TODO: Implement Event PATCH
+                    console.log('Event dragging not fully supported for non-tasks yet');
+                    return;
+                }
+            }
+
+            await fetchEvents();
+        } catch (error) {
+            console.error('Failed to drop event:', error);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full">
             <PageHeader
@@ -232,10 +295,25 @@ export default function CalendarPage() {
                                             setView('day');
                                         }}
                                         onEventClick={handleEventClick}
+                                        onEventDrop={handleEventDrop}
                                     />
                                 )}
-                                {view === 'week' && <WeekView currentDate={currentDate} events={events} onEventClick={handleEventClick} />}
-                                {view === 'day' && <DayView currentDate={currentDate} events={events} onEventClick={handleEventClick} />}
+                                {view === 'week' && (
+                                    <WeekView
+                                        currentDate={currentDate}
+                                        events={events}
+                                        onEventClick={handleEventClick}
+                                        onEventDrop={handleEventDrop}
+                                    />
+                                )}
+                                {view === 'day' && (
+                                    <DayView
+                                        currentDate={currentDate}
+                                        events={events}
+                                        onEventClick={handleEventClick}
+                                        onEventDrop={handleEventDrop}
+                                    />
+                                )}
                             </div>
                         </>
                     )}

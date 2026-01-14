@@ -15,20 +15,7 @@ export async function GET(request: Request) {
     const end = searchParams.get('end');
 
     try {
-        const events = await prisma.calendarEvent.findMany({
-            where: {
-                userId: userId,
-                ...(start && end && {
-                    start: {
-                        gte: new Date(start),
-                        lte: new Date(end),
-                    },
-                }),
-            },
-            orderBy: { start: 'asc' },
-        });
-
-        // Also fetch tasks as events
+        // 1. Fetch tasks first to know which Google Events to hide (deduplication)
         const tasks = await prisma.task.findMany({
             where: {
                 userId: userId,
@@ -41,6 +28,27 @@ export async function GET(request: Request) {
                     },
                 }),
             },
+        });
+
+        // Collect external IDs of tasks to avoid showing the same event twice
+        const taskExternalIds = tasks
+            .map(t => t.calendarEventId)
+            .filter((id): id is string => !!id);
+
+        // 2. Fetch events, excluding those that are already represented by tasks
+        const events = await prisma.calendarEvent.findMany({
+            where: {
+                userId: userId,
+                // Exclude events that link to our tasks
+                externalId: { notIn: taskExternalIds },
+                ...(start && end && {
+                    start: {
+                        gte: new Date(start),
+                        lte: new Date(end),
+                    },
+                }),
+            },
+            orderBy: { start: 'asc' },
         });
 
         const taskEvents = tasks.map(task => {

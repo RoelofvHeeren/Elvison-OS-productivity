@@ -7,9 +7,10 @@ interface Props {
     currentDate: Date;
     events: any[];
     onEventClick: (event: any) => void;
+    onEventDrop: (event: any, date: Date, hour: number) => void;
 }
 
-export default function DayView({ currentDate, events, onEventClick }: Props) {
+export default function DayView({ currentDate, events, onEventClick, onEventDrop }: Props) {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const dayEvents = events.filter(e => new Date(e.start).toDateString() === currentDate.toDateString());
 
@@ -23,6 +24,25 @@ export default function DayView({ currentDate, events, onEventClick }: Props) {
         }
     }, []);
 
+    const handleDragStart = (e: React.DragEvent, event: any) => {
+        e.dataTransfer.setData('application/json', JSON.stringify(event));
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e: React.DragEvent, hour: number) => {
+        e.preventDefault();
+        const eventData = e.dataTransfer.getData('application/json');
+        if (eventData) {
+            const event = JSON.parse(eventData);
+            onEventDrop(event, currentDate, hour);
+        }
+    };
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-3">
@@ -32,7 +52,13 @@ export default function DayView({ currentDate, events, onEventClick }: Props) {
                             const hourEvents = dayEvents.filter(e => new Date(e.start).getHours() === hour);
 
                             return (
-                                <div key={hour} id={`day-hour-${hour}`} className="flex border-b border-white/[0.03]">
+                                <div
+                                    key={hour}
+                                    id={`day-hour-${hour}`}
+                                    className="flex border-b border-white/[0.03]"
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDrop(e, hour)}
+                                >
                                     <div className="w-20 h-24 flex justify-center text-xs text-gray-400 font-mono pr-4 pt-4 border-r border-white/10 shrink-0 bg-white/[0.02]">
                                         {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                                     </div>
@@ -41,8 +67,10 @@ export default function DayView({ currentDate, events, onEventClick }: Props) {
                                         {hourEvents.map(event => (
                                             <div
                                                 key={event.id}
+                                                draggable
+                                                onDragStart={(e) => handleDragStart(e, event)}
                                                 onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                                className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] cursor-pointer ${event.source === 'LOCAL_TASK'
+                                                className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] cursor-pointer active:opacity-50 ${event.source === 'LOCAL_TASK'
                                                     ? 'bg-blue-500/5 border-blue-500/50 text-blue-100'
                                                     : 'bg-[#139187]/5 border-[#139187]/50 text-emerald-100'
                                                     }`}
@@ -80,7 +108,9 @@ export default function DayView({ currentDate, events, onEventClick }: Props) {
                             dayEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map(event => (
                                 <div
                                     key={event.id}
-                                    className="border-l-2 border-white/10 pl-3 cursor-pointer hover:bg-white/5 p-1 rounded transition-colors"
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, event)}
+                                    className="border-l-2 border-white/10 pl-3 cursor-pointer hover:bg-white/5 p-1 rounded transition-colors active:opacity-50"
                                     onClick={() => onEventClick(event)}
                                 >
                                     <div className="text-[10px] text-gray-500 font-mono mb-0.5">

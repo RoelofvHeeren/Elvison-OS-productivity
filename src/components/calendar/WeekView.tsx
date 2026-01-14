@@ -7,9 +7,10 @@ interface Props {
     currentDate: Date;
     events: any[];
     onEventClick: (event: any) => void;
+    onEventDrop: (event: any, date: Date, hour: number) => void;
 }
 
-export default function WeekView({ currentDate, events, onEventClick }: Props) {
+export default function WeekView({ currentDate, events, onEventClick, onEventDrop }: Props) {
     const startOfWeek = new Date(currentDate);
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -31,6 +32,25 @@ export default function WeekView({ currentDate, events, onEventClick }: Props) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }, []);
+
+    const handleDragStart = (e: React.DragEvent, event: any) => {
+        e.dataTransfer.setData('application/json', JSON.stringify(event));
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e: React.DragEvent, date: Date, hour: number) => {
+        e.preventDefault();
+        const eventData = e.dataTransfer.getData('application/json');
+        if (eventData) {
+            const event = JSON.parse(eventData);
+            onEventDrop(event, date, hour);
+        }
+    };
 
     return (
         <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/40">
@@ -71,12 +91,19 @@ export default function WeekView({ currentDate, events, onEventClick }: Props) {
                             });
 
                             return (
-                                <div key={date.toISOString()} className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1">
+                                <div
+                                    key={date.toISOString()}
+                                    className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1 relative"
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDrop(e, date, hour)}
+                                >
                                     {hourEvents.map(event => (
                                         <div
                                             key={event.id}
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, event)}
                                             onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                            className={`p-1.5 rounded border-l-2 text-[10px] leading-tight cursor-pointer ${event.source === 'LOCAL_TASK'
+                                            className={`p-1.5 rounded border-l-2 text-[10px] leading-tight cursor-pointer shadow-sm hover:shadow-md transition-shadow active:opacity-50 ${event.source === 'LOCAL_TASK'
                                                 ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'
                                                 : 'bg-[#139187]/10 border-[#139187]/50 text-emerald-200'
                                                 }`}

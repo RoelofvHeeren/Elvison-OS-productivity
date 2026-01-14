@@ -7,9 +7,10 @@ interface Props {
     events: any[];
     onDateClick: (date: Date) => void;
     onEventClick: (event: any) => void;
+    onEventDrop: (event: any, date: Date, hour?: number) => void;
 }
 
-export default function MonthView({ currentDate, events, onDateClick, onEventClick }: Props) {
+export default function MonthView({ currentDate, events, onDateClick, onEventClick, onEventDrop }: Props) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
@@ -54,6 +55,25 @@ export default function MonthView({ currentDate, events, onDateClick, onEventCli
 
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+    const handleDragStart = (e: React.DragEvent, event: any) => {
+        e.dataTransfer.setData('application/json', JSON.stringify(event));
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e: React.DragEvent, date: Date) => {
+        e.preventDefault();
+        const eventData = e.dataTransfer.getData('application/json');
+        if (eventData) {
+            const event = JSON.parse(eventData);
+            onEventDrop(event, date);
+        }
+    };
+
     return (
         <div className="bg-transparent">
             {/* Scroll Container for Mobile */}
@@ -78,6 +98,8 @@ export default function MonthView({ currentDate, events, onDateClick, onEventCli
                                 <div
                                     key={i}
                                     onClick={() => onDateClick(d.date)}
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDrop(e, d.date)}
                                     className={`min-h-[80px] p-2 border-r border-b border-white/5 transition-colors hover:bg-white/[0.03] cursor-pointer group ${!d.currentMonth ? 'opacity-30' : ''}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
@@ -88,13 +110,24 @@ export default function MonthView({ currentDate, events, onDateClick, onEventCli
                                     </div>
 
                                     <div className="space-y-1">
+                                        {/* In month view events are summarized, but we can still make the summary draggable or just visually indicate drop capability */}
+                                        {/* For better UX, users might drag from a sidebar list or we might list events here. 
+                                            Currently it just shows counts. Dragging *from* month view is tricky without visible events.
+                                            BUT, dropping *onto* month view days is useful regardless of source.
+                                            Let's support dropping first. Dragging from here requires listing events.
+                                            The summary chips aren't specific events.
+                                            So dragging *within* month view is only possible if we list events.
+                                            Let's stick to Drop support for now (e.g. from sidebar or if we expand events later).
+                                            WAIT, user might drag from agenda sidebar? 
+                                            Actually, let's keep it simple: Month View supports DROP. WEEK/DAY support DRAG & DROP.
+                                        */}
                                         {eventCount > 0 && (
-                                            <div className="px-2 py-1 text-[10px] rounded-full bg-[#139187]/20 text-[#139187] font-medium border border-[#139187]/20 truncate">
+                                            <div draggable className="px-2 py-1 text-[10px] rounded-full bg-[#139187]/20 text-[#139187] font-medium border border-[#139187]/20 truncate cursor-grab active:cursor-grabbing">
                                                 {eventCount} event{eventCount > 1 ? 's' : ''}
                                             </div>
                                         )}
                                         {taskCount > 0 && (
-                                            <div className="px-2 py-1 text-[10px] rounded-full bg-blue-500/10 text-blue-300 font-medium border border-blue-500/20 truncate">
+                                            <div draggable className="px-2 py-1 text-[10px] rounded-full bg-blue-500/10 text-blue-300 font-medium border border-blue-500/20 truncate cursor-grab active:cursor-grabbing">
                                                 {taskCount} task{taskCount > 1 ? 's' : ''}
                                             </div>
                                         )}
