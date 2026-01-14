@@ -240,6 +240,24 @@ function CapturePageContent() {
         }
     };
 
+    // Helper to format UTC ISO string to Local YYYY-MM-DDTHH:mm for input[type="datetime-local"]
+    const toLocalInputString = (isoString: string) => {
+        if (!isoString) return '';
+        try {
+            const date = new Date(isoString);
+            // new Date(isoString) is in local time representation by default JS behavior,
+            // but toISOString() converts to UTC.
+            // We want the local time numbers in the ISO format string.
+            // Subtracting timezone offset (which is in minutes, positive if behind UTC, negative if ahead)
+            // e.g. UTC+8 -> offset is -480 (-8 hours). date.getTime() - (-480*60000) adds 8 hours.
+            const offset = date.getTimezoneOffset() * 60000;
+            const localDate = new Date(date.getTime() - offset);
+            return localDate.toISOString().slice(0, 16);
+        } catch {
+            return '';
+        }
+    };
+
     // Success state
     if (saved) {
         return (
@@ -310,7 +328,7 @@ function CapturePageContent() {
                                 </label>
                                 <input
                                     type="datetime-local"
-                                    value={editDueDate ? editDueDate.slice(0, 16) : ''}
+                                    value={toLocalInputString(editDueDate)}
                                     onChange={(e) => setEditDueDate(e.target.value ? new Date(e.target.value).toISOString() : '')}
                                     className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
@@ -370,7 +388,7 @@ function CapturePageContent() {
                                 </label>
                                 <input
                                     type="datetime-local"
-                                    value={editDatetime ? editDatetime.slice(0, 16) : ''}
+                                    value={toLocalInputString(editDatetime)}
                                     onChange={(e) => setEditDatetime(e.target.value ? new Date(e.target.value).toISOString() : '')}
                                     className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
@@ -393,7 +411,7 @@ function CapturePageContent() {
                                 </label>
                                 <input
                                     type="datetime-local"
-                                    value={editStartDateTime ? editStartDateTime.slice(0, 16) : ''}
+                                    value={toLocalInputString(editStartDateTime)}
                                     onChange={(e) => setEditStartDateTime(e.target.value ? new Date(e.target.value).toISOString() : '')}
                                     className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
@@ -409,7 +427,7 @@ function CapturePageContent() {
                                 </label>
                                 <input
                                     type="datetime-local"
-                                    value={editEndDateTime ? editEndDateTime.slice(0, 16) : ''}
+                                    value={toLocalInputString(editEndDateTime)}
                                     onChange={(e) => setEditEndDateTime(e.target.value ? new Date(e.target.value).toISOString() : '')}
                                     className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
                                 />
