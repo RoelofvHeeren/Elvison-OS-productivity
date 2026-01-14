@@ -255,7 +255,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate, in
                 {/* Footer Buttons */}
                 <div className="pt-4 flex gap-3">
                     {initialData && onDelete && (
-                        <Button type="button" variant="destructive" onClick={handleDelete} loading={loading}>
+                        <Button type="button" variant="danger" onClick={handleDelete} loading={loading}>
                             <Trash2 className="w-4 h-4" />
                         </Button>
                     )}
