@@ -115,7 +115,7 @@ export async function GET(request: Request) {
             }
         });
         const affirmation = affirmations.length > 0
-            ? affirmations[Math.floor(Math.random() * affirmations.length)].text
+            ? affirmations[Math.floor(Math.random() * affirmations.length)].content
             : "Seize the day";
 
         return NextResponse.json({
