@@ -7,7 +7,7 @@ import { google } from 'googleapis';
 
 // Schema for the AI output
 interface CaptureResult {
-    type: 'TASK' | 'NOTE' | 'REMINDER';
+    type: 'TASK' | 'NOTE' | 'REMINDER' | 'EVENT';
     title: string;
     content?: string;
     priority?: 'HIGH' | 'MEDIUM' | 'LOW';
