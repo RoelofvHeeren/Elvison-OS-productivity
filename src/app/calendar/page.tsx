@@ -21,6 +21,10 @@ export default function CalendarPage() {
     const [editingTask, setEditingTask] = useState<any | null>(null);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [view, setView] = useState<CalendarView>('month');
+    const [events, setEvents] = useState<any[]>([]);
+    const [showReminders, setShowReminders] = useState(false);
+    const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
     const fetchEvents = async () => {
         setLoading(true);
