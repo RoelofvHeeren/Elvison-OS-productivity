@@ -52,7 +52,10 @@ export async function GET(request: Request) {
             });
 
             // Refresh token if needed
-            if (oauth2Client.isTokenExpiring()) {
+            const expiryDate = user.googleTokenExpiry ? new Date(user.googleTokenExpiry).getTime() : 0;
+            const isExpiring = !expiryDate || (expiryDate - Date.now() < 5 * 60 * 1000);
+
+            if (isExpiring) {
                 try {
                     const { credentials } = await oauth2Client.refreshAccessToken();
                     // Update DB with new tokens
