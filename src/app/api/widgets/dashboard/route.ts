@@ -56,6 +56,8 @@ export async function GET(request: Request) {
                 title: true,
                 priority: true,
                 dueDate: true,
+                dueTime: true,
+                doToday: true
             },
             orderBy: [
                 { priority: 'desc' },
@@ -105,12 +107,23 @@ export async function GET(request: Request) {
                 habitsCompleted: completedHabitsCount,
                 habitsTotal: totalHabitsCount,
             },
-            tasks: todayTasks.map(t => ({
-                id: t.id,
-                title: t.title,
-                priority: t.priority,
-                dueTime: t.dueDate ? new Date(t.dueDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null
-            })),
+            tasks: todayTasks.map(t => {
+                let time = null;
+                if (t.dueTime) {
+                    const dt = new Date(t.dueTime);
+                    // Check if midnight (00:00) - treat as no specific time
+                    const isMidnight = dt.getHours() === 0 && dt.getMinutes() === 0;
+                    if (!isMidnight) {
+                        time = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    }
+                }
+                return {
+                    id: t.id,
+                    title: t.title,
+                    priority: t.priority,
+                    dueTime: time
+                };
+            }),
             updatedAt: new Date().toISOString()
         };
 

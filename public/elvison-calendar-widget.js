@@ -43,7 +43,7 @@ Script.complete();
 async function createMediumWidget() {
     const data = await fetchData();
     const w = new ListWidget();
-    w.setPadding(16, 16, 16, 16);
+    w.setPadding(12, 12, 12, 12);
 
     // Background
     const bgImage = await getBackgroundImage();
@@ -60,7 +60,7 @@ async function createMediumWidget() {
     // LEFT COLUMN: Date
     const leftCol = mainStack.addStack();
     leftCol.layoutVertically();
-    leftCol.size = new Size(80, 0); // Fixed width for date area
+    leftCol.size = new Size(60, 0); // Reduced width
 
     const today = new Date();
 
@@ -72,7 +72,8 @@ async function createMediumWidget() {
     dayNum.font = Font.boldSystemFont(36);
     dayNum.textColor = new Color(COLORS.white);
 
-    leftCol.addSpacer(); // Push content up
+    // leftCol.addSpacer(); // REMOVED spacer to keep things tighter
+    leftCol.addSpacer(10); // Small gap instead
 
     // Add Event Button (Small)
     const addBtn = leftCol.addStack();
@@ -86,15 +87,15 @@ async function createMediumWidget() {
     addTxt.font = Font.boldSystemFont(10);
     addTxt.textColor = new Color(COLORS.white);
 
-    mainStack.addSpacer(20);
+    mainStack.addSpacer(10); // Reduced gap between columns
 
     // RIGHT COLUMN: Events
     const rightCol = mainStack.addStack();
     rightCol.layoutVertically();
 
     if (data.events && data.events.length > 0) {
-        // Show max 3 events
-        const maxEvents = 3;
+        // Show max 5 events
+        const maxEvents = 5;
         for (let i = 0; i < Math.min(data.events.length, maxEvents); i++) {
             const event = data.events[i];
             const eventStack = rightCol.addStack();
