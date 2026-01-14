@@ -43,7 +43,7 @@ Script.complete();
 async function createMediumWidget() {
     const data = await fetchData();
     const w = new ListWidget();
-    w.setPadding(12, 12, 12, 12);
+    w.setPadding(16, 16, 16, 16);
 
     // Background
     const bgImage = await getBackgroundImage();
@@ -57,15 +57,16 @@ async function createMediumWidget() {
     const mainStack = w.addStack();
     mainStack.layoutHorizontally();
 
-    // LEFT COLUMN: Date
+    // LEFT COLUMN: Date (Centered)
     const leftCol = mainStack.addStack();
     leftCol.layoutVertically();
+    leftCol.centerAlignContent();
     leftCol.size = new Size(80, 0); // Slightly wider for affirmation readability
 
     const today = new Date();
 
     const weekday = leftCol.addText(today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    weekday.font = Font.boldSystemFont(16);
+    weekday.font = new Font('PlayfairDisplay-Bold', 16);
     weekday.textColor = new Color(COLORS.white);
 
     leftCol.addSpacer(4);
@@ -73,7 +74,7 @@ async function createMediumWidget() {
     if (data.affirmation) {
         const aff = leftCol.addText(data.affirmation);
         aff.font = Font.italicSystemFont(10);
-        aff.textColor = new Color(COLORS.teal);
+        aff.textColor = new Color(COLORS.white);
         aff.minimumScaleFactor = 0.5;
     }
 
@@ -130,7 +131,7 @@ async function createMediumWidget() {
             titleRow.addSpacer(6);
 
             const titleTxt = titleRow.addText(event.title);
-            titleTxt.font = Font.boldSystemFont(12);
+            titleTxt.font = Font.boldSystemFont(10.2); // 15% reduction from 12
             titleTxt.textColor = new Color(COLORS.white);
             titleTxt.lineLimit = 1;
 
