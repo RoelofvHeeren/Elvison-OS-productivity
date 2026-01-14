@@ -41,7 +41,15 @@ export async function GET(request: Request) {
             where: {
                 userId: userId,
                 status: { not: 'DONE' },
-                doToday: true
+                OR: [
+                    { doToday: true },
+                    {
+                        dueDate: {
+                            gte: today,
+                            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+                        }
+                    }
+                ]
             },
             select: {
                 id: true,
@@ -61,7 +69,15 @@ export async function GET(request: Request) {
             where: {
                 userId: userId,
                 status: { not: 'DONE' },
-                doToday: true
+                OR: [
+                    { doToday: true },
+                    {
+                        dueDate: {
+                            gte: today,
+                            lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+                        }
+                    }
+                ]
             }
         });
 
