@@ -59,14 +59,21 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
         e.preventDefault();
     };
 
-    const handleTouchEnd = (e: React.TouchEvent, hour: number) => {
+    const handleTouchEnd = (e: React.TouchEvent) => {
         if (!draggedEvent) return;
 
         const touch = e.changedTouches[0];
         const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
-        if (element && element.closest('[data-drop-slot]')) {
-            onEventDrop(draggedEvent, hour);
+        // Find the closest drop slot and extract its hour
+        const dropSlot = element?.closest('[data-drop-slot]') as HTMLElement;
+        if (dropSlot) {
+            const hourStr = dropSlot.getAttribute('data-hour');
+
+            if (hourStr) {
+                const targetHour = parseInt(hourStr);
+                onEventDrop(draggedEvent, targetHour);
+            }
         }
 
         setDraggedEvent(null);
@@ -126,10 +133,11 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
                                     {/* Event Slot */}
                                     <div
                                         data-drop-slot="true"
+                                        data-hour={hour.toString()}
                                         className="flex-1 p-2 space-y-2 group hover:bg-white/[0.02] transition-colors relative cursor-pointer"
                                         onDragOver={handleDragOver}
                                         onDrop={(e) => handleDrop(e, hour)}
-                                        onTouchEnd={(e) => handleTouchEnd(e, hour)}
+                                        onTouchEnd={handleTouchEnd}
                                         onClick={(e) => handleSlotClick(hour, e)}
                                     >
                                         {hourEvents.map(event => (

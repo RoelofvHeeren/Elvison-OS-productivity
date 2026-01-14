@@ -68,15 +68,23 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
         e.preventDefault(); // Prevent scrolling while dragging
     };
 
-    const handleTouchEnd = (e: React.TouchEvent, date: Date, hour: number) => {
+    const handleTouchEnd = (e: React.TouchEvent) => {
         if (!draggedEvent) return;
 
         const touch = e.changedTouches[0];
         const element = document.elementFromPoint(touch.clientX, touch.clientY);
 
-        // Check if we dropped on a valid slot
-        if (element && element.closest('[data-drop-slot]')) {
-            onEventDrop(draggedEvent, date, hour);
+        // Find the closest drop slot and extract its date/hour
+        const dropSlot = element?.closest('[data-drop-slot]') as HTMLElement;
+        if (dropSlot) {
+            const dateStr = dropSlot.getAttribute('data-date');
+            const hourStr = dropSlot.getAttribute('data-hour');
+
+            if (dateStr && hourStr) {
+                const targetDate = new Date(dateStr);
+                const targetHour = parseInt(hourStr);
+                onEventDrop(draggedEvent, targetDate, targetHour);
+            }
         }
 
         setDraggedEvent(null);
@@ -144,10 +152,12 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
                                 <div
                                     key={date.toISOString()}
                                     data-drop-slot="true"
+                                    data-date={date.toISOString()}
+                                    data-hour={hour.toString()}
                                     className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1 relative cursor-pointer"
                                     onDragOver={handleDragOver}
                                     onDrop={(e) => handleDrop(e, date, hour)}
-                                    onTouchEnd={(e) => handleTouchEnd(e, date, hour)}
+                                    onTouchEnd={handleTouchEnd}
                                     onClick={(e) => handleSlotClick(date, hour, e)}
                                 >
                                     {hourEvents.map(event => (
