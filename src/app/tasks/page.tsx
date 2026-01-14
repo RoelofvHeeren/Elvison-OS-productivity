@@ -231,12 +231,22 @@ export default function TasksPage() {
     const handleFormSubmit = async (data: any) => {
         if (isSubmitting) return;
         setIsSubmitting(true);
+
+        // Prepare payload with timezone correction
+        const payload = { ...data };
+
+        if (data.dueDate && data.dueTime) {
+            // Combine date and time, interpret as local, convert to ISO (UTC)
+            const localDateTime = new Date(`${data.dueDate}T${data.dueTime}:00`);
+            payload.dueTime = localDateTime.toISOString();
+        }
+
         try {
             if (editingTask) {
                 const res = await fetch(`/api/tasks/${editingTask.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(payload),
                 });
 
                 if (res.ok) {
@@ -249,7 +259,7 @@ export default function TasksPage() {
                 const res = await fetch('/api/tasks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(payload),
                 });
 
                 if (res.ok) {

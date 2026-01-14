@@ -109,8 +109,15 @@ export const POST = auth(async (req) => {
                 if (task.dueTime) {
                     // Specific time set: Create timed event
                     const dueTime = new Date(task.dueTime);
-                    const startDateTime = new Date(task.dueDate!);
-                    startDateTime.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+                    let startDateTime = new Date(task.dueDate!); // Default base
+
+                    // If dueTime has year > 2000, use it as full timestamp source
+                    if (dueTime.getFullYear() > 2000) {
+                        startDateTime = dueTime;
+                    } else {
+                        // Legacy handling: reset date base
+                        startDateTime.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+                    }
 
                     const endDateTime = new Date(startDateTime.getTime() + 30 * 60000); // 30 min duration by default
 

@@ -90,10 +90,17 @@ export const POST = auth(async (req) => {
         const { title, priority, dueDate, dueTime, doToday, projectId, subtasks } = body;
 
         // Default logic: If dueDate is set but dueTime is NOT, default to 09:00:00
+        // Default logic: If dueDate is set but dueTime is NOT, default to 09:00:00
         let finalDueTime: Date | null = null;
         if (dueDate) {
             if (dueTime) {
-                finalDueTime = new Date(`1970-01-01T${dueTime}:00`);
+                // If it's a full ISO string (e.g. from client conversion), use it directly
+                if (dueTime.includes('T')) {
+                    finalDueTime = new Date(dueTime);
+                } else {
+                    // Legacy HH:MM format - assumes UTC implies 1970-01-01
+                    finalDueTime = new Date(`1970-01-01T${dueTime}:00`);
+                }
             } else {
                 // User didn't pick a time, default to 09:00 AM
                 finalDueTime = new Date(`1970-01-01T09:00:00`);
@@ -131,10 +138,16 @@ export const POST = auth(async (req) => {
 
                 if (calendar) {
                     // Construct Start Time
-                    const eventDate = new Date(task.dueDate);
+                    let eventDate = new Date(task.dueDate);
+
                     // If we have a time, set it. Otherwise rely on the 09:00 default we just enforced.
                     if (task.dueTime) {
-                        eventDate.setHours(task.dueTime.getHours(), task.dueTime.getMinutes(), 0, 0);
+                        // If dueTime is a full timestamp (year > 2000), use it as the source of truth
+                        if (task.dueTime.getFullYear() > 2000) {
+                            eventDate = new Date(task.dueTime);
+                        } else {
+                            eventDate.setHours(task.dueTime.getHours(), task.dueTime.getMinutes(), 0, 0);
+                        }
                     } else {
                         eventDate.setHours(9, 0, 0, 0);
                     }

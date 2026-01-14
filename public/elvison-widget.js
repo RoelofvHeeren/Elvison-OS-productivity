@@ -3,8 +3,9 @@
 
 // Configuration
 const API_URL = "https://elvison-os-productivity-production.up.railway.app/api/widgets/dashboard";
-const API_KEY = "elvison-widget-secret";
-const USER_ID = "user-1"; // PASTE YOUR WIDGET ID FROM SETTINGS
+const API_KEY = "elvison-widget-secret"; // Keep for backward compatibility if needed, but mainly use token
+const WIDGET_TOKEN = "PASTE_YOUR_TOKEN_HERE"; // Get this from your App Settings
+const USER_ID = ""; // valid user id is resolved from token on server
 const APP_URL = "https://elvison-os-productivity-production.up.railway.app";
 const BG_IMAGE_URL = "https://elvison-os-productivity-production.up.railway.app/widget-bg.png";
 
@@ -255,7 +256,9 @@ function addCaptureBtn(stack, label, url) {
 
 async function fetchData() {
     try {
-        const req = new Request(`${API_URL}?key=${API_KEY}&userId=${USER_ID}`);
+        // Use token preference if available
+        const url = `${API_URL}?key=${API_KEY}&token=${WIDGET_TOKEN}`;
+        const req = new Request(url);
         return await req.loadJSON();
     } catch (e) {
         return {

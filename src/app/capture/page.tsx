@@ -6,7 +6,7 @@ import { Mic, Square, Loader2, CheckCircle2, ChevronLeft, Edit3, Calendar, Folde
 import Button, { IconButton } from '@/components/ui/Button';
 
 interface CaptureCandidate {
-    type: 'TASK' | 'NOTE' | 'REMINDER';
+    type: 'TASK' | 'NOTE' | 'REMINDER' | 'EVENT';
     title: string;
     content?: string;
     priority?: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -14,6 +14,11 @@ interface CaptureCandidate {
     datetime?: string;
     projectId?: string;
     projectName?: string;
+    // Event specific
+    startDateTime?: string;
+    endDateTime?: string;
+    location?: string;
+    attendees?: string[];
 }
 
 interface Project {
@@ -41,6 +46,12 @@ function CapturePageContent() {
     const [editDatetime, setEditDatetime] = useState('');
     const [editPriority, setEditPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
     const [editProjectId, setEditProjectId] = useState<string>('');
+    // Event specific
+    // Event specific
+    const [editStartDateTime, setEditStartDateTime] = useState('');
+    const [editEndDateTime, setEditEndDateTime] = useState('');
+    const [editLocation, setEditLocation] = useState('');
+    const [editAttendees, setEditAttendees] = useState(''); // Comma separated string for editing
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -148,6 +159,12 @@ function CapturePageContent() {
             setEditDatetime(data.candidate.datetime || '');
             setEditPriority(data.candidate.priority || 'MEDIUM');
             setEditProjectId(data.candidate.projectId || '');
+
+            // Event specific
+            setEditStartDateTime(data.candidate.startDateTime || '');
+            setEditEndDateTime(data.candidate.endDateTime || '');
+            setEditLocation(data.candidate.location || '');
+            setEditAttendees(data.candidate.attendees ? data.candidate.attendees.join(', ') : '');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Something went wrong');
         } finally {
@@ -168,6 +185,11 @@ function CapturePageContent() {
             datetime: editDatetime || null,
             priority: editPriority,
             projectId: editProjectId || null,
+            // Event specific
+            startDateTime: editStartDateTime || null,
+            endDateTime: editEndDateTime || null,
+            location: editLocation || null,
+            attendees: editAttendees.split(',').map(e => e.trim()).filter(e => e),
         };
 
         const formData = new FormData();
@@ -362,6 +384,70 @@ function CapturePageContent() {
                         </>
                     )}
 
+                    {candidate.type === 'EVENT' && (
+                        <>
+                            {/* Start Time */}
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Clock className="w-3 h-3 text-[#139187]" /> Start Time
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    value={editStartDateTime ? editStartDateTime.slice(0, 16) : ''}
+                                    onChange={(e) => setEditStartDateTime(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                />
+                                {editStartDateTime && (
+                                    <p className="text-xs text-white font-medium mt-1">{formatDate(editStartDateTime)}</p>
+                                )}
+                            </div>
+
+                            {/* End Time */}
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Clock className="w-3 h-3 text-[#139187]" /> End Time
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    value={editEndDateTime ? editEndDateTime.slice(0, 16) : ''}
+                                    onChange={(e) => setEditEndDateTime(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                />
+                                {editEndDateTime && (
+                                    <p className="text-xs text-white font-medium mt-1">{formatDate(editEndDateTime)}</p>
+                                )}
+                            </div>
+
+                            {/* Location */}
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <Flag className="w-3 h-3 text-[#139187]" /> Location
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editLocation}
+                                    onChange={(e) => setEditLocation(e.target.value)}
+                                    placeholder="Add location"
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1"
+                                />
+                            </div>
+
+                            {/* Attendees */}
+                            <div className="bg-black/60 backdrop-blur-md rounded-lg p-4 border border-white/10">
+                                <label className="text-xs text-white font-bold mb-2 flex items-center gap-2">
+                                    <FolderOpen className="w-3 h-3 text-[#139187]" /> Attendees (Emails)
+                                </label>
+                                <textarea
+                                    value={editAttendees}
+                                    onChange={(e) => setEditAttendees(e.target.value)}
+                                    placeholder="email@example.com, another@example.com"
+                                    className="w-full bg-transparent text-white font-medium border-b border-white/20 focus:border-[#139187] outline-none py-1 min-h-[60px]"
+                                />
+                                <p className="text-xs text-white/50 mt-1">Separate emails with commas</p>
+                            </div>
+                        </>
+                    )}
+
                     {error && <p className="text-xs text-red-400 text-center font-bold">{error}</p>}
 
                     {/* Action buttons - In flow */}
@@ -400,7 +486,7 @@ function CapturePageContent() {
                 {[
                     { key: 'task', label: 'Task', color: '#3B82F6' },
                     { key: 'note', label: 'Note', color: '#F59E0B' },
-                    { key: 'reminder', label: 'Reminder', color: '#10B981' }
+                    { key: 'reminder', label: 'Reminder', color: '#10B981' },
                 ].map(({ key, label, color }) => (
                     <button
                         key={key}

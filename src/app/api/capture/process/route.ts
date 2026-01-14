@@ -3,6 +3,7 @@ import { generateStructuredOutputGemini, transcribeAudioGemini } from '@/lib/gem
 import { prisma } from '@/lib/db';
 
 import { auth } from "@/auth"
+import { google } from 'googleapis';
 
 // Schema for the AI output
 interface CaptureResult {
@@ -13,7 +14,13 @@ interface CaptureResult {
     dueDate?: string;  // For tasks
     datetime?: string; // For reminders
     projectId?: string;
+    projectId?: string;
     projectName?: string;
+    // Event specific
+    startDateTime?: string;
+    endDateTime?: string;
+    location?: string;
+    attendees?: string[];
 }
 
 export const POST = auth(async (req) => {
@@ -33,7 +40,59 @@ export const POST = auth(async (req) => {
         if (action === 'save') {
             const itemData = JSON.parse(formData.get('data') as string);
 
-            if (itemData.type === 'TASK') {
+            if (itemData.type === 'EVENT') {
+                // Save to Google Calendar
+                const user = await prisma.user.findUnique({
+                    where: { id: userId }
+                });
+
+                if (!user || !user.googleAccessToken) {
+                    return NextResponse.json({ error: 'Google Calendar not connected' }, { status: 400 });
+                }
+
+                const oauth2Client = new google.auth.OAuth2(
+                    process.env.GOOGLE_CLIENT_ID,
+                    process.env.GOOGLE_CLIENT_SECRET
+                );
+
+                oauth2Client.setCredentials({
+                    access_token: user.googleAccessToken,
+                    refresh_token: user.googleRefreshToken || undefined,
+                    expiry_date: user.googleTokenExpiry ? Number(user.googleTokenExpiry) : undefined
+                });
+
+                // Refresh if needed
+                if (oauth2Client.isTokenExpiring()) {
+                    const { credentials } = await oauth2Client.refreshAccessToken();
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            googleAccessToken: credentials.access_token,
+                            googleRefreshToken: credentials.refresh_token ?? user.googleRefreshToken,
+                            googleTokenExpiry: credentials.expiry_date ? new Date(credentials.expiry_date) : undefined
+                        }
+                    });
+                }
+
+                const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+                const event = {
+                    summary: itemData.title,
+                    description: itemData.content || '',
+                    start: { dateTime: itemData.startDateTime }, // ISO strings
+                    end: { dateTime: itemData.endDateTime },
+                    location: itemData.location,
+                    attendees: itemData.attendees ? itemData.attendees.map((email: string) => ({ email })) : [],
+                };
+
+                const res = await calendar.events.insert({
+                    calendarId: 'primary',
+                    requestBody: event,
+                });
+
+                return NextResponse.json({ success: true, item: res.data, type: 'EVENT' });
+
+            } else if (itemData.type === 'TASK') {
                 const task = await prisma.task.create({
                     data: {
                         userId: userId,
@@ -104,7 +163,7 @@ export const POST = auth(async (req) => {
         const projectList = projects.map(p => `"${p.name}" (ID: ${p.id})`).join(', ');
 
         // Determine the output type based on mode
-        const modeType = mode === 'reminder' ? 'REMINDER' : mode === 'note' ? 'NOTE' : 'TASK';
+        const modeType = mode === 'reminder' ? 'REMINDER' : mode === 'note' ? 'NOTE' : mode === 'calendar' ? 'EVENT' : 'TASK';
 
         // AI Processing with Gemini
         const systemPrompt = `
@@ -152,6 +211,18 @@ export const POST = auth(async (req) => {
         2. **Content**: Clean up the transcript into nice markdown, preserving the key information.
         ` : ''}
 
+        ${modeType === 'EVENT' ? `
+        INSTRUCTIONS FOR CALENDAR EVENT:
+        1. **Title**: Generate a clear, concise event title.
+           - Example: "Lunch with John"
+        2. **Start/End Time**: Extract start and end times. 
+           - **startDateTime**: ISO string (UTC).
+           - **endDateTime**: ISO string (UTC). If duration is not specified, assume 1 hour.
+        3. **Attendees**: Extract any mentioned names or emails who are invited.
+           - Return an array of potential email addresses if mentioned (or placeholders if just names).
+        4. **Location**: Extract location if mentioned.
+        ` : ''}
+
         RESPOND WITH THIS EXACT JSON STRUCTURE:
         {
             "type": "${modeType}",
@@ -161,7 +232,11 @@ export const POST = auth(async (req) => {
             ${modeType === 'TASK' ? '"dueDate": "ISO string or null",' : ''}
             ${modeType === 'REMINDER' ? '"datetime": "ISO string (REQUIRED)",' : ''}
             ${modeType === 'TASK' ? '"projectId": "UUID or null",' : ''}
-            ${modeType === 'TASK' ? '"projectName": "Project name or null"' : ''}
+            ${modeType === 'TASK' ? '"projectName": "Project name or null",' : ''}
+            ${modeType === 'EVENT' ? '"startDateTime": "ISO string",' : ''}
+            ${modeType === 'EVENT' ? '"endDateTime": "ISO string",' : ''}
+            ${modeType === 'EVENT' ? '"location": "string or null",' : ''}
+            ${modeType === 'EVENT' ? '"attendees": ["email1", "email2"],' : ''}
         }
         `;
 
