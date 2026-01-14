@@ -38,16 +38,42 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate, in
             setEndTime(end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
             setAttendees(initialData.attendees?.map((a: any) => a.email) || []);
         } else if (isOpen && initialDate) {
-            // Reset to initialDate if creating new
-            setStartDate(initialDate.toISOString().split('T')[0]);
-            setEndDate(initialDate.toISOString().split('T')[0]);
-            setStartTime('09:00');
-            setEndTime('10:00');
+            // Extract time from initialDate if it has been set
+            const dateToUse = new Date(initialDate);
+            setStartDate(dateToUse.toISOString().split('T')[0]);
+            setEndDate(dateToUse.toISOString().split('T')[0]);
+
+            // Use the time from initialDate, or default to 09:00
+            const hours = dateToUse.getHours();
+            const minutes = dateToUse.getMinutes();
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            setStartTime(timeStr);
+
+            // Auto-calculate end time (start + 1 hour)
+            const endDate = new Date(dateToUse);
+            endDate.setHours(endDate.getHours() + 1);
+            const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+            setEndTime(endTimeStr);
+
             setTitle('');
             setDescription('');
             setAttendees([]);
         }
     }, [initialData, initialDate, isOpen]);
+
+    // Auto-update end time when start time changes (add 1 hour)
+    const handleStartTimeChange = (newStartTime: string) => {
+        setStartTime(newStartTime);
+
+        // Parse start time and add 1 hour
+        const [hours, minutes] = newStartTime.split(':').map(Number);
+        const startDate = new Date();
+        startDate.setHours(hours, minutes, 0, 0);
+        startDate.setHours(startDate.getHours() + 1);
+
+        const endTimeStr = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+        setEndTime(endTimeStr);
+    };
 
     const addAttendee = () => {
         if (attendeeEmail && !attendees.includes(attendeeEmail) && attendeeEmail.includes('@')) {
@@ -166,7 +192,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate, in
                                 type="time"
                                 required
                                 value={startTime}
-                                onChange={(e) => setStartTime(e.target.value)}
+                                onChange={(e) => handleStartTimeChange(e.target.value)}
                                 style={{ colorScheme: 'dark' }}
                                 className="w-28 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#139187]"
                             />

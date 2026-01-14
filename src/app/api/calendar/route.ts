@@ -108,15 +108,20 @@ export async function POST(request: Request) {
         try {
             const calendar = await setGoogleCredentials(userId);
             if (calendar) {
+                // Get user's timezone (you might want to store this in user settings)
+                const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
                 const event = {
                     summary: title,
                     description: description,
                     location: location || null,
                     start: {
                         dateTime: new Date(start).toISOString(),
+                        timeZone: timeZone,
                     },
                     end: {
                         dateTime: new Date(end).toISOString(),
+                        timeZone: timeZone,
                     },
                     attendees: attendees ? attendees.map((email: string) => ({ email })) : [],
                 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 
 interface Props {
@@ -12,6 +12,9 @@ interface Props {
 }
 
 export default function WeekView({ currentDate, events, onEventClick, onEventDrop, onSlotClick }: Props) {
+    const [draggedEvent, setDraggedEvent] = useState<any>(null);
+    const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
+
     const startOfWeek = new Date(currentDate);
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -53,7 +56,46 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
         }
     };
 
-    const handleSlotClick = (date: Date, hour: number) => {
+    // Touch event handlers for mobile
+    const handleTouchStart = (e: React.TouchEvent, event: any) => {
+        setDraggedEvent(event);
+        const touch = e.touches[0];
+        setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!draggedEvent) return;
+        e.preventDefault(); // Prevent scrolling while dragging
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent, date: Date, hour: number) => {
+        if (!draggedEvent) return;
+
+        const touch = e.changedTouches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        // Check if we dropped on a valid slot
+        if (element && element.closest('[data-drop-slot]')) {
+            onEventDrop(draggedEvent, date, hour);
+        }
+
+        setDraggedEvent(null);
+        setTouchStartPos(null);
+    };
+
+    const handleSlotClick = (date: Date, hour: number, e: React.MouseEvent | React.TouchEvent) => {
+        // Prevent click if we just finished dragging
+        if (touchStartPos) {
+            const touch = (e as React.TouchEvent).changedTouches?.[0];
+            if (touch) {
+                const distance = Math.sqrt(
+                    Math.pow(touch.clientX - touchStartPos.x, 2) +
+                    Math.pow(touch.clientY - touchStartPos.y, 2)
+                );
+                if (distance > 10) return; // Was a drag, not a click
+            }
+        }
+
         // Create a new date object with the specific hour
         const clickDate = new Date(date);
         clickDate.setHours(hour, 0, 0, 0);
@@ -101,16 +143,20 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
                             return (
                                 <div
                                     key={date.toISOString()}
+                                    data-drop-slot="true"
                                     className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1 relative cursor-pointer"
                                     onDragOver={handleDragOver}
                                     onDrop={(e) => handleDrop(e, date, hour)}
-                                    onClick={() => handleSlotClick(date, hour)}
+                                    onTouchEnd={(e) => handleTouchEnd(e, date, hour)}
+                                    onClick={(e) => handleSlotClick(date, hour, e)}
                                 >
                                     {hourEvents.map(event => (
                                         <div
                                             key={event.id}
                                             draggable
                                             onDragStart={(e) => handleDragStart(e, event)}
+                                            onTouchStart={(e) => handleTouchStart(e, event)}
+                                            onTouchMove={handleTouchMove}
                                             onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                             className={`p-1.5 rounded border-l-2 text-[10px] leading-tight cursor-pointer shadow-sm hover:shadow-md transition-shadow active:opacity-50 ${event.source === 'LOCAL_TASK'
                                                 ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'

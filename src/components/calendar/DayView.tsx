@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GlassCard from '@/components/ui/GlassCard';
 
 interface Props {
@@ -12,6 +12,9 @@ interface Props {
 }
 
 export default function DayView({ currentDate, events, onEventClick, onEventDrop, onSlotClick }: Props) {
+    const [draggedEvent, setDraggedEvent] = useState<any>(null);
+    const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null);
+
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const dayEvents = events.filter(e => new Date(e.start).toDateString() === currentDate.toDateString());
 
@@ -44,7 +47,44 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
         }
     };
 
-    const handleSlotClick = (hour: number) => {
+    // Touch event handlers for mobile
+    const handleTouchStart = (e: React.TouchEvent, event: any) => {
+        setDraggedEvent(event);
+        const touch = e.touches[0];
+        setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!draggedEvent) return;
+        e.preventDefault();
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent, hour: number) => {
+        if (!draggedEvent) return;
+
+        const touch = e.changedTouches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (element && element.closest('[data-drop-slot]')) {
+            onEventDrop(draggedEvent, hour);
+        }
+
+        setDraggedEvent(null);
+        setTouchStartPos(null);
+    };
+
+    const handleSlotClick = (hour: number, e?: React.MouseEvent | React.TouchEvent) => {
+        if (touchStartPos && e) {
+            const touch = (e as React.TouchEvent).changedTouches?.[0];
+            if (touch) {
+                const distance = Math.sqrt(
+                    Math.pow(touch.clientX - touchStartPos.x, 2) +
+                    Math.pow(touch.clientY - touchStartPos.y, 2)
+                );
+                if (distance > 10) return;
+            }
+        }
+
         const clickDate = new Date(currentDate);
         clickDate.setHours(hour, 0, 0, 0);
         onSlotClick(clickDate);
@@ -85,16 +125,20 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
 
                                     {/* Event Slot */}
                                     <div
+                                        data-drop-slot="true"
                                         className="flex-1 p-2 space-y-2 group hover:bg-white/[0.02] transition-colors relative cursor-pointer"
                                         onDragOver={handleDragOver}
                                         onDrop={(e) => handleDrop(e, hour)}
-                                        onClick={() => handleSlotClick(hour)}
+                                        onTouchEnd={(e) => handleTouchEnd(e, hour)}
+                                        onClick={(e) => handleSlotClick(hour, e)}
                                     >
                                         {hourEvents.map(event => (
                                             <div
                                                 key={event.id}
                                                 draggable
                                                 onDragStart={(e) => handleDragStart(e, event)}
+                                                onTouchStart={(e) => handleTouchStart(e, event)}
+                                                onTouchMove={handleTouchMove}
                                                 onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                                 className={`p-3 rounded-lg border-l-4 shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all cursor-pointer active:opacity-50 ${event.source === 'LOCAL_TASK'
                                                     ? 'bg-blue-500/10 border-blue-500 backdrop-blur-md'
