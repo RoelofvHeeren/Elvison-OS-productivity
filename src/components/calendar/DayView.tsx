@@ -6,9 +6,10 @@ import GlassCard from '@/components/ui/GlassCard';
 interface Props {
     currentDate: Date;
     events: any[];
+    onEventClick: (event: any) => void;
 }
 
-export default function DayView({ currentDate, events }: Props) {
+export default function DayView({ currentDate, events, onEventClick }: Props) {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const dayEvents = events.filter(e => new Date(e.start).toDateString() === currentDate.toDateString());
 
@@ -40,7 +41,8 @@ export default function DayView({ currentDate, events }: Props) {
                                         {hourEvents.map(event => (
                                             <div
                                                 key={event.id}
-                                                className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] ${event.source === 'LOCAL_TASK'
+                                                onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                                className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] cursor-pointer ${event.source === 'LOCAL_TASK'
                                                     ? 'bg-blue-500/5 border-blue-500/50 text-blue-100'
                                                     : 'bg-[#139187]/5 border-[#139187]/50 text-emerald-100'
                                                     }`}
@@ -76,7 +78,11 @@ export default function DayView({ currentDate, events }: Props) {
                             <p className="text-gray-500 text-sm italic">Nothing scheduled</p>
                         ) : (
                             dayEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()).map(event => (
-                                <div key={event.id} className="border-l-2 border-white/10 pl-3">
+                                <div
+                                    key={event.id}
+                                    className="border-l-2 border-white/10 pl-3 cursor-pointer hover:bg-white/5 p-1 rounded transition-colors"
+                                    onClick={() => onEventClick(event)}
+                                >
                                     <div className="text-[10px] text-gray-500 font-mono mb-0.5">
                                         {event.allDay ? 'All Day' : new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>

@@ -20,6 +20,7 @@ interface TaskFormProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: TaskFormData) => void;
+    onDelete?: () => void;
     initialData?: Partial<TaskFormData>;
     projects?: { id: string; name: string }[];
 }
@@ -37,6 +38,7 @@ export default function TaskForm({
     isOpen,
     onClose,
     onSubmit,
+    onDelete,
     initialData,
     projects = [],
 }: TaskFormProps) {
@@ -96,14 +98,23 @@ export default function TaskForm({
             title={initialData ? 'Edit Task' : 'New Task'}
             description="Create a new task with optional due date and subtasks"
             footer={
-                <>
-                    <Button variant="secondary" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit} disabled={!formData.title.trim()}>
-                        {initialData ? 'Update' : 'Create Task'}
-                    </Button>
-                </>
+                <div className="flex justify-between w-full">
+                    {initialData && onDelete ? (
+                        <Button variant="danger" onClick={onDelete}>
+                            Delete
+                        </Button>
+                    ) : (
+                        <div /> /* Spacer */
+                    )}
+                    <div className="flex gap-2">
+                        <Button variant="secondary" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSubmit} disabled={!formData.title.trim()}>
+                            {initialData ? 'Update' : 'Create Task'}
+                        </Button>
+                    </div>
+                </div>
             }
         >
             <form onSubmit={handleSubmit} className="space-y-4">

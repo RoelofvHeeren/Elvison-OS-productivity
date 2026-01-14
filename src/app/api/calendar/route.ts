@@ -43,15 +43,37 @@ export async function GET(request: Request) {
             },
         });
 
-        const taskEvents = tasks.map(task => ({
-            id: `task-${task.id}`,
-            title: `📌 ${task.title}`,
-            start: task.dueDate,
-            end: new Date(task.dueDate!.getTime() + 30 * 60000),
-            allDay: false,
-            source: 'LOCAL_TASK',
-            status: task.status,
-        }));
+        const taskEvents = tasks.map(task => {
+            let startDate = new Date(task.dueDate!); // Default to dueDate date part
+
+            if (task.dueTime) {
+                const dueTime = new Date(task.dueTime);
+                if (dueTime.getFullYear() > 2000) {
+                    // It's a full ISO timestamp
+                    startDate = dueTime;
+                } else {
+                    // Legacy time-only (1970 base), merge with dueDate
+                    startDate.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+                }
+            } else {
+                // If no specific time, maybe default to 9am or keep it?
+                // Actually, if no time, it probably should be an all-day event or defaults.
+                // Current behavior was 8am/9am. Let's start at 9am if no time.
+                startDate.setHours(9, 0, 0, 0);
+            }
+
+            return {
+                id: `task-${task.id}`,
+                title: `📌 ${task.title}`,
+                start: startDate,
+                end: new Date(startDate.getTime() + 30 * 60000), // 30 min duration
+                allDay: !task.dueTime, // Treat as all-day if no time specified? User said "it's set for 8am", maybe they prefer all-day visual?
+                // Actually, if dueTime is null, let's make it ALL DAY so it floats at top.
+                source: 'LOCAL_TASK',
+                status: task.status,
+                originalTaskId: task.id, // Pass ID for editing
+            };
+        });
 
         return NextResponse.json([...events, ...taskEvents]);
     } catch (error) {

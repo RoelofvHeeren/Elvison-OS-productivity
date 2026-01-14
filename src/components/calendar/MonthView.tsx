@@ -6,9 +6,10 @@ interface Props {
     currentDate: Date;
     events: any[];
     onDateClick: (date: Date) => void;
+    onEventClick: (event: any) => void;
 }
 
-export default function MonthView({ currentDate, events, onDateClick }: Props) {
+export default function MonthView({ currentDate, events, onDateClick, onEventClick }: Props) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 

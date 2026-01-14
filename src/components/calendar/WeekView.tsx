@@ -6,9 +6,10 @@ import GlassCard from '@/components/ui/GlassCard';
 interface Props {
     currentDate: Date;
     events: any[];
+    onEventClick: (event: any) => void;
 }
 
-export default function WeekView({ currentDate, events }: Props) {
+export default function WeekView({ currentDate, events, onEventClick }: Props) {
     const startOfWeek = new Date(currentDate);
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -74,7 +75,8 @@ export default function WeekView({ currentDate, events }: Props) {
                                     {hourEvents.map(event => (
                                         <div
                                             key={event.id}
-                                            className={`p-1.5 rounded border-l-2 text-[10px] leading-tight ${event.source === 'LOCAL_TASK'
+                                            onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                            className={`p-1.5 rounded border-l-2 text-[10px] leading-tight cursor-pointer ${event.source === 'LOCAL_TASK'
                                                 ? 'bg-blue-500/10 border-blue-500/50 text-blue-200'
                                                 : 'bg-[#139187]/10 border-[#139187]/50 text-emerald-200'
                                                 }`}
