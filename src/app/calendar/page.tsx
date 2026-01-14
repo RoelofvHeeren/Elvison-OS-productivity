@@ -92,6 +92,23 @@ export default function CalendarPage() {
         }
     };
 
+    const [editingEvent, setEditingEvent] = useState<any | null>(null);
+
+    const handleEventDelete = async (eventId: string) => {
+        try {
+            const res = await fetch(`/api/calendar?id=${eventId}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                await fetchEvents();
+                setIsEventModalOpen(false);
+                setEditingEvent(null);
+            }
+        } catch (error) {
+            console.error('Failed to delete event:', error);
+        }
+    };
+
     const handleEventClick = async (event: any) => {
         if (event.source === 'LOCAL_TASK' && event.originalTaskId) {
             // Fetch full task details
@@ -134,7 +151,17 @@ export default function CalendarPage() {
             } catch (e) {
                 console.error("Failed to prep task for edit", e);
             }
+        } else {
+            // Handle Google Event clicking (Delete/Edit)
+            setEditingEvent(event);
+            setIsEventModalOpen(true);
         }
+    };
+
+    const handleSlotClick = (date: Date) => {
+        setCurrentDate(date);
+        setEditingEvent(null); // Clear editing state for new event
+        setIsEventModalOpen(true);
     };
 
     const handleTaskUpdate = async (data: any) => {
@@ -216,26 +243,11 @@ export default function CalendarPage() {
                     body: JSON.stringify(payload),
                 });
             } else {
-                // Determine duration to calculate end time
-                const originalStart = new Date(event.start);
-                const originalEnd = new Date(event.end);
-                const duration = originalEnd.getTime() - originalStart.getTime();
-                const end = new Date(start.getTime() + duration);
-
-                // Update Calendar Event
-                // We need an endpoint for this or reuse POST logic? 
-                // We don't have a specific PATCH endpoint for events yet, only DELETE/POST.
-                // Assuming we might need to add PATCH to /api/calendar or just re-create?
-                // Re-creating is risky for IDs. Let's assume we can't drag Google Events easily yet 
-                // or we need to add PATCH.
-                // User requirement implies "dragging events", but mostly cares about Tasks.
-                // Let's focus on Tasks first as per "8am" context.
-                // If valid event ID:
-                if (event.id && !event.id.startsWith('task-')) {
-                    // TODO: Implement Event PATCH
-                    console.log('Event dragging not fully supported for non-tasks yet');
-                    return;
-                }
+                // Google Event Dragging logic
+                // Since we don't have PATCH for events yet, we can't fully support this
+                // But at least we won't crash.
+                console.log('Event dragging not supported for non-tasks yet');
+                return;
             }
 
             await fetchEvents();
@@ -273,7 +285,7 @@ export default function CalendarPage() {
                                     currentDate={currentDate}
                                     setCurrentDate={setCurrentDate}
                                     onSync={syncCalendar}
-                                    onNewEvent={() => setIsEventModalOpen(true)}
+                                    onNewEvent={() => { setEditingEvent(null); setIsEventModalOpen(true); }}
                                     loading={loading}
                                     transparent={true} // Add this prop to Controller
                                 />
@@ -304,6 +316,7 @@ export default function CalendarPage() {
                                         events={events}
                                         onEventClick={handleEventClick}
                                         onEventDrop={handleEventDrop}
+                                        onSlotClick={handleSlotClick}
                                     />
                                 )}
                                 {view === 'day' && (
@@ -311,7 +324,8 @@ export default function CalendarPage() {
                                         currentDate={currentDate}
                                         events={events}
                                         onEventClick={handleEventClick}
-                                        onEventDrop={handleEventDrop}
+                                        onEventDrop={(event, hour) => handleEventDrop(event, currentDate, hour)}
+                                        onSlotClick={handleSlotClick}
                                     />
                                 )}
                             </div>
@@ -322,9 +336,11 @@ export default function CalendarPage() {
 
             <EventModal
                 isOpen={isEventModalOpen}
-                onClose={() => setIsEventModalOpen(false)}
+                onClose={() => { setIsEventModalOpen(false); setEditingEvent(null); }}
                 onSuccess={fetchEvents}
                 initialDate={currentDate}
+                initialData={editingEvent}
+                onDelete={handleEventDelete}
             />
 
             {/* Task Edit Modal */}

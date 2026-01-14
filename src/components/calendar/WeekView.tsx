@@ -8,9 +8,10 @@ interface Props {
     events: any[];
     onEventClick: (event: any) => void;
     onEventDrop: (event: any, date: Date, hour: number) => void;
+    onSlotClick: (date: Date) => void;
 }
 
-export default function WeekView({ currentDate, events, onEventClick, onEventDrop }: Props) {
+export default function WeekView({ currentDate, events, onEventClick, onEventDrop, onSlotClick }: Props) {
     const startOfWeek = new Date(currentDate);
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
 
@@ -50,6 +51,13 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
             const event = JSON.parse(eventData);
             onEventDrop(event, date, hour);
         }
+    };
+
+    const handleSlotClick = (date: Date, hour: number) => {
+        // Create a new date object with the specific hour
+        const clickDate = new Date(date);
+        clickDate.setHours(hour, 0, 0, 0);
+        onSlotClick(clickDate);
     };
 
     return (
@@ -93,9 +101,10 @@ export default function WeekView({ currentDate, events, onEventClick, onEventDro
                             return (
                                 <div
                                     key={date.toISOString()}
-                                    className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1 relative"
+                                    className="flex-1 h-20 border-r border-white/[0.03] group transition-colors hover:bg-white/[0.02] p-1 space-y-1 relative cursor-pointer"
                                     onDragOver={handleDragOver}
                                     onDrop={(e) => handleDrop(e, date, hour)}
+                                    onClick={() => handleSlotClick(date, hour)}
                                 >
                                     {hourEvents.map(event => (
                                         <div

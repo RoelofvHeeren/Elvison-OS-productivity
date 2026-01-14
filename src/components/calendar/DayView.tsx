@@ -7,10 +7,11 @@ interface Props {
     currentDate: Date;
     events: any[];
     onEventClick: (event: any) => void;
-    onEventDrop: (event: any, date: Date, hour: number) => void;
+    onEventDrop: (event: any, period: number) => void; // period is the hour
+    onSlotClick: (date: Date) => void;
 }
 
-export default function DayView({ currentDate, events, onEventClick, onEventDrop }: Props) {
+export default function DayView({ currentDate, events, onEventClick, onEventDrop, onSlotClick }: Props) {
     const hours = Array.from({ length: 24 }, (_, i) => i);
     const dayEvents = events.filter(e => new Date(e.start).toDateString() === currentDate.toDateString());
 
@@ -22,7 +23,7 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    }, []);
+    }, [currentDate]); // Re-run when date changes
 
     const handleDragStart = (e: React.DragEvent, event: any) => {
         e.dataTransfer.setData('application/json', JSON.stringify(event));
@@ -39,55 +40,86 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
         const eventData = e.dataTransfer.getData('application/json');
         if (eventData) {
             const event = JSON.parse(eventData);
-            onEventDrop(event, currentDate, hour);
+            onEventDrop(event, hour);
         }
+    };
+
+    const handleSlotClick = (hour: number) => {
+        const clickDate = new Date(currentDate);
+        clickDate.setHours(hour, 0, 0, 0);
+        onSlotClick(clickDate);
     };
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-3">
-                <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/40">
-                    <div className="overflow-y-auto max-h-[800px] custom-scrollbar">
+                <GlassCard className="!p-0 border-white/10 overflow-hidden bg-black/40 h-full flex flex-col">
+                    {/* Header */}
+                    <div className="py-4 text-center border-b border-white/10 bg-white/[0.02]">
+                        <div className="text-sm font-bold text-[#139187] uppercase tracking-widest mb-1">
+                            {currentDate.toLocaleDateString('default', { weekday: 'long' })}
+                        </div>
+                        <div className="text-3xl font-bold text-white">
+                            {currentDate.getDate()} {currentDate.toLocaleDateString('default', { month: 'long' })}
+                        </div>
+                    </div>
+
+                    {/* Time Grid */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {hours.map(hour => {
-                            const hourEvents = dayEvents.filter(e => new Date(e.start).getHours() === hour);
+                            const hourEvents = events.filter(e => {
+                                const start = new Date(e.start);
+                                return start.toDateString() === currentDate.toDateString() && start.getHours() === hour;
+                            });
 
                             return (
                                 <div
                                     key={hour}
                                     id={`day-hour-${hour}`}
-                                    className="flex border-b border-white/[0.03]"
-                                    onDragOver={handleDragOver}
-                                    onDrop={(e) => handleDrop(e, hour)}
+                                    className="flex border-b border-white/[0.03] min-h-[100px]"
                                 >
-                                    <div className="w-20 h-24 flex justify-center text-xs text-gray-400 font-mono pr-4 pt-4 border-r border-white/10 shrink-0 bg-white/[0.02]">
+                                    {/* Time Label */}
+                                    <div className="w-20 py-2 flex justify-center text-xs text-gray-500 font-mono border-r border-white/10 bg-white/[0.01]">
                                         {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                                     </div>
 
-                                    <div className="flex-1 p-3 space-y-2 group transition-colors hover:bg-white/[0.02]">
+                                    {/* Event Slot */}
+                                    <div
+                                        className="flex-1 p-2 space-y-2 group hover:bg-white/[0.02] transition-colors relative cursor-pointer"
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, hour)}
+                                        onClick={() => handleSlotClick(hour)}
+                                    >
                                         {hourEvents.map(event => (
                                             <div
                                                 key={event.id}
                                                 draggable
                                                 onDragStart={(e) => handleDragStart(e, event)}
                                                 onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                                className={`p-3 rounded-xl border-l-4 shadow-luxury transition-transform hover:scale-[1.01] cursor-pointer active:opacity-50 ${event.source === 'LOCAL_TASK'
-                                                    ? 'bg-blue-500/5 border-blue-500/50 text-blue-100'
-                                                    : 'bg-[#139187]/5 border-[#139187]/50 text-emerald-100'
+                                                className={`p-3 rounded-lg border-l-4 shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all cursor-pointer active:opacity-50 ${event.source === 'LOCAL_TASK'
+                                                    ? 'bg-blue-500/10 border-blue-500 backdrop-blur-md'
+                                                    : 'bg-[#139187]/10 border-[#139187] backdrop-blur-md'
                                                     }`}
                                             >
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="font-bold">{event.title}</span>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className={`text-xs font-bold uppercase tracking-wider ${event.source === 'LOCAL_TASK' ? 'text-blue-200' : 'text-emerald-200'
+                                                        }`}>
+                                                        {event.source === 'LOCAL_TASK' ? 'Task' : 'Event'}
+                                                    </span>
                                                     {!event.allDay && (
-                                                        <span className="text-[10px] font-mono opacity-60">
+                                                        <span className="text-xs text-white/60 font-mono">
                                                             {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            {' - '}
-                                                            {new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div className="text-xs opacity-60">
-                                                    {event.source === 'GOOGLE' ? 'Google Calendar' : 'Local Task'}
+                                                <div className="font-semibold text-white text-sm">
+                                                    {event.title}
                                                 </div>
+                                                {event.description && (
+                                                    <div className="text-xs text-white/50 mt-1 line-clamp-2">
+                                                        {event.description}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

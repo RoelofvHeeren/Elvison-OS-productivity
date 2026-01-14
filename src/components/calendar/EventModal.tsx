@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import { Mail, Plus, X, Calendar as CalendarIcon, Clock, AlignLeft, Users } from 'lucide-react';
+import { Mail, Plus, X, Calendar as CalendarIcon, Clock, AlignLeft, Users, Trash2 } from 'lucide-react';
 import GlassCard, { InnerCard } from '@/components/ui/GlassCard';
 
 interface Props {
@@ -11,9 +11,11 @@ interface Props {
     onClose: () => void;
     onSuccess: () => void;
     initialDate?: Date;
+    initialData?: any; // Event object for editing
+    onDelete?: (eventId: string) => void;
 }
 
-export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: Props) {
+export default function EventModal({ isOpen, onClose, onSuccess, initialDate, initialData, onDelete }: Props) {
     const [loading, setLoading] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -23,6 +25,29 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
     const [endTime, setEndTime] = useState('10:00');
     const [attendeeEmail, setAttendeeEmail] = useState('');
     const [attendees, setAttendees] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (initialData) {
+            setTitle(initialData.title);
+            setDescription(initialData.description || '');
+            const start = new Date(initialData.start);
+            const end = new Date(initialData.end);
+            setStartDate(start.toISOString().split('T')[0]);
+            setStartTime(start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+            setEndDate(end.toISOString().split('T')[0]);
+            setEndTime(end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+            setAttendees(initialData.attendees?.map((a: any) => a.email) || []);
+        } else if (isOpen && initialDate) {
+            // Reset to initialDate if creating new
+            setStartDate(initialDate.toISOString().split('T')[0]);
+            setEndDate(initialDate.toISOString().split('T')[0]);
+            setStartTime('09:00');
+            setEndTime('10:00');
+            setTitle('');
+            setDescription('');
+            setAttendees([]);
+        }
+    }, [initialData, initialDate, isOpen]);
 
     const addAttendee = () => {
         if (attendeeEmail && !attendees.includes(attendeeEmail) && attendeeEmail.includes('@')) {
@@ -40,8 +65,23 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
         setLoading(true);
 
         try {
-            const startStr = new Date(`${startDate}T${startTime}:00`).toISOString();
-            const endStr = new Date(`${endDate}T${endTime}:00`).toISOString();
+            const startStr = new Date(`${startDate}T${startTime}`).toISOString();
+            const endStr = new Date(`${endDate}T${endTime}`).toISOString();
+
+            // We currently only assume creating for simplicity, but editing would be a PATCH.
+            // Since we primarily care about Deleting Google events per user request, 
+            // and editing Google events is complex (needs PATCH support), we'll focus on Creation/Deletion first.
+            // However, if initialData exists, we should technically PATCH? 
+            // For now, let's just assume we are creating if no ID, or maybe we re-create?
+            // User explicitly asked to DELETE.
+
+            if (initialData?.id) {
+                // TODO: Add PATCH support if fully requested.
+                // For now, let's just close or recreate. 
+                // Assuming user primarily wants to delete.
+                // Let's create new for now. Or error?
+                // Let's just allow creating new from here for now.
+            }
 
             const res = await fetch('/api/calendar', {
                 method: 'POST',
@@ -67,6 +107,21 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
         }
     };
 
+    const handleDelete = async () => {
+        if (!initialData?.id || !onDelete) return;
+        if (window.confirm('Are you sure you want to delete this event? This will remove it from Google Calendar as well.')) {
+            setLoading(true);
+            try {
+                await onDelete(initialData.id);
+                onClose();
+            } catch (e) {
+                console.error("Delete failed", e);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
     const resetForm = () => {
         setTitle('');
         setDescription('');
@@ -75,7 +130,7 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Create New Event" className="max-w-xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={initialData ? "Edit Event" : "Create New Event"} className="max-w-xl">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Title */}
                 <div className="space-y-2">
@@ -197,14 +252,26 @@ export default function EventModal({ isOpen, onClose, onSuccess, initialDate }: 
                     )}
                 </div>
 
-                {/* Submit */}
+                {/* Footer Buttons */}
                 <div className="pt-4 flex gap-3">
+                    {initialData && onDelete && (
+                        <Button type="button" variant="destructive" onClick={handleDelete} loading={loading}>
+                            <Trash2 className="w-4 h-4" />
+                        </Button>
+                    )}
                     <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button type="submit" loading={loading} className="flex-[2]">
-                        Create Event & Send Invites
-                    </Button>
+                    {!initialData && (
+                        <Button type="submit" loading={loading} className="flex-[2]">
+                            Create Event & Send Invites
+                        </Button>
+                    )}
+                    {initialData && (
+                        <Button type="submit" loading={loading} className="flex-[2]" disabled>
+                            Edit Not Supported Yet (Delete Only)
+                        </Button>
+                    )}
                 </div>
             </form>
         </Modal>
