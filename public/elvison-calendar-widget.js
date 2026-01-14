@@ -60,17 +60,22 @@ async function createMediumWidget() {
     // LEFT COLUMN: Date
     const leftCol = mainStack.addStack();
     leftCol.layoutVertically();
-    leftCol.size = new Size(60, 0); // Reduced width
+    leftCol.size = new Size(80, 0); // Slightly wider for affirmation readability
 
     const today = new Date();
 
-    const weekday = leftCol.addText(today.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase());
-    weekday.font = Font.systemFont(12);
-    weekday.textColor = new Color(COLORS.gray);
+    const weekday = leftCol.addText(today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    weekday.font = Font.boldSystemFont(16);
+    weekday.textColor = new Color(COLORS.white);
 
-    const dayNum = leftCol.addText(today.getDate().toString());
-    dayNum.font = Font.boldSystemFont(36);
-    dayNum.textColor = new Color(COLORS.white);
+    leftCol.addSpacer(4);
+
+    if (data.affirmation) {
+        const aff = leftCol.addText(data.affirmation);
+        aff.font = Font.italicSystemFont(10);
+        aff.textColor = new Color(COLORS.teal);
+        aff.minimumScaleFactor = 0.5;
+    }
 
     // leftCol.addSpacer(); // REMOVED spacer to keep things tighter
     leftCol.addSpacer(10); // Small gap instead
@@ -94,8 +99,8 @@ async function createMediumWidget() {
     rightCol.layoutVertically();
 
     if (data.events && data.events.length > 0) {
-        // Show max 5 events
-        const maxEvents = 5;
+        // Show max 4 events
+        const maxEvents = 4;
         for (let i = 0; i < Math.min(data.events.length, maxEvents); i++) {
             const event = data.events[i];
             const eventStack = rightCol.addStack();

@@ -107,13 +107,22 @@ export async function GET(request: Request) {
                 // Allow partial failure, return empty events
             }
         }
+        // Fetch a random active affirmation
+        const affirmations = await prisma.affirmation.findMany({
+            where: {
+                userId: user.id,
+                active: true
+            }
+        });
+        const affirmation = affirmations.length > 0
+            ? affirmations[Math.floor(Math.random() * affirmations.length)].text
+            : "Seize the day";
 
-        const data = {
+        return NextResponse.json({
             events: events,
+            affirmation: affirmation,
             updatedAt: new Date().toISOString()
-        };
-
-        return NextResponse.json(data);
+        });
     } catch (error) {
         console.error('Failed to fetch calendar widget data:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
