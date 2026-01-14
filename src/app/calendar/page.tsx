@@ -20,6 +20,7 @@ export default function CalendarPage() {
     const [projects, setProjects] = useState<any[]>([]);
     const [editingTask, setEditingTask] = useState<any | null>(null);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const fetchEvents = async () => {
         setLoading(true);
