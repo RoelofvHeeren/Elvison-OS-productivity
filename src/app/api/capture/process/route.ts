@@ -60,8 +60,11 @@ export const POST = auth(async (req) => {
                     expiry_date: user.googleTokenExpiry ? Number(user.googleTokenExpiry) : undefined
                 });
 
-                // Refresh if needed
-                if (oauth2Client.isTokenExpiring()) {
+                // Refresh if needed (check if expiring in next 5 mins or already expired)
+                const expiryDate = user.googleTokenExpiry?.getTime();
+                const isExpiring = !expiryDate || (expiryDate - Date.now() < 5 * 60 * 1000);
+
+                if (isExpiring) {
                     const { credentials } = await oauth2Client.refreshAccessToken();
                     await prisma.user.update({
                         where: { id: user.id },

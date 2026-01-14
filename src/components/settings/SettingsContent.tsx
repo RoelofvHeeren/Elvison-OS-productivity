@@ -19,6 +19,7 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
     const [reviewDay, setReviewDay] = useState(0);
     const [reviewHour, setReviewHour] = useState(18);
     const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+    const [selectedWidget, setSelectedWidget] = useState<'dashboard' | 'calendar'>('dashboard');
 
     // Fetch settings
     useEffect(() => {
@@ -264,13 +265,35 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                 </h3>
                 <div className="rounded-xl bg-white/5 p-4 space-y-4">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20 text-purple-400">
-                            <Monitor className="h-5 w-5" />
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${selectedWidget === 'dashboard' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                            {selectedWidget === 'dashboard' ? <Monitor className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
                         </div>
                         <div className="flex flex-col">
                             <span className="font-medium text-white">iOS Widget</span>
                             <span className="text-xs text-gray-400">Using Scriptable App</span>
                         </div>
+                    </div>
+
+                    {/* Widget Type Toggles */}
+                    <div className="flex p-1 bg-black/40 rounded-lg">
+                        <button
+                            onClick={() => setSelectedWidget('dashboard')}
+                            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${selectedWidget === 'dashboard'
+                                ? 'bg-purple-500/20 text-purple-400 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-300'
+                                }`}
+                        >
+                            Dashboard
+                        </button>
+                        <button
+                            onClick={() => setSelectedWidget('calendar')}
+                            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${selectedWidget === 'calendar'
+                                ? 'bg-blue-500/20 text-blue-400 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-300'
+                                }`}
+                        >
+                            Calendar
+                        </button>
                     </div>
 
                     <div className="space-y-4 pt-2">
@@ -312,11 +335,11 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                         </div>
 
                         <a
-                            href={widgetToken ? `/api/widgets/script?token=${widgetToken}` : '#'}
-                            className={`flex items-center justify-center w-full rounded-lg py-2.5 text-xs font-semibold text-white transition-all shadow-lg active:scale-[0.98] ${widgetToken ? 'bg-[#139187] hover:bg-[#139187]/80' : 'bg-gray-700 cursor-not-allowed'}`}
+                            href={widgetToken ? `/api/widgets/script?token=${widgetToken}&type=${selectedWidget}` : '#'}
+                            className={`flex items-center justify-center w-full rounded-lg py-2.5 text-xs font-semibold text-white transition-all shadow-lg active:scale-[0.98] ${widgetToken ? (selectedWidget === 'dashboard' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-blue-600 hover:bg-blue-500') : 'bg-gray-700 cursor-not-allowed'}`}
                             onClick={(e) => !widgetToken && e.preventDefault()}
                         >
-                            Download Personalized Script
+                            Download {selectedWidget === 'dashboard' ? 'Dashboard' : 'Calendar'} Script
                         </a>
                     </div>
                 </div>
