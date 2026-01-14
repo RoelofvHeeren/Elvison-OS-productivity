@@ -104,22 +104,46 @@ export const POST = auth(async (req) => {
 
         for (const task of tasksToSync) {
             try {
-                const eventDate = new Date(task.dueDate!);
+                let resource: any;
+
                 if (task.dueTime) {
+                    // Specific time set: Create timed event
                     const dueTime = new Date(task.dueTime);
-                    eventDate.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+                    const startDateTime = new Date(task.dueDate!);
+                    startDateTime.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+
+                    const endDateTime = new Date(startDateTime.getTime() + 30 * 60000); // 30 min duration by default
+
+                    resource = {
+                        summary: `📌 ${task.title}`,
+                        description: `Scheduled from Elvison OS`,
+                        start: { dateTime: startDateTime.toISOString() },
+                        end: { dateTime: endDateTime.toISOString() },
+                    };
                 } else {
-                    eventDate.setHours(9, 0, 0, 0);
+                    // No time set: Create All-Day event
+                    // Use the date string part YYYY-MM-DD to avoid timezone shifts
+                    const dateStr = task.dueDate!.toISOString().split('T')[0];
+
+                    resource = {
+                        summary: `📌 ${task.title}`,
+                        description: `Scheduled from Elvison OS`,
+                        start: { date: dateStr },
+                        end: { date: dateStr }, // For single all-day event, Google expects end date to be the next day? 
+                        // Actually for single day, end should be start + 1 day for exclusive end.
+                        // But typically same day works if inclusive? No, Google API says end is exclusive.
+                    };
+
+                    // Correction: End date must be next day for all-day event
+                    const nextDay = new Date(task.dueDate!);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    const nextDayStr = nextDay.toISOString().split('T')[0];
+                    resource.end.date = nextDayStr;
                 }
 
                 const googleEvent = await calendar.events.insert({
                     calendarId: 'primary',
-                    requestBody: {
-                        summary: `📌 ${task.title}`,
-                        description: `Scheduled from Elvison OS`,
-                        start: { dateTime: eventDate.toISOString() },
-                        end: { dateTime: new Date(eventDate.getTime() + 30 * 60000).toISOString() },
-                    },
+                    requestBody: resource,
                 });
 
                 if (googleEvent.data.id) {

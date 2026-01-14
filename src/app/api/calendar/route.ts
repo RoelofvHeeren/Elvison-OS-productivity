@@ -129,3 +129,66 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });
     }
 }
+export async function DELETE(request: Request) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get('id');
+
+    if (!eventId) {
+        return NextResponse.json({ error: "Event ID required" }, { status: 400 });
+    }
+
+    try {
+        // 1. Fetch the event to check ownership and get externalId
+        const event = await prisma.calendarEvent.findUnique({
+            where: { id: eventId },
+        });
+
+        if (!event) {
+            return NextResponse.json({ error: "Event not found" }, { status: 404 });
+        }
+
+        if (event.userId !== userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        }
+
+        let googleDeleteError = null;
+
+        // 2. Try to delete from Google if it has an external ID
+        if (event.externalId && event.source === 'GOOGLE') {
+            try {
+                const calendar = await setGoogleCredentials(userId);
+                if (calendar) {
+                    await calendar.events.delete({
+                        calendarId: 'primary',
+                        eventId: event.externalId,
+                    });
+                }
+            } catch (error: any) {
+                console.error('Failed to delete from Google Calendar:', error);
+                // If it's already gone (404) or other error, we record it but proceed to delete local
+                if (error.code !== 404) {
+                    googleDeleteError = error.message;
+                }
+            }
+        }
+
+        // 3. Delete from local database
+        await prisma.calendarEvent.delete({
+            where: { id: eventId },
+        });
+
+        return NextResponse.json({
+            success: true,
+            googleDeleteError,
+        });
+    } catch (error) {
+        console.error('Failed to delete calendar event:', error);
+        return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
+    }
+}
