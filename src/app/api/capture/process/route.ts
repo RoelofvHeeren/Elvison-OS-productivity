@@ -14,7 +14,6 @@ interface CaptureResult {
     dueDate?: string;  // For tasks
     datetime?: string; // For reminders
     projectId?: string;
-    projectId?: string;
     projectName?: string;
     // Event specific
     startDateTime?: string;

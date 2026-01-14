@@ -70,5 +70,5 @@ export async function setGoogleCredentials(userId: string) {
         }
     });
 
-    return google.calendar({ version: 'v3', auth: oauth2Client });
+    return google.calendar({ version: 'v3', auth: client });
 }
