@@ -145,7 +145,7 @@ export default function TodaysTasks() {
                             {/* Task Info */}
                             <div className="flex-1 min-w-0">
                                 <p
-                                    className={`font-medium ${task.status === 'DONE' ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-main)]'
+                                    className={`font-medium font-serif ${task.status === 'DONE' ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-main)]'
                                         }`}
                                 >
                                     {task.title}

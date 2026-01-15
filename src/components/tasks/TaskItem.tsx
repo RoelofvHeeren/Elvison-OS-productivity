@@ -82,7 +82,7 @@ export default function TaskItem({
                     <div className="flex items-start justify-between gap-2">
                         <div>
                             <p
-                                className={`font-medium ${isDone ? 'text-gray-500 line-through' : 'text-white'
+                                className={`font-medium font-serif ${isDone ? 'text-gray-500 line-through' : 'text-white'
                                     }`}
                             >
                                 {task.title}

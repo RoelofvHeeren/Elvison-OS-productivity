@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Raleway, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import VideoBackground from "@/components/layout/VideoBackground";
 import AppLayout from "@/components/layout/AppLayout";
@@ -7,16 +7,16 @@ import AuthProvider from "@/components/providers/AuthProvider";
 import { WeeklyReviewLockProvider } from "@/providers/WeeklyReviewLockProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 
-const plusJakarta = Plus_Jakarta_Sans({
+const raleway = Raleway({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-const instrumentSerif = Instrument_Serif({
+const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -57,7 +57,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body
-        className={`${plusJakarta.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${raleway.variable} ${playfairDisplay.variable} ${jetbrainsMono.variable} antialiased`}
         style={{ fontFamily: 'var(--font-sans)' }}
       >
         <AuthProvider>

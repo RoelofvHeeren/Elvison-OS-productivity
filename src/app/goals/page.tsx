@@ -204,7 +204,7 @@ export default function GoalsPage() {
                                     <div className="flex-1">
                                         <div className="flex items-start justify-between">
                                             <div>
-                                                <h3 className="text-lg font-semibold text-[var(--text-main)]">
+                                                <h3 className="text-lg font-semibold font-serif text-[var(--text-main)]">
                                                     {goal.title}
                                                 </h3>
                                                 <span

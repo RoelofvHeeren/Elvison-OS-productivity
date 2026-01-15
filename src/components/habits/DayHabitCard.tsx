@@ -120,7 +120,7 @@ export default function DayHabitCard({
                                             <Minus className="w-3 h-3 text-white" />
                                         </div>
                                     )}
-                                    <span className={`text-sm font-bold ${isCompleted ? 'text-[var(--text-muted)]' : 'text-[var(--text-main)]'}`}>
+                                    <span className={`text-sm font-bold font-serif ${isCompleted ? 'text-[var(--text-muted)]' : 'text-[var(--text-main)]'}`}>
                                         {habit.name}
                                     </span>
                                 </div>

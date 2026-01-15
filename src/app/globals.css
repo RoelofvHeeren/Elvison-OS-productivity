@@ -20,8 +20,8 @@
   --color-glass-border: var(--glass-border);
 
   /* Fonts */
-  --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
-  --font-serif: "Instrument Serif", serif;
+  --font-sans: "Raleway", "Inter", sans-serif;
+  --font-serif: "Playfair Display", serif;
   --font-mono: "JetBrains Mono", monospace;
 }
 
