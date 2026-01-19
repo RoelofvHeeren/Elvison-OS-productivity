@@ -23,15 +23,25 @@ import {
     Loader2,
     X,
     StickyNote,
+    Users,
+    Trash2,
+    CheckSquare,
 } from 'lucide-react';
 
 interface KnowledgeItem {
     id: string;
-    category: 'DOCUMENT' | 'PROMPT' | 'TOOL' | 'PLAYBOOK' | 'REFERENCE' | 'NOTE';
+    category: 'DOCUMENT' | 'PROMPT' | 'TOOL' | 'PLAYBOOK' | 'REFERENCE' | 'NOTE' | 'MEETING';
     title: string;
     content: string;
     tags: string[];
     updatedAt: string;
+}
+
+interface ExtractedTask {
+    title: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+    dueDate: string | null;
+    selected: boolean;
 }
 
 const categoryIcons = {
@@ -41,11 +51,13 @@ const categoryIcons = {
     PLAYBOOK: Book,
     REFERENCE: Bookmark,
     NOTE: StickyNote,
+    MEETING: Users,
 };
 
 const tabs = [
     { id: 'all', label: 'All' },
     { id: 'NOTE', label: 'Notes', icon: StickyNote },
+    { id: 'MEETING', label: 'Meetings', icon: Users },
     { id: 'DOCUMENT', label: 'Documents', icon: FileText },
     { id: 'PROMPT', label: 'Prompts', icon: MessageSquare },
     { id: 'TOOL', label: 'Tools', icon: Wrench },
@@ -78,6 +90,13 @@ export default function KnowledgePage() {
     const [aiSources, setAISources] = useState<string[]>([]);
     const [aiLoading, setAILoading] = useState(false);
 
+    // Transcript Processing State
+    const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
+    const [transcriptText, setTranscriptText] = useState('');
+    const [processingTranscript, setProcessingTranscript] = useState(false);
+    const [processedResult, setProcessedResult] = useState<{ summary: string, tasks: ExtractedTask[] } | null>(null);
+    const [savingProcessedData, setSavingProcessedData] = useState(false);
+
     // Drag and drop
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,13 +119,37 @@ export default function KnowledgePage() {
         }
     };
 
+    const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
+    const [selectedProject, setSelectedProject] = useState('all');
+
+    useEffect(() => {
+        fetchItems();
+        fetchProjects();
+    }, []);
+
+    const fetchProjects = async () => {
+        try {
+            const res = await fetch('/api/projects');
+            if (res.ok) {
+                const data = await res.json();
+                setProjects(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch projects:', error);
+        }
+    };
+
     const filteredItems = items.filter((item) => {
         const matchesTab = activeTab === 'all' || item.category === activeTab;
         const matchesSearch =
             !searchQuery ||
             item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchesTab && matchesSearch;
+
+        // @ts-ignore - verify item.project structure from API
+        const matchesProject = selectedProject === 'all' || (item.project && item.project.id === selectedProject);
+
+        return matchesTab && matchesSearch && matchesProject;
     });
 
     const handleSubmit = async () => {
@@ -159,6 +202,27 @@ export default function KnowledgePage() {
             console.error('Failed to upload file:', error);
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleDelete = async (id: string, e?: React.MouseEvent) => {
+        e?.stopPropagation(); // Prevent opening the modal if clicked from list
+        if (!confirm('Are you sure you want to delete this item?')) return;
+
+        try {
+            const res = await fetch(`/api/knowledge/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                setItems(items.filter(item => item.id !== id));
+                setSelectedItem(null); // Close modal if open
+            } else {
+                alert('Failed to delete item');
+            }
+        } catch (error) {
+            console.error('Failed to delete item:', error);
+            alert('Error deleting item');
         }
     };
 
@@ -226,6 +290,94 @@ export default function KnowledgePage() {
         }
     };
 
+    const handleProcessTranscript = async () => {
+        if (!transcriptText.trim()) return;
+        setProcessingTranscript(true);
+        setProcessedResult(null);
+
+        try {
+            const res = await fetch('/api/knowledge/process-transcript', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcript: transcriptText }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                // Add 'selected' property to tasks
+                const tasksWithSelection = data.tasks.map((task: any) => ({ ...task, selected: true }));
+                setProcessedResult({ ...data, tasks: tasksWithSelection });
+            } else {
+                alert('Failed to process transcript');
+            }
+        } catch (error) {
+            console.error('Failed to process transcript:', error);
+            alert('Error processing transcript');
+        } finally {
+            setProcessingTranscript(false);
+        }
+    };
+
+    const handleSaveProcessedData = async () => {
+        if (!processedResult) return;
+        setSavingProcessedData(true);
+
+        try {
+            // 1. Save Summary as Knowledge Item
+            const summaryRes = await fetch('/api/knowledge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: `Meeting Summary - ${new Date().toLocaleDateString()}`,
+                    category: 'MEETING',
+                    content: processedResult.summary,
+                    tags: ['meeting', 'summary', 'ai-generated'],
+                }),
+            });
+
+            if (!summaryRes.ok) throw new Error('Failed to save summary');
+
+            // 2. Import Selected Tasks
+            const selectedTasks = processedResult.tasks.filter(t => t.selected);
+            let importedCount = 0;
+
+            for (const task of selectedTasks) {
+                const taskRes = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: task.title,
+                        priority: task.priority,
+                        dueDate: task.dueDate,
+                        // Default to today if no date, or leave null? 
+                        // Implementation plan said "Add to task manager", implies creating them.
+                        // API expects standard task fields.
+                    }),
+                });
+                if (taskRes.ok) importedCount++;
+            }
+
+            alert(`Saved summary and imported ${importedCount} tasks.`);
+            setIsTranscriptOpen(false);
+            setTranscriptText('');
+            setProcessedResult(null);
+            fetchItems(); // Refresh knowledge list
+
+        } catch (error) {
+            console.error('Error saving processed data:', error);
+            alert('Failed to save data completely. Check console.');
+        } finally {
+            setSavingProcessedData(false);
+        }
+    };
+
+    const toggleTaskSelection = (index: number) => {
+        if (!processedResult) return;
+        const newTasks = [...processedResult.tasks];
+        newTasks[index].selected = !newTasks[index].selected;
+        setProcessedResult({ ...processedResult, tasks: newTasks });
+    };
+
     if (loading) {
         return (
             <>
@@ -248,25 +400,42 @@ export default function KnowledgePage() {
                 description="Your personal repository of documents, prompts, and references"
                 icon={BookOpen}
             >
-                <Button variant="accent" icon={Sparkles} onClick={() => setIsAIQueryOpen(true)}>
-                    Ask AI
-                </Button>
-                <Button icon={Plus} onClick={() => setIsFormOpen(true)}>
-                    Add Item
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="accent" icon={Users} onClick={() => setIsTranscriptOpen(true)}>
+                        Process Transcript
+                    </Button>
+                    <Button variant="secondary" icon={Sparkles} onClick={() => setIsAIQueryOpen(true)}>
+                        Ask AI
+                    </Button>
+                    <Button icon={Plus} onClick={() => setIsFormOpen(true)}>
+                        Add Item
+                    </Button>
+                </div>
             </PageHeader>
 
-            {/* Search */}
+            {/* Search & Filter */}
             <GlassCard padding="sm" className="mb-8">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search knowledge base..."
-                        className="w-full bg-black/20 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
-                    />
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search knowledge base..."
+                            className="w-full bg-black/20 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 outline-none focus:border-[#139187]"
+                        />
+                    </div>
+                    <div className="w-full md:w-64">
+                        <Select
+                            value={selectedProject}
+                            onChange={(e) => setSelectedProject(e.target.value)}
+                            options={[
+                                { value: 'all', label: 'All Projects' },
+                                ...projects.map(p => ({ value: p.id, label: p.name }))
+                            ]}
+                        />
+                    </div>
                 </div>
             </GlassCard>
 
@@ -289,13 +458,23 @@ export default function KnowledgePage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredItems.map((item) => {
-                            const Icon = categoryIcons[item.category];
+                            // @ts-ignore - Handle potential string mismatch if enum not perfectly synced right away
+                            const Icon = categoryIcons[item.category] || FileText;
                             return (
                                 <InnerCard
                                     key={item.id}
-                                    className="cursor-pointer hover:bg-black/30 transition-colors"
+                                    className="cursor-pointer hover:bg-black/30 transition-colors group relative"
                                     padding="none"
                                 >
+                                    {/* Delete Button (visible on hover) */}
+                                    <button
+                                        onClick={(e) => handleDelete(item.id, e)}
+                                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/10 text-red-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500/20 z-10"
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+
                                     <div
                                         className="p-4"
                                         onClick={() => setSelectedItem(item)}
@@ -305,7 +484,7 @@ export default function KnowledgePage() {
                                                 <Icon className="w-5 h-5 text-[#139187]" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="font-medium text-white truncate">
+                                                <h4 className="font-medium text-white truncate pr-6">
                                                     {item.title}
                                                 </h4>
                                                 <span className="text-xs text-gray-500">
@@ -348,6 +527,120 @@ export default function KnowledgePage() {
                     </div>
                 )}
             </TabNav>
+
+            {/* Transcript Modal */}
+            <Modal
+                isOpen={isTranscriptOpen}
+                onClose={() => {
+                    setIsTranscriptOpen(false);
+                    setProcessedResult(null);
+                    setTranscriptText('');
+                }}
+                title="Process Meeting Transcript"
+                description="Paste your meeting transcript. AI will generate a summary and find tasks for you."
+                footer={
+                    processedResult ? (
+                        <>
+                            <Button variant="secondary" onClick={() => setProcessedResult(null)}>
+                                Back to Edit
+                            </Button>
+                            <Button onClick={handleSaveProcessedData} disabled={savingProcessedData}>
+                                {savingProcessedData ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Summary & Import Tasks'}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="secondary" onClick={() => setIsTranscriptOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleProcessTranscript}
+                                disabled={processingTranscript || !transcriptText.trim()}
+                                icon={Sparkles}
+                            >
+                                {processingTranscript ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Process Transcript'}
+                            </Button>
+                        </>
+                    )
+                }
+            >
+                {!processedResult ? (
+                    <div className="space-y-4">
+                        <Textarea
+                            placeholder="Paste meeting transcript here..."
+                            rows={12}
+                            value={transcriptText}
+                            onChange={(e) => setTranscriptText(e.target.value)}
+                        />
+                        <p className="text-sm text-gray-400">
+                            The AI will look for tasks assigned to "Roelof" or "me", and create a summary.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+                        {/* Summary Section */}
+                        <div>
+                            <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-[#139187]" />
+                                Generated Summary
+                            </h3>
+                            <Textarea
+                                value={processedResult.summary}
+                                onChange={(e) => setProcessedResult({ ...processedResult, summary: e.target.value })}
+                                rows={6}
+                                className="text-sm"
+                            />
+                        </div>
+
+                        {/* Tasks Section */}
+                        <div>
+                            <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                                <CheckSquare className="w-4 h-4 text-[#139187]" />
+                                Extracted Tasks ({processedResult.tasks.filter(t => t.selected).length} selected)
+                            </h3>
+
+                            {processedResult.tasks.length === 0 ? (
+                                <p className="text-sm text-gray-500 italic">No tasks found for Roelof.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {processedResult.tasks.map((task, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`p-3 rounded-lg border flex items-start gap-3 cursor-pointer transition-colors ${task.selected
+                                                ? 'bg-[#139187]/10 border-[#139187]'
+                                                : 'bg-white/5 border-white/10 hover:border-white/20'
+                                                }`}
+                                            onClick={() => toggleTaskSelection(idx)}
+                                        >
+                                            <div className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 ${task.selected ? 'bg-[#139187] border-[#139187]' : 'border-gray-500'
+                                                }`}>
+                                                {task.selected && <CheckSquare className="w-3.5 h-3.5 text-white" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-white font-medium mb-1">{task.title}</p>
+                                                <div className="flex gap-2 text-xs">
+                                                    <span className={`px-1.5 py-0.5 rounded ${task.priority === 'HIGH' ? 'bg-red-500/20 text-red-400' :
+                                                        task.priority === 'MEDIUM' ? 'bg-orange-500/20 text-orange-400' :
+                                                            'bg-blue-500/20 text-blue-400'
+                                                        }`}>
+                                                        {task.priority}
+                                                    </span>
+                                                    {task.dueDate && (
+                                                        <span className="text-gray-400 flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            {task.dueDate}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
 
             {/* Add Item Modal */}
             <Modal
@@ -432,6 +725,7 @@ export default function KnowledgePage() {
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         options={[
                             { value: 'NOTE', label: 'Note' },
+                            { value: 'MEETING', label: 'Meeting' },
                             { value: 'DOCUMENT', label: 'Document' },
                             { value: 'PROMPT', label: 'Prompt' },
                             { value: 'TOOL', label: 'Tool' },
@@ -514,11 +808,28 @@ export default function KnowledgePage() {
                 </div>
             </Modal>
 
-            {/* Item Detail Modal */}
+            {/* Item Detail Modal - with Delete button */}
             <Modal
                 isOpen={!!selectedItem}
                 onClose={() => setSelectedItem(null)}
                 title={selectedItem?.title || ''}
+                footer={
+                    selectedItem && (
+                        <div className="w-full flex justify-between">
+                            <Button
+                                variant="secondary"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                icon={Trash2}
+                                onClick={() => handleDelete(selectedItem.id)}
+                            >
+                                Delete Item
+                            </Button>
+                            <Button onClick={() => setSelectedItem(null)}>
+                                Close
+                            </Button>
+                        </div>
+                    )
+                }
             >
                 {selectedItem && (
                     <div className="space-y-4">
