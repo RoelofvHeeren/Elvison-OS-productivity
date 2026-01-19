@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { auth } from '@/auth';
 
 export async function GET() {
     try {
-        // TODO: Replace with real auth
-        const user = await prisma.user.findFirst();
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id }
+        });
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 401 });

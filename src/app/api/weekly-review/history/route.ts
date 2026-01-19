@@ -3,8 +3,12 @@ import { prisma } from '@/lib/db';
 
 export async function GET() {
     try {
-        // TODO: Auth
-        const user = await prisma.user.findFirst();
+        // TODO: Auth - Deterministic User
+        const user = await prisma.user.findFirst({
+            orderBy: {
+                createdAt: 'asc'
+            }
+        });
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 401 });
         }
