@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
     const type = searchParams.get('type') || 'dashboard'; // 'dashboard' | 'calendar'
+    const platform = searchParams.get('platform') || 'ios'; // 'ios' | 'macos'
 
     if (!token) {
         return NextResponse.json({ error: 'Missing token' }, { status: 400 });
@@ -22,9 +23,12 @@ export async function GET(request: Request) {
     }
 
     try {
-        let filename = 'elvison-widget.js';
-        if (type === 'calendar') {
-            filename = 'elvison-calendar-widget.js';
+        // Determine filename based on type and platform
+        let filename: string;
+        if (platform === 'macos') {
+            filename = type === 'calendar' ? 'elvison-calendar-widget-macos.js' : 'elvison-widget-macos.js';
+        } else {
+            filename = type === 'calendar' ? 'elvison-calendar-widget.js' : 'elvison-widget.js';
         }
 
         const filePath = path.join(process.cwd(), 'public', filename);
@@ -42,10 +46,13 @@ export async function GET(request: Request) {
             );
         }
 
+        const platformLabel = platform === 'macos' ? 'macos' : 'ios';
+        const downloadFilename = `${filename.replace('.js', '').replace('-macos', '')}-${platformLabel}-${user.name || 'user'}.js`;
+
         return new NextResponse(scriptContent, {
             headers: {
                 'Content-Type': 'application/javascript',
-                'Content-Disposition': `attachment; filename="${filename.replace('.js', '')}-${user.name || 'user'}.js"`
+                'Content-Disposition': `attachment; filename="${downloadFilename}"`
             }
         });
     } catch (error) {

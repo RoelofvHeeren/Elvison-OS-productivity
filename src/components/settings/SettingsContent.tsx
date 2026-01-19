@@ -20,6 +20,20 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
     const [reviewHour, setReviewHour] = useState(18);
     const [isSavingSchedule, setIsSavingSchedule] = useState(false);
     const [selectedWidget, setSelectedWidget] = useState<'dashboard' | 'calendar'>('dashboard');
+    const [isMobile, setIsMobile] = useState(true); // Default to mobile, updated on mount
+
+    // Detect mobile vs desktop
+    useEffect(() => {
+        const checkMobile = () => {
+            // Check both viewport width and touch capability for best detection
+            const mobile = window.innerWidth < 768 ||
+                /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            setIsMobile(mobile);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Fetch settings
     useEffect(() => {
@@ -269,8 +283,10 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                             {selectedWidget === 'dashboard' ? <Monitor className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-medium text-white">iOS Widget</span>
-                            <span className="text-xs text-gray-400">Using Scriptable App</span>
+                            <span className="font-medium text-white">{isMobile ? 'iOS' : 'macOS'} Widget</span>
+                            <span className="text-xs text-gray-400">
+                                {isMobile ? 'Using Scriptable App' : 'Using ScriptWidget App'}
+                            </span>
                         </div>
                     </div>
 
@@ -327,19 +343,29 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                             </p>
                         </div>
 
-                        <div className="space-y-2 text-xs text-gray-300 border-t border-white/5 pt-4">
-                            <p>1. Install the <a href="https://scriptable.app" target="_blank" className="text-blue-400 underline" rel="noreferrer">Scriptable App</a> on iOS.</p>
-                            <p>2. Download your **personalized script** below.</p>
-                            <p>3. Create a new script in Scriptable and paste the code.</p>
-                            <p>4. Add the Scriptable widget to your home screen.</p>
-                        </div>
+                        {/* Platform-specific instructions */}
+                        {isMobile ? (
+                            <div className="space-y-2 text-xs text-gray-300 border-t border-white/5 pt-4">
+                                <p>1. Install the <a href="https://scriptable.app" target="_blank" className="text-blue-400 underline" rel="noreferrer">Scriptable App</a> on iOS.</p>
+                                <p>2. Download your personalized script below.</p>
+                                <p>3. Create a new script in Scriptable and paste the code.</p>
+                                <p>4. Add the Scriptable widget to your home screen.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2 text-xs text-gray-300 border-t border-white/5 pt-4">
+                                <p>1. Install <a href="https://apps.apple.com/app/scriptwidget/id1555453758" target="_blank" className="text-blue-400 underline" rel="noreferrer">ScriptWidget</a> from the Mac App Store.</p>
+                                <p>2. Download your personalized script below.</p>
+                                <p>3. Create a new widget in ScriptWidget and paste the code.</p>
+                                <p>4. Uncomment <code className="text-teal-400">widget.html = await render();</code> at the bottom.</p>
+                            </div>
+                        )}
 
                         <a
-                            href={widgetToken ? `/api/widgets/script?token=${widgetToken}&type=${selectedWidget}` : '#'}
+                            href={widgetToken ? `/api/widgets/script?token=${widgetToken}&type=${selectedWidget}&platform=${isMobile ? 'ios' : 'macos'}` : '#'}
                             className={`flex items-center justify-center w-full rounded-lg py-2.5 text-xs font-semibold text-white transition-all shadow-lg active:scale-[0.98] ${widgetToken ? (selectedWidget === 'dashboard' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-blue-600 hover:bg-blue-500') : 'bg-gray-700 cursor-not-allowed'}`}
                             onClick={(e) => !widgetToken && e.preventDefault()}
                         >
-                            Download {selectedWidget === 'dashboard' ? 'Dashboard' : 'Calendar'} Script
+                            Download {selectedWidget === 'dashboard' ? 'Dashboard' : 'Calendar'} Script ({isMobile ? 'iOS' : 'macOS'})
                         </a>
                     </div>
                 </div>
