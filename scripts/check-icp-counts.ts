@@ -40,7 +40,7 @@ async function main() {
             `;
             console.log('\n📈 Leads by ICP:', leadsByIcp);
         } catch (e) {
-            console.log('❌ Could not query leads by ICP:', e.message);
+            console.log('❌ Could not query leads by ICP:', e instanceof Error ? e.message : String(e));
         }
 
         // Check companies with leads vs without
@@ -61,7 +61,7 @@ async function main() {
             `;
             console.log('🏢 Companies without leads:', companiesWithoutLeads);
         } catch (e) {
-            console.log('❌ Could not check company/lead relationship:', e.message);
+            console.log('❌ Could not check company/lead relationship:', e instanceof Error ? e.message : String(e));
         }
 
     } catch (error) {
