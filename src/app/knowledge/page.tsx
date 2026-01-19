@@ -335,11 +335,15 @@ export default function KnowledgePage() {
                 }),
             });
 
-            if (!summaryRes.ok) throw new Error('Failed to save summary');
+            if (!summaryRes.ok) {
+                const errData = await summaryRes.text(); // Use text() in case it's not JSON
+                throw new Error(`Summary Save Failed: ${summaryRes.status} ${errData}`);
+            }
 
             // 2. Import Selected Tasks
             const selectedTasks = processedResult.tasks.filter(t => t.selected);
             let importedCount = 0;
+            let lastTaskError = '';
 
             for (const task of selectedTasks) {
                 const taskRes = await fetch('/api/tasks', {
@@ -349,15 +353,24 @@ export default function KnowledgePage() {
                         title: task.title,
                         priority: task.priority,
                         dueDate: task.dueDate,
-                        // Default to today if no date, or leave null? 
-                        // Implementation plan said "Add to task manager", implies creating them.
-                        // API expects standard task fields.
+                        projectId: null, // Explicitly send null or selected project if we add that feature
                     }),
                 });
-                if (taskRes.ok) importedCount++;
+                if (taskRes.ok) {
+                    importedCount++;
+                } else {
+                    const tErr = await taskRes.text();
+                    lastTaskError = tErr;
+                    console.error('Task save failed:', tErr);
+                }
             }
 
-            alert(`Saved summary and imported ${importedCount} tasks.`);
+            if (importedCount < selectedTasks.length) {
+                alert(`Saved summary, but only ${importedCount}/${selectedTasks.length} tasks imported.\nLast error: ${lastTaskError}`);
+            } else {
+                alert(`Success! Saved summary and imported ${importedCount} tasks.`);
+            }
+
             setIsTranscriptOpen(false);
             setTranscriptText('');
             setProcessedResult(null);
@@ -365,7 +378,7 @@ export default function KnowledgePage() {
 
         } catch (error) {
             console.error('Error saving processed data:', error);
-            alert('Failed to save data completely. Check console.');
+            alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setSavingProcessedData(false);
         }
