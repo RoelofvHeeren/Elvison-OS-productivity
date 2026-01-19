@@ -378,6 +378,20 @@ export default function KnowledgePage() {
         setProcessedResult({ ...processedResult, tasks: newTasks });
     };
 
+    const updateTaskTitle = (index: number, newTitle: string) => {
+        if (!processedResult) return;
+        const newTasks = [...processedResult.tasks];
+        newTasks[index].title = newTitle;
+        setProcessedResult({ ...processedResult, tasks: newTasks });
+    };
+
+    const updateTaskDueDate = (index: number, newDate: string) => {
+        if (!processedResult) return;
+        const newTasks = [...processedResult.tasks];
+        newTasks[index].dueDate = newDate || null;
+        setProcessedResult({ ...processedResult, tasks: newTasks });
+    };
+
     if (loading) {
         return (
             <>
@@ -617,20 +631,31 @@ export default function KnowledgePage() {
                                                 {task.selected && <CheckSquare className="w-3.5 h-3.5 text-white" />}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-white font-medium mb-1">{task.title}</p>
-                                                <div className="flex gap-2 text-xs">
+                                                <input
+                                                    type="text"
+                                                    value={task.title}
+                                                    onChange={(e) => updateTaskTitle(idx, e.target.value)}
+                                                    className="w-full bg-transparent border-none text-sm text-white font-medium focus:ring-0 p-0 mb-1 placeholder:text-gray-600"
+                                                    placeholder="Task title..."
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                <div className="flex gap-2 text-xs items-center">
                                                     <span className={`px-1.5 py-0.5 rounded ${task.priority === 'HIGH' ? 'bg-red-500/20 text-red-400' :
                                                         task.priority === 'MEDIUM' ? 'bg-orange-500/20 text-orange-400' :
                                                             'bg-blue-500/20 text-blue-400'
                                                         }`}>
                                                         {task.priority}
                                                     </span>
-                                                    {task.dueDate && (
-                                                        <span className="text-gray-400 flex items-center gap-1">
-                                                            <Calendar className="w-3 h-3" />
-                                                            {task.dueDate}
-                                                        </span>
-                                                    )}
+
+                                                    <div className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors" onClick={(e) => e.stopPropagation()}>
+                                                        <Calendar className="w-3 h-3" />
+                                                        <input
+                                                            type="date"
+                                                            value={task.dueDate || ''}
+                                                            onChange={(e) => updateTaskDueDate(idx, e.target.value)}
+                                                            className="bg-transparent border-none text-xs p-0 w-24 focus:ring-0 text-gray-400 hover:text-white"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

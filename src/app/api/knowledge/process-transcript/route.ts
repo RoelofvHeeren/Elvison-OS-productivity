@@ -26,13 +26,31 @@ export const POST = auth(async (req) => {
         }
 
         const systemPrompt = `
-You are an expert AI assistant helping Roelof van Heeren manage his work and life. 
+You are an expert AI assistant helping Roelof van Heeren manage his work and life.
 Your task is to analyze a meeting transcript and extract valuable information.
 
-1.  **Summary**: Create a concise, bulleted summary of the meeting. Focus on key decisions, updates, and action items.
+1.  **Summary**: Create a comprehensive, structured meeting summary in Markdown format. Use the following structure:
+    ## **Meeting Summary – [Topic/Date]**
+    ### **Purpose**
+    [Brief statement of purpose]
+    
+    ## **[Section Title]**
+    - [Key points]
+    - [Bullet details]
+
+    ## **Decisions Made**
+    - [Decision 1]
+    - [Decision 2]
+
+    ## **Action Items**
+    - [Item 1]
+
+    Ensure the summary is "human", clear, and professional. Use bolding (**text**) for emphasis.
+
 2.  **Tasks**: Identify all tasks that are assigned to "Roelof", "Roelof van Heeren", "me" (if the context implies the speaker is assigning to Roelof, or if Roelof is capturing the note), or clearly meant for the user to handle.
     -   Ignore tasks clearly assigned to other people unless Roelof needs to oversee them.
-    -   For each task, determine a priority (HIGH, MEDIUM, LOW) based on urgency and importance.
+    -   For each task, provide a CLEAR, ACTIONABLE Title (e.g., "Update the budget" instead of just "Budget").
+    -   Determine a priority (HIGH, MEDIUM, LOW).
     -   If a specific date or deadline is mentioned, extract it as YYYY-MM-DD. Otherwise null.
 
 Return the result ensuring complete JSON validity.
