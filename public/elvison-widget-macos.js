@@ -1,34 +1,17 @@
-// Elvison OS Dashboard Widget for macOS (ScriptWidget / Übersicht)
-// ================================================================
-// This script is designed for macOS widget apps that use JavaScript.
-// Tested with: ScriptWidget (App Store)
-// 
-// SETUP:
-// 1. Install ScriptWidget from the Mac App Store
-// 2. Create a new widget and paste this code
-// 3. Replace WIDGET_TOKEN with your token from App Settings
-// ================================================================
+// Elvison OS Dashboard Widget for ScriptWidget (macOS)
+// ====================================================
+// SETUP: 
+// 1. Create a new widget in ScriptWidget
+// 2. Paste this code
+// 3. Your token is already embedded!
 
-// Configuration - UPDATE THESE VALUES
-const WIDGET_TOKEN = "PASTE_YOUR_TOKEN_HERE"; // Get this from your App Settings
+// Configuration
+const WIDGET_TOKEN = "PASTE_YOUR_TOKEN_HERE";
 const API_URL = "https://elvison-os-productivity-production.up.railway.app/api/widgets/dashboard";
 const API_KEY = "elvison-widget-secret";
 const APP_URL = "https://elvison-os-productivity-production.up.railway.app";
-const BG_IMAGE_URL = "https://elvison-os-productivity-production.up.railway.app/widget-bg.png";
 
-// Colors - Black, Teal, White theme
-const COLORS = {
-    bg: "#0F0F11",
-    teal: "#139187",
-    white: "#FFFFFF",
-    gray: "#AAAAAA",
-    darkGray: "#666666"
-};
-
-// ================================================================
-// ScriptWidget Version (JSX-like syntax)
-// ================================================================
-
+// Get greeting based on time of day
 function getGreeting() {
     const hour = new Date().getHours();
     if (hour >= 3 && hour < 12) return "Good Morning";
@@ -36,103 +19,118 @@ function getGreeting() {
     return "Good Evening";
 }
 
-async function fetchData() {
-    try {
-        const url = `${API_URL}?key=${API_KEY}&token=${WIDGET_TOKEN}`;
-        const response = await fetch(url);
-        return await response.json();
-    } catch (e) {
-        console.error("Failed to fetch data:", e);
-        return {
-            stats: { tasksRemaining: "-", habitsCompleted: "-", habitsTotal: "-" },
-            tasks: []
-        };
-    }
-}
+// Fetch data from API
+const data = await $fetch(`${API_URL}?key=${API_KEY}&token=${WIDGET_TOKEN}`)
+    .then(res => res.json())
+    .catch(() => ({
+        stats: { tasksRemaining: "-", habitsCompleted: "-", habitsTotal: "-" },
+        tasks: []
+    }));
 
-async function render() {
-    const data = await fetchData();
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-    const timeStr = today.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// Date formatting
+const today = new Date();
+const dateStr = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const timeStr = today.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Build task list HTML
-    let tasksHtml = '';
-    if (data.tasks && data.tasks.length > 0) {
-        for (const task of data.tasks) {
-            const timeLabel = task.dueTime ? `<span style="color: ${COLORS.gray}; font-size: 10px;">${task.dueTime}</span>` : '';
-            tasksHtml += `
-                <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                    <span style="color: ${COLORS.teal}; font-size: 8px; margin-right: 6px;">●</span>
-                    <span style="color: ${COLORS.white}; font-size: 12px; flex: 1;">${task.title}</span>
-                    ${timeLabel}
-                </div>
-            `;
-        }
-        if (data.stats.tasksRemaining > data.tasks.length) {
-            tasksHtml += `<div style="color: ${COLORS.gray}; font-size: 11px; font-style: italic;">+${data.stats.tasksRemaining - data.tasks.length} more</div>`;
-        }
-    } else {
-        tasksHtml = `<div style="color: ${COLORS.gray}; font-size: 13px;">No tasks for today ✓</div>`;
-    }
+// Build task items
+const taskItems = data.tasks && data.tasks.length > 0
+    ? data.tasks.slice(0, 5).map(task => (
+        <hstack>
+            <text color="#139187" font="10">●</text>
+            <spacer length="4" />
+            <text color="white" font="12">{task.title}</text>
+            <spacer />
+            {task.dueTime && <text color="#AAAAAA" font="10">{task.dueTime}</text>}
+        </hstack>
+    ))
+    : [<text color="#AAAAAA" font="13">No tasks for today ✓</text>];
 
-    return `
-        <div style="
-            background-color: ${COLORS.bg};
-            background-image: url('${BG_IMAGE_URL}');
-            background-size: cover;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100%;
-            box-sizing: border-box;
-        ">
-            <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <a href="${APP_URL}" style="color: ${COLORS.teal}; font-weight: bold; font-size: 14px; text-decoration: none;">ELVISON OS</a>
-                <span style="color: ${COLORS.white}; font-size: 11px;">${dateStr}</span>
-            </div>
-            
-            <!-- Greeting -->
-            <div style="color: ${COLORS.white}; font-size: 22px; font-weight: 100; margin-top: 10px;">
-                ${getGreeting()}
-            </div>
-            
-            <!-- Capture Buttons -->
-            <div style="display: flex; gap: 10px; margin-top: 14px;">
-                <a href="${APP_URL}/capture?mode=task" style="background: rgba(19, 145, 135, 0.25); border-radius: 8px; padding: 6px 12px; color: ${COLORS.white}; font-size: 12px; font-weight: 600; text-decoration: none;">Task</a>
-                <a href="${APP_URL}/capture?mode=note" style="background: rgba(19, 145, 135, 0.25); border-radius: 8px; padding: 6px 12px; color: ${COLORS.white}; font-size: 12px; font-weight: 600; text-decoration: none;">Note</a>
-                <a href="${APP_URL}/capture?mode=reminder" style="background: rgba(19, 145, 135, 0.25); border-radius: 8px; padding: 6px 12px; color: ${COLORS.white}; font-size: 12px; font-weight: 600; text-decoration: none;">Reminder</a>
-            </div>
-            
-            <!-- Stats -->
-            <div style="display: flex; justify-content: space-between; margin-top: 16px;">
-                <div>
-                    <div style="color: ${COLORS.teal}; font-size: 24px; font-weight: bold;">${data.stats.tasksRemaining}</div>
-                    <div style="color: ${COLORS.white}; font-size: 10px;">Tasks Left</div>
-                </div>
-                <div>
-                    <div style="color: ${COLORS.teal}; font-size: 24px; font-weight: bold;">${data.stats.habitsCompleted}/${data.stats.habitsTotal}</div>
-                    <div style="color: ${COLORS.white}; font-size: 10px;">Habits</div>
-                </div>
-            </div>
-            
-            <!-- Today's Tasks -->
-            <div style="margin-top: 16px;">
-                <div style="color: ${COLORS.white}; font-size: 10px; font-weight: bold; margin-bottom: 8px;">TODAY'S TASKS</div>
-                ${tasksHtml}
-            </div>
-            
-            <!-- Footer -->
-            <div style="color: ${COLORS.darkGray}; font-size: 8px; text-align: center; margin-top: auto; padding-top: 10px;">
-                Updated ${timeStr}
-            </div>
-        </div>
-    `;
-}
+// Render the widget
+$render(
+    <vstack
+        background="#0F0F11"
+        padding="16"
+        frame="max"
+    >
+        {/* Header */}
+        <hstack>
+            <text color="#139187" font="bold,14">ELVISON OS</text>
+            <spacer />
+            <text color="white" font="11">{dateStr}</text>
+        </hstack>
 
-// Export for ScriptWidget
-// If using ScriptWidget, uncomment the line below:
-// widget.html = await render();
+        <spacer length="10" />
 
-// For testing in browser or Node.js:
-render().then(html => console.log(html));
+        {/* Greeting */}
+        <text color="white" font="thin,22">{getGreeting()}</text>
+
+        <spacer length="12" />
+
+        {/* Quick Action Buttons */}
+        <hstack>
+            <link url={`${APP_URL}/capture?mode=task`}>
+                <text
+                    color="white"
+                    font="semibold,11"
+                    padding="6,10"
+                    background="rgba(19,145,135,0.25)"
+                    cornerRadius="8"
+                >Task</text>
+            </link>
+            <spacer length="8" />
+            <link url={`${APP_URL}/capture?mode=note`}>
+                <text
+                    color="white"
+                    font="semibold,11"
+                    padding="6,10"
+                    background="rgba(19,145,135,0.25)"
+                    cornerRadius="8"
+                >Note</text>
+            </link>
+            <spacer length="8" />
+            <link url={`${APP_URL}/capture?mode=reminder`}>
+                <text
+                    color="white"
+                    font="semibold,11"
+                    padding="6,10"
+                    background="rgba(19,145,135,0.25)"
+                    cornerRadius="8"
+                >Reminder</text>
+            </link>
+        </hstack>
+
+        <spacer length="14" />
+
+        {/* Stats Row */}
+        <hstack>
+            <vstack>
+                <text color="#139187" font="bold,24">{data.stats.tasksRemaining}</text>
+                <text color="white" font="10">Tasks Left</text>
+            </vstack>
+            <spacer />
+            <vstack alignment="trailing">
+                <text color="#139187" font="bold,24">{data.stats.habitsCompleted}/{data.stats.habitsTotal}</text>
+                <text color="white" font="10">Habits</text>
+            </vstack>
+        </hstack>
+
+        <spacer length="14" />
+
+        {/* Tasks Section */}
+        <text color="white" font="bold,10">TODAY'S TASKS</text>
+        <spacer length="6" />
+
+        <vstack spacing="4">
+            {taskItems}
+        </vstack>
+
+        {data.stats.tasksRemaining > 5 && (
+            <text color="#AAAAAA" font="italic,11">+{data.stats.tasksRemaining - 5} more</text>
+        )}
+
+        <spacer />
+
+        {/* Footer */}
+        <text color="#666666" font="8" alignment="center">Updated {timeStr}</text>
+    </vstack>
+);

@@ -356,7 +356,7 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                                 <p>1. Install <a href="https://apps.apple.com/app/scriptwidget/id1555453758" target="_blank" className="text-blue-400 underline" rel="noreferrer">ScriptWidget</a> from the Mac App Store.</p>
                                 <p>2. Download your personalized script below.</p>
                                 <p>3. Create a new widget in ScriptWidget and paste the code.</p>
-                                <p>4. Uncomment <code className="text-teal-400">widget.html = await render();</code> at the bottom.</p>
+                                <p>4. Configure the widget size and add to desktop.</p>
                             </div>
                         )}
 
