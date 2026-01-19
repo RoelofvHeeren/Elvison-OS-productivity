@@ -42,7 +42,7 @@ if (data.tasks && data.tasks.length > 0) {
             <hstack key={String(i)}>
                 <text font="caption" color="#139187">●</text>
                 <spacer length="4" />
-                <text font="caption" color="white">{data.tasks[i].title}</text>
+                <text font="caption" color="white" lineLimit="1">{data.tasks[i].title}</text>
             </hstack>
         );
     }
@@ -50,14 +50,21 @@ if (data.tasks && data.tasks.length > 0) {
     taskList.push(<text key="none" font="caption" color="secondary">No tasks for today ✓</text>);
 }
 
-// Render widget with dark background
+// Render widget
 $render(
-    <zstack frame="max">
-        {/* Dark background */}
+    <zstack frame="max" alignment="leading">
+        {/* Layer 1: Fallback Background Color */}
         <rectangle fill="#0F0F11" />
 
-        {/* Content */}
-        <vstack alignment="leading" padding="16">
+        {/* Layer 2: Background Image (User uploaded) */}
+        {/* 'resizable' and 'scaledToFill' ensure it covers the whole widget */}
+        <image src="image/widget-bg.png" resizable="true" scaledToFill="true" />
+
+        {/* Layer 3: Dimming Overlay for Readability */}
+        <rectangle fill="black" opacity="0.3" />
+
+        {/* Layer 4: Content */}
+        <vstack alignment="leading" padding="16" frame="max">
             {/* Header row */}
             <hstack>
                 <text font="headline" color="#139187">ELVISON OS</text>
@@ -76,14 +83,14 @@ $render(
             <hstack>
                 <link url={`${APP_URL}/capture?mode=task`}>
                     <zstack>
-                        <rectangle fill="#139187" cornerRadius="8" frame="50,28" />
+                        <rectangle fill="#139187" cornerRadius="8" frame="50,28" opacity="0.9" />
                         <text font="caption" color="white">Task</text>
                     </zstack>
                 </link>
                 <spacer length="8" />
                 <link url={`${APP_URL}/capture?mode=note`}>
                     <zstack>
-                        <rectangle fill="#139187" cornerRadius="8" frame="50,28" />
+                        <rectangle fill="#139187" cornerRadius="8" frame="50,28" opacity="0.9" />
                         <text font="caption" color="white">Note</text>
                     </zstack>
                 </link>
