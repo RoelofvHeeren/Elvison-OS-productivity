@@ -44,24 +44,18 @@ export const className = `
   .elvison-widget {
     background-color: #0F0F11;
     background-image: url('${BG_IMAGE}');
-    background-size: cover;
+    background-size: 100% 100%; /* Stretch to fit exactly */
     background-position: center;
-    border-radius: 16px;
+    /* No border-radius - let the background image define the shape */
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     padding: 20px;
   }
 
-  /* Overlay for readability */
+  /* Overlay for readability - hidden since image already has dark tint */
   .elvison-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 1;
+    display: none;
   }
 
   .elvison-content {
