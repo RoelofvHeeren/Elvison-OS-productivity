@@ -33,6 +33,7 @@ export const className = `
   top: 420px;  /* Below dashboard widget */
   left: 40px;  /* Same left position as dashboard */
   width: 320px;
+  background: transparent; /* Make root container transparent */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #fff;
   
@@ -41,8 +42,7 @@ export const className = `
     background-image: url('${BG_IMAGE}');
     background-size: 100% 100%; /* Stretch to fit exactly */
     background-position: center;
-    /* No border-radius - let the background image define the shape */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    /* No border-radius or box-shadow - let the background image define everything */
     overflow: visible;
     position: relative;
     padding: 16px;
