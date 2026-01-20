@@ -144,6 +144,17 @@ export const className = `
     text-align: center;
     margin-top: 8px;
   }
+
+  /* Link Reset */
+  a.nostyle {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+  }
+  a.nostyle:hover {
+    opacity: 0.8;
+  }
 `;
 
 // Helper for Greeting
@@ -203,32 +214,34 @@ export const render = ({ data, error }) => {
 
                 {/* Stats */}
                 <div className="stats">
-                    <div className="stat-item">
+                    <a href={`${APP_URL}/tasks`} className="nostyle stat-item">
                         <span className="stat-val">{stats.tasksRemaining}</span>
                         <span className="stat-label">Tasks Left</span>
-                    </div>
-                    <div className="stat-item" style={{ alignItems: 'flex-end' }}>
+                    </a>
+                    <a href={`${APP_URL}/habits`} className="nostyle stat-item" style={{ alignItems: 'flex-end' }}>
                         <span className="stat-val">{stats.habitsCompleted}/{stats.habitsTotal}</span>
                         <span className="stat-label">Habits</span>
-                    </div>
+                    </a>
                 </div>
 
                 {/* Tasks */}
                 <div>
-                    <div className="tasks-header">Today's Tasks</div>
-                    <div className="task-list">
-                        {tasks && tasks.length > 0 ? (
-                            tasks.slice(0, 4).map((t, i) => (
-                                <div key={i} className="task">
-                                    <span className="dot">●</span>
-                                    <span className="task-title">{t.title}</span>
-                                    {t.dueTime && <span className="task-time">{t.dueTime}</span>}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="task" style={{ opacity: 0.5 }}>No tasks for today ✓</div>
-                        )}
-                    </div>
+                    <a href={`${APP_URL}/tasks`} className="nostyle">
+                        <div className="tasks-header">Today's Tasks</div>
+                        <div className="task-list">
+                            {tasks && tasks.length > 0 ? (
+                                tasks.slice(0, 4).map((t, i) => (
+                                    <div key={i} className="task">
+                                        <span className="dot">●</span>
+                                        <span className="task-title">{t.title}</span>
+                                        {t.dueTime && <span className="task-time">{t.dueTime}</span>}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="task" style={{ opacity: 0.5 }}>No tasks for today ✓</div>
+                            )}
+                        </div>
+                    </a>
                 </div>
 
                 {/* Footer */}
