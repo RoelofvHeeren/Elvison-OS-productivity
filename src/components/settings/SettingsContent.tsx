@@ -352,11 +352,22 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
                                 <p>4. Add the Scriptable widget to your home screen.</p>
                             </div>
                         ) : (
-                            <div className="space-y-2 text-xs text-gray-300 border-t border-white/5 pt-4">
-                                <p>1. Install <a href="https://apps.apple.com/app/scriptwidget/id1555453758" target="_blank" className="text-blue-400 underline" rel="noreferrer">ScriptWidget</a> from the Mac App Store.</p>
-                                <p>2. Download your personalized script below.</p>
-                                <p>3. Create a new widget in ScriptWidget and paste the code.</p>
-                                <p>4. Configure the widget size and add to desktop.</p>
+                            <div className="space-y-3 text-xs text-gray-300 border-t border-white/5 pt-4">
+                                <div className="bg-white/5 p-2 rounded border border-white/10">
+                                    <p className="font-semibold text-teal-400 mb-1">Option 1: Übersicht (Recommended)</p>
+                                    <ol className="list-decimal list-inside space-y-1 text-[11px] opacity-80">
+                                        <li>Install <a href="http://tracesof.net/uebersicht/" target="_blank" className="text-blue-400 underline hover:text-blue-300">Übersicht</a> (Free).</li>
+                                        <li>Click menu bar icon → "Open Widgets Folder".</li>
+                                        <li>Download script below & move into folder.</li>
+                                    </ol>
+                                </div>
+                                <div className="bg-white/5 p-2 rounded border border-white/10">
+                                    <p className="font-semibold text-teal-400 mb-1">Option 2: Native Sync (Sonoma+)</p>
+                                    <p className="text-[11px] opacity-80">
+                                        If you have the widget on iPhone + macOS Sonoma:
+                                        Right click Desktop → Edit Widgets → Search "Scriptable" → Add from iPhone.
+                                    </p>
+                                </div>
                             </div>
                         )}
 

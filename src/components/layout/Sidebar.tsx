@@ -36,7 +36,7 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`sticky top-0 h-screen shrink-0 flex flex-col border-r-2 border-[#139187] bg-[var(--glass-base)] backdrop-filter backdrop-blur-[var(--glass-blur)] px-4 py-6 shadow-luxury z-50 transition-all duration-500 ${collapsed ? 'w-20' : 'w-64'
+            className={`relative h-screen shrink-0 flex flex-col border-r-2 border-[#139187] bg-[var(--glass-base)] backdrop-filter backdrop-blur-[var(--glass-blur)] px-4 py-6 shadow-luxury z-50 transition-all duration-500 ${collapsed ? 'w-20' : 'w-64'
                 }`}
         >
             {/* Logo */}

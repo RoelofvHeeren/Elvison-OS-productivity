@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         // Determine filename based on type and platform
         let filename: string;
         if (platform === 'macos') {
-            filename = type === 'calendar' ? 'elvison-calendar-widget-macos.js' : 'elvison-widget-macos.js';
+            filename = type === 'calendar' ? 'elvison-calendar-widget-ubersicht.jsx' : 'elvison-widget-ubersicht.jsx';
         } else {
             filename = type === 'calendar' ? 'elvison-calendar-widget.js' : 'elvison-widget.js';
         }
@@ -47,7 +47,10 @@ export async function GET(request: Request) {
         }
 
         const platformLabel = platform === 'macos' ? 'macos' : 'ios';
-        const downloadFilename = `${filename.replace('.js', '').replace('-macos', '')}-${platformLabel}-${user.name || 'user'}.js`;
+        const ext = platform === 'macos' ? 'jsx' : 'js'; // Übersicht uses .jsx
+        // Remove .js or .jsx from original filename to avoid double extension
+        const cleanName = filename.replace('.js', '').replace('.jsx', '').replace('-ubersicht', '').replace('-macos', '');
+        const downloadFilename = `${cleanName}-${platformLabel}-${user.name || 'user'}.${ext}`;
 
         return new NextResponse(scriptContent, {
             headers: {
