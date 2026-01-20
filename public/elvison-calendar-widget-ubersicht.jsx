@@ -37,7 +37,7 @@ export const className = `
   color: #fff;
   
   .elvison-cal-widget {
-    background-color: #0F0F11;
+    background-color: transparent;
     background-image: url('${BG_IMAGE}');
     background-size: 100% 100%; /* Stretch to fit exactly */
     background-position: center;
