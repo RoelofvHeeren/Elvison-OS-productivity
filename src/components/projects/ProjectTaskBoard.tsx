@@ -122,7 +122,7 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
     };
 
     return (
-        <div className="flex-1 overflow-x-auto overflow-y-hidden h-full"> // No container queries yet
+        <div className="flex-1 overflow-x-auto overflow-y-hidden h-full">
             <DndContext
                 sensors={sensors}
                 collisionDetection={customCollisionDetection}

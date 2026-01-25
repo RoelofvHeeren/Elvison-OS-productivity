@@ -20,15 +20,18 @@ interface TaskColumnProps {
 }
 
 export default function TaskColumn({ id, title, tasks, onEditTask }: TaskColumnProps) {
-    const { setNodeRef } = useDroppable({ id });
+    const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
         <div
             ref={setNodeRef}
-            className="flex flex-col h-full min-w-[320px] w-[350px] bg-white/5 rounded-xl border border-white/5 overflow-hidden backdrop-blur-sm shadow-xl"
+            className={`
+                flex flex-col h-full min-w-[320px] w-[350px] rounded-xl border overflow-hidden backdrop-blur-sm shadow-xl transition-colors duration-200
+                ${isOver ? 'bg-white/10 border-[#139187]/50 ring-1 ring-[#139187]/20' : 'bg-white/5 border-white/5'}
+            `}
         >
             {/* Column Header */}
-            <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
+            <div className={`p-4 border-b flex items-center justify-between ${isOver ? 'bg-white/10 border-white/10' : 'bg-white/5 border-white/5'}`}>
                 <div className="flex items-center gap-3">
                     <span className="text-sm font-bold text-white tracking-wide">{title}</span>
                     <span className="bg-white/10 text-[10px] px-2 py-0.5 rounded-full text-gray-300 font-medium border border-white/10">
@@ -46,7 +49,10 @@ export default function TaskColumn({ id, title, tasks, onEditTask }: TaskColumnP
                 </SortableContext>
 
                 {tasks.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-24 text-gray-500 text-xs border border-dashed border-white/10 rounded-lg bg-white/[0.02]">
+                    <div className={`
+                        flex flex-col items-center justify-center h-full min-h-[150px] text-gray-500 text-xs border border-dashed rounded-lg transition-colors
+                        ${isOver ? 'border-[#139187]/40 bg-[#139187]/5' : 'border-white/10 bg-white/[0.02]'}
+                    `}>
                         <p>Drop items here</p>
                     </div>
                 )}
