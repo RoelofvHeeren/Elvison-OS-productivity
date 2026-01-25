@@ -19,6 +19,7 @@ import {
     Circle,
     CheckCircle2,
 } from 'lucide-react';
+import ProjectTaskBoard from '@/components/projects/ProjectTaskBoard';
 
 interface Project {
     id: string;
@@ -31,7 +32,7 @@ interface Project {
     tasksCount: number;
     completedTasks: number;
     notesCount: number;
-    tasks?: { id: string; title: string; status: string }[];
+    tasks?: { id: string; title: string; status: string; priority: 'HIGH' | 'MEDIUM' | 'LOW'; dueDate: string | null }[];
     notes?: { id: string; title: string; content: string; createdAt: string }[];
 }
 
@@ -429,35 +430,17 @@ export default function ProjectsPage() {
                 title={`${selectedProject?.name} - ${viewMode === 'tasks' ? 'Tasks' : 'Notes'}`}
             >
                 {viewMode === 'tasks' ? (
-                    <div className="space-y-3">
-                        {selectedProject?.tasks && selectedProject.tasks.length > 0 ? (
-                            selectedProject.tasks.map((task) => (
-                                <button
-                                    key={task.id}
-                                    onClick={() => handleTaskToggle(task.id, task.status)}
-                                    className="w-full flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        {task.status === 'DONE' ? (
-                                            <CheckCircle2 className="w-5 h-5 text-green-400" />
-                                        ) : (
-                                            <Circle className="w-5 h-5 text-gray-500 hover:text-[#139187]" />
-                                        )}
-                                        <span className={`text-sm ${task.status === 'DONE' ? 'text-gray-500 line-through' : 'text-white'}`}>
-                                            {task.title}
-                                        </span>
-                                    </div>
-                                    <StatusBadge status={getStatusType(task.status)} label={task.status} />
-                                </button>
-                            ))
-                        ) : (
-                            <div className="text-center py-8 text-gray-400">
-                                <p>No tasks yet. Add tasks in the Task Manager.</p>
-                            </div>
+                    <div className="h-[600px] w-full bg-[var(--glass-base)] rounded-lg p-2">
+                        {selectedProject && (
+                            <ProjectTaskBoard
+                                project={selectedProject}
+                                tasks={selectedProject.tasks as any[] || []}
+                                onTaskUpdate={handleTaskToggle}
+                            />
                         )}
-                        <div className="pt-4 border-t border-white/5">
-                            <Button variant="secondary" className="w-full" onClick={() => window.location.href = '/tasks'}>
-                                Manage Tasks
+                        <div className="mt-4 flex justify-end">
+                            <Button variant="secondary" onClick={() => window.location.href = '/tasks'}>
+                                Manage All Tasks
                             </Button>
                         </div>
                     </div>

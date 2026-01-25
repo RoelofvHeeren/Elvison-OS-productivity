@@ -78,6 +78,29 @@ export default function CalendarPage() {
     useEffect(() => {
         fetchEvents();
         fetchProjects();
+
+        // Initial sync on mount (or maybe we want to be less aggressive? let's keep it manual or low freq)
+        // Actually, user wants "live" feeling.
+        syncCalendar(); // Trigger a background sync on mount
+
+        // Poll every 5 minutes
+        const intervalId = setInterval(() => {
+            syncCalendar();
+        }, 5 * 60 * 1000);
+
+        // Sync on window focus
+        const onFocus = () => {
+            // Check if document is visible to avoid double firing
+            if (document.visibilityState === 'visible') {
+                syncCalendar();
+            }
+        };
+
+        window.addEventListener('focus', onFocus);
+        return () => {
+            clearInterval(intervalId);
+            window.removeEventListener('focus', onFocus);
+        };
     }, [currentDate, view]);
 
     const fetchProjects = async () => {

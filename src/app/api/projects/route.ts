@@ -21,7 +21,7 @@ export async function GET(request: Request) {
             },
             include: {
                 tasks: {
-                    select: { id: true, title: true, status: true },
+                    select: { id: true, title: true, status: true, priority: true, dueDate: true },
                 },
                 notes: {
                     select: { id: true, title: true, content: true, createdAt: true },

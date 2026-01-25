@@ -134,7 +134,7 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
                                     <div
                                         data-drop-slot="true"
                                         data-hour={hour.toString()}
-                                        className="flex-1 p-2 space-y-2 group hover:bg-white/[0.02] transition-colors relative cursor-pointer"
+                                        className={`flex-1 p-2 space-y-2 group transition-colors relative ${draggedEvent ? 'hover:bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/[0.02]'}`}
                                         onDragOver={handleDragOver}
                                         onDrop={(e) => handleDrop(e, hour)}
                                         onTouchEnd={handleTouchEnd}
@@ -148,9 +148,11 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
                                                 onTouchStart={(e) => handleTouchStart(e, event)}
                                                 onTouchMove={handleTouchMove}
                                                 onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                                className={`p-3 rounded-lg border-l-4 shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all cursor-pointer active:opacity-50 ${event.source === 'LOCAL_TASK'
-                                                    ? 'bg-blue-500/10 border-blue-500 backdrop-blur-md'
-                                                    : 'bg-[#139187]/10 border-[#139187] backdrop-blur-md'
+                                                className={`p-3 rounded-lg border-l-4 shadow-lg transition-all active:opacity-50 active:scale-95 group-hover:shadow-2xl
+                                                    cursor-grab active:cursor-grabbing
+                                                    ${event.source === 'LOCAL_TASK'
+                                                        ? 'bg-blue-500/10 border-blue-500 backdrop-blur-md hover:bg-blue-500/20'
+                                                        : 'bg-[#139187]/10 border-[#139187] backdrop-blur-md hover:bg-[#139187]/20'
                                                     }`}
                                             >
                                                 <div className="flex items-center justify-between mb-1">
@@ -194,7 +196,7 @@ export default function DayView({ currentDate, events, onEventClick, onEventDrop
                                     key={event.id}
                                     draggable
                                     onDragStart={(e) => handleDragStart(e, event)}
-                                    className="border-l-2 border-white/10 pl-3 cursor-pointer hover:bg-white/5 p-1 rounded transition-colors active:opacity-50"
+                                    className="border-l-2 border-white/10 pl-3 hover:bg-white/5 p-1 rounded transition-colors active:opacity-50 cursor-grab active:cursor-grabbing"
                                     onClick={() => onEventClick(event)}
                                 >
                                     <div className="text-[10px] text-gray-500 font-mono mb-0.5">
