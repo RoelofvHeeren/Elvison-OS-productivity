@@ -9,6 +9,10 @@ import {
     useSensor,
     useSensors,
     DragEndEvent,
+    pointerWithin,
+    rectIntersection,
+    getFirstCollision,
+    CollisionDetection,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import TaskColumn from './TaskColumn';
@@ -30,6 +34,7 @@ interface ProjectTaskBoardProps {
     project: Project;
     tasks: Task[];
     onTaskUpdate: (taskId: string, newStatus: string) => void;
+    onEditTask: (task: Task) => void;
 }
 
 const COLUMNS = [
@@ -38,7 +43,7 @@ const COLUMNS = [
     { id: 'DONE', title: 'Done' },
 ];
 
-export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskUpdate }: ProjectTaskBoardProps) {
+export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskUpdate, onEditTask }: ProjectTaskBoardProps) {
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
     useEffect(() => {
@@ -46,11 +51,28 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
     }, [initialTasks]);
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Prevent accidental drags when clicking
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
+
+    // Custom collision detection strategy
+    const customCollisionDetection: CollisionDetection = (args) => {
+        const pointerCollisions = pointerWithin(args);
+
+        // First, check if we are over a column directly using pointer
+        if (pointerCollisions.length > 0) {
+            return pointerCollisions;
+        }
+
+        // Fallback to rect intersection for keyboard support or closely packed items
+        return rectIntersection(args);
+    };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -92,7 +114,7 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
         <div className="flex-1 overflow-x-auto overflow-y-hidden h-full">
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCorners}
+                collisionDetection={customCollisionDetection}
                 onDragEnd={handleDragEnd}
             >
                 <div className="flex gap-4 h-full min-w-max pb-4 px-1">
@@ -102,6 +124,7 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
                             id={col.id}
                             title={col.title}
                             tasks={tasks.filter((t) => t.status === col.id)}
+                            onEditTask={onEditTask}
                         />
                     ))}
                 </div>

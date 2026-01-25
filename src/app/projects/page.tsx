@@ -21,6 +21,9 @@ import {
 } from 'lucide-react';
 import ProjectTaskBoard from '@/components/projects/ProjectTaskBoard';
 
+import Link from 'next/link';
+import TaskForm from '@/components/tasks/TaskForm';
+
 interface Project {
     id: string;
     name: string;
@@ -55,6 +58,10 @@ export default function ProjectsPage() {
     const [newNote, setNewNote] = useState({ title: '', content: '' });
     const [isAddingNote, setIsAddingNote] = useState(false);
     const [viewingProject, setViewingProject] = useState<Project | null>(null);
+
+    // Task Editing State
+    const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState<any>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -428,20 +435,39 @@ export default function ProjectsPage() {
                     setIsAddingNote(false);
                 }}
                 title={`${selectedProject?.name} - ${viewMode === 'tasks' ? 'Tasks' : 'Notes'}`}
+                className="max-w-[95vw] h-[90vh] w-full"
             >
                 {viewMode === 'tasks' ? (
-                    <div className="h-[600px] w-full bg-[var(--glass-base)] rounded-lg p-2">
-                        {selectedProject && (
-                            <ProjectTaskBoard
-                                project={selectedProject}
-                                tasks={selectedProject.tasks as any[] || []}
-                                onTaskUpdate={handleTaskToggle}
-                            />
-                        )}
-                        <div className="mt-4 flex justify-end">
-                            <Button variant="secondary" onClick={() => window.location.href = '/tasks'}>
-                                Manage All Tasks
-                            </Button>
+                    <div className="h-full flex flex-col bg-[var(--glass-base)] rounded-lg p-2 overflow-hidden">
+                        <div className="flex-1 overflow-hidden">
+                            {selectedProject && (
+                                <ProjectTaskBoard
+                                    project={selectedProject}
+                                    tasks={selectedProject.tasks as any[] || []}
+                                    onTaskUpdate={handleTaskToggle}
+                                    onEditTask={(task) => {
+                                        setEditingTask(task);
+                                        setIsTaskFormOpen(true);
+                                    }}
+                                />
+                            )}
+                        </div>
+                        <div className="mt-4 flex justify-between items-center bg-white/5 p-3 rounded-lg">
+                            <span className="text-sm text-gray-400">Drag tasks to update status</span>
+                            <div className="flex gap-2">
+                                <Button
+                                    icon={Plus}
+                                    onClick={() => {
+                                        setEditingTask(null);
+                                        setIsTaskFormOpen(true);
+                                    }}
+                                >
+                                    Add Task
+                                </Button>
+                                <Button variant="secondary" onClick={() => window.location.href = '/tasks'}>
+                                    Manage All Tasks
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -625,6 +651,81 @@ export default function ProjectsPage() {
                     </div>
                 )}
             </Modal>
+
+            {/* Task Form Modal */}
+            {isTaskFormOpen && (
+                <TaskForm
+                    isOpen={isTaskFormOpen}
+                    onClose={() => {
+                        setIsTaskFormOpen(false);
+                        setEditingTask(null);
+                    }}
+                    initialData={editingTask ? {
+                        title: editingTask.title,
+                        priority: editingTask.priority,
+                        projectId: selectedProject?.id,
+                        dueDate: editingTask.dueDate ? editingTask.dueDate.split('T')[0] : '',
+                    } : {
+                        projectId: selectedProject?.id,
+                        priority: 'MEDIUM',
+                    }}
+                    projects={projects}
+                    onSubmit={async (data) => {
+                        try {
+                            const url = editingTask ? `/api/tasks/${editingTask.id}` : '/api/tasks';
+                            const method = editingTask ? 'PATCH' : 'POST';
+
+                            const res = await fetch(url, {
+                                method,
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data),
+                            });
+
+                            if (res.ok) {
+                                fetchProjects();
+                                const updatedTask = await res.json();
+
+                                if (selectedProject) {
+                                    let newTasks = selectedProject.tasks || [];
+                                    if (editingTask) {
+                                        newTasks = newTasks.map(t => t.id === updatedTask.id ? { ...t, ...updatedTask } : t);
+                                    } else {
+                                        newTasks = [updatedTask, ...newTasks];
+                                    }
+
+                                    const updatedProject = { ...selectedProject, tasks: newTasks, tasksCount: newTasks.length };
+                                    setSelectedProject(updatedProject);
+                                    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                }
+
+                                setIsTaskFormOpen(false);
+                                setEditingTask(null);
+                            }
+                        } catch (e) {
+                            console.error('Failed to save task:', e);
+                        }
+                    }}
+                    onDelete={editingTask ? async () => {
+                        if (!confirm('Are you sure you want to delete this task?')) return;
+                        try {
+                            const res = await fetch(`/api/tasks/${editingTask.id}`, { method: 'DELETE' });
+                            if (res.ok) {
+                                fetchProjects();
+                                if (selectedProject) {
+                                    const newTasks = (selectedProject.tasks || []).filter(t => t.id !== editingTask.id);
+                                    const updatedProject = { ...selectedProject, tasks: newTasks, tasksCount: newTasks.length };
+                                    setSelectedProject(updatedProject);
+                                    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                }
+                                setIsTaskFormOpen(false);
+                                setEditingTask(null);
+                            }
+                        } catch (e) {
+                            console.error('Failed to delete task:', e);
+                        }
+                    } : undefined}
+                />
+            )}
         </>
     );
 }
