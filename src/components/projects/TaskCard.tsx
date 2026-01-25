@@ -36,7 +36,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
     const getPriorityColor = (priority: string) => {
         switch (priority) {
             case 'HIGH': return 'from-red-500/20 to-transparent border-l-red-500';
-            case 'MEDIUM': return 'from-yellow-500/20 to-transparent border-l-yellow-500';
+            case 'MEDIUM': return 'from-[#139187]/20 to-transparent border-l-[#139187]'; // Teal
             case 'LOW': return 'from-green-500/20 to-transparent border-l-green-500';
             default: return 'from-gray-500/20 to-transparent border-l-gray-500';
         }
@@ -45,7 +45,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
     const getPriorityBadgeColor = (priority: string) => {
         switch (priority) {
             case 'HIGH': return 'text-red-400 bg-red-400/10 border-red-400/20';
-            case 'MEDIUM': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+            case 'MEDIUM': return 'text-[#139187] bg-[#139187]/10 border-[#139187]/20'; // Teal
             case 'LOW': return 'text-green-400 bg-green-400/10 border-green-400/20';
             default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
         }
@@ -56,7 +56,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
             <div
                 ref={setNodeRef}
                 style={style}
-                className="opacity-50 bg-[#139187]/10 border-2 border-[#139187] p-4 rounded-xl h-[120px]"
+                className="opacity-0 h-[100px]" // Invisible placeholder
             />
         );
     }

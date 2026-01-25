@@ -13,9 +13,11 @@ import {
     rectIntersection,
     getFirstCollision,
     CollisionDetection,
+    DragOverlay,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import TaskColumn from './TaskColumn';
+import TaskCard from './TaskCard';
 
 interface Task {
     id: string;
@@ -74,8 +76,17 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
         return rectIntersection(args);
     };
 
+    const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+    const handleDragStart = (event: React.DragEvent<any>) => {
+        const { active } = event as any;
+        const task = tasks.find(t => t.id === active.id);
+        if (task) setActiveTask(task);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        setActiveTask(null);
 
         if (!over) return;
 
@@ -111,10 +122,15 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
     };
 
     return (
-        <div className="flex-1 overflow-x-auto overflow-y-hidden h-full">
+        <div className="flex-1 overflow-x-auto overflow-y-hidden h-full"> // No container queries yet
             <DndContext
                 sensors={sensors}
                 collisionDetection={customCollisionDetection}
+                onDragStart={(event) => {
+                    const { active } = event;
+                    const task = tasks.find(t => t.id === active.id);
+                    if (task) setActiveTask(task);
+                }}
                 onDragEnd={handleDragEnd}
             >
                 <div className="flex gap-4 h-full min-w-max pb-4 px-1">
@@ -128,6 +144,10 @@ export default function ProjectTaskBoard({ project, tasks: initialTasks, onTaskU
                         />
                     ))}
                 </div>
+
+                <DragOverlay>
+                    {activeTask ? <TaskCard task={activeTask} onEdit={() => { }} /> : null}
+                </DragOverlay>
             </DndContext>
         </div>
     );
