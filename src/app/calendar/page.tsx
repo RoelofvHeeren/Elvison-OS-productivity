@@ -266,11 +266,28 @@ export default function CalendarPage() {
                     body: JSON.stringify(payload),
                 });
             } else {
-                // Google Event Dragging logic
-                // Since we don't have PATCH for events yet, we can't fully support this
-                // But at least we won't crash.
-                console.log('Event dragging not supported for non-tasks yet');
-                return;
+                // Google/Local Event Dragging logic
+                const originalStart = new Date(event.start);
+                const originalEnd = new Date(event.end);
+                const duration = originalEnd.getTime() - originalStart.getTime();
+
+                const newStart = new Date(start);
+                // If it's a month view drop (no hour), preserve original time
+                if (newHour === undefined) {
+                    newStart.setHours(originalStart.getHours(), originalStart.getMinutes(), 0, 0);
+                }
+
+                const newEnd = new Date(newStart.getTime() + duration);
+
+                await fetch(`/api/calendar`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: event.id,
+                        start: newStart.toISOString(),
+                        end: newEnd.toISOString()
+                    }),
+                });
             }
 
             await fetchEvents();

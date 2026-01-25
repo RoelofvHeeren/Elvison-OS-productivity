@@ -227,3 +227,96 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
     }
 }
+
+export async function PATCH(request: Request) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    try {
+        const body = await request.json();
+        const { id, start, end, title, description, location } = body;
+
+        if (!id) {
+            return NextResponse.json({ error: "Event ID required" }, { status: 400 });
+        }
+
+        // 1. Fetch event
+        const event = await prisma.calendarEvent.findUnique({
+            where: { id },
+        });
+
+        if (!event) {
+            return NextResponse.json({ error: "Event not found" }, { status: 404 });
+        }
+
+        if (event.userId !== userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        }
+
+        let googleUpdateError = null;
+
+        // 2. Update Google Calendar if externalId exists
+        if (event.externalId && event.source === 'GOOGLE') {
+            try {
+                const calendar = await setGoogleCredentials(userId);
+                if (calendar) {
+                    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+                    const resource: any = {
+                        summary: title || event.title,
+                        description: description !== undefined ? description : event.description,
+                        location: location !== undefined ? location : event.location,
+                    };
+
+                    // Only update time if provided
+                    if (start) {
+                        resource.start = {
+                            dateTime: new Date(start).toISOString(),
+                            timeZone
+                        };
+                    }
+                    if (end) {
+                        resource.end = {
+                            dateTime: new Date(end).toISOString(),
+                            timeZone
+                        };
+                    }
+
+                    await calendar.events.patch({
+                        calendarId: 'primary',
+                        eventId: event.externalId,
+                        requestBody: resource,
+                    });
+                }
+            } catch (error: any) {
+                console.error('Failed to update Google Calendar event:', error);
+                googleUpdateError = error.message;
+            }
+        }
+
+        // 3. Update local database
+        const updatedEvent = await prisma.calendarEvent.update({
+            where: { id },
+            data: {
+                title: title || undefined,
+                description: description !== undefined ? description : undefined,
+                location: location !== undefined ? location : undefined,
+                start: start ? new Date(start) : undefined,
+                end: end ? new Date(end) : undefined,
+            },
+        });
+
+        return NextResponse.json({
+            success: true,
+            event: updatedEvent,
+            googleUpdateError,
+        });
+
+    } catch (error) {
+        console.error('Failed to update calendar event:', error);
+        return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
+    }
+}
