@@ -4,6 +4,9 @@ import { join } from 'path';
 import { getCoachDb } from '@/lib/coach-outreach/supabase';
 import { getTransformationsForAudience } from '@/lib/coach-outreach/transformations';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyRow = Record<string, any>;
+
 // Read the template once at startup
 const TEMPLATE_PATH = join(process.cwd(), 'src/lib/coach-outreach/landing-template.html');
 
@@ -16,11 +19,13 @@ export async function GET(
 
   try {
     const db = getCoachDb();
-    const { data: cached } = await db
+    const { data } = await db
       .from('coach_previews')
       .select('preview_data')
       .eq('ig_username', username)
       .single();
+
+    const cached = data as AnyRow | null;
 
     if (cached?.preview_data) {
       const preview = typeof cached.preview_data === 'string'
