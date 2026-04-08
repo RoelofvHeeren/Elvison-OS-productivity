@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coaching — Loading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/motion@12.6.0/dist/motion.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --acc: #E8A830;
+  --acc2: #C8901A;
+  --dark:  #09090A;
+  --dark2: #111113;
+  --dark3: #1A1A1E;
+  --cream: #F5F0E8;
+  --cream2: #EDE6D8;
+  --white: #FFFFFF;
+  --muted: #999490;
+  --muted2: #7A7570;
+  --border-light: rgba(0,0,0,0.09);
+  --border-dark: rgba(255,255,255,0.09);
+
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+
+  --r: 10px;
+  --r-lg: 20px;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--dark); color: var(--white); overflow-x: hidden; }
+
+em { font-style: italic; color: var(--acc); }
+a { color: inherit; text-decoration: none; }
+
+/* ── NAV ─────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5vw; height: 68px;
+  background: rgba(9,9,10,0.82); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-dark);
+}
+.nav-logo {
+  font-family: var(--serif); font-size: 1.15rem; font-weight: 700;
+  letter-spacing: 0.01em; color: var(--white);
+}
+.nav-logo span { color: var(--acc); }
+.nav-cta {
+  background: var(--acc); color: var(--dark);
+  padding: 0.55rem 1.35rem; border-radius: var(--r);
+  font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  transition: opacity .2s;
+}
+.nav-cta:hover { opacity: .85; }
+
+/* ── HERO ─────────────────────────────────────────────── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+#hero {
+  min-height: 100vh; display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-top: 68px;
+}
+.hero-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 7vw 5vw 7vw 7vw; gap: 2rem;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--acc);
+  animation: fadeUp .5s ease .15s both;
+}
+.hero-eyebrow::before {
+  content: ''; display: block; width: 28px; height: 2px;
+  background: var(--acc);
+}
+.hero-h1 {
+  font-family: var(--serif); font-size: clamp(2.8rem, 5vw, 4.4rem);
+  font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
+  animation: fadeUp .65s ease .3s both;
+}
+.hero-sub {
+  font-size: 1.05rem; line-height: 1.7; color: rgba(255,255,255,0.62);
+  max-width: 480px;
+  animation: fadeUp .55s ease .5s both;
+}
+.hero-actions { display: flex; align-items: center; gap: 1rem; animation: fadeUp .5s ease .65s both; }
+.btn-primary {
+  background: var(--acc); color: var(--dark);
+  padding: .85rem 2.2rem; border-radius: var(--r);
+  font-size: .9rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  transition: transform .2s, opacity .2s; display: inline-block;
+}
+.btn-primary:hover { transform: translateY(-2px); opacity: .88; }
+.btn-ghost {
+  color: rgba(255,255,255,0.7); font-size: .9rem; font-weight: 500;
+  display: flex; align-items: center; gap: .4rem; transition: color .2s;
+}
+.btn-ghost:hover { color: var(--white); }
+.btn-ghost svg { width: 18px; height: 18px; }
+
+.hero-right {
+  position: relative; overflow: hidden;
+  background: var(--dark2);
+}
+.hero-img {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #141218 0%, #1a1620 50%, #0f1a14 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+/* decorative grid pattern when no photo */
+.hero-img::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 80% 80% at 60% 40%, black 30%, transparent 80%);
+}
+.hero-img img {
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  opacity: 0; transition: opacity .6s;
+}
+.hero-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, var(--dark) 0%, transparent 40%),
+              linear-gradient(to top, var(--dark) 0%, transparent 35%);
+}
+.hero-badge {
+  position: absolute; bottom: 2.5rem; left: 2.5rem;
+  background: rgba(9,9,10,0.85); backdrop-filter: blur(10px);
+  border: 1px solid var(--border-dark); border-radius: var(--r);
+  padding: 1rem 1.4rem; display: flex; align-items: center; gap: .75rem;
+  animation: fadeUp .5s ease .85s both;
+}
+.hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(34,197,94,.4) } 50%{ box-shadow:0 0 0 6px rgba(34,197,94,0) } }
+.hero-badge-text { font-size: .78rem; line-height: 1.4; }
+.hero-badge-text strong { display: block; font-weight: 700; color: var(--white); }
+.hero-badge-text span { color: rgba(255,255,255,.5); }
+
+/* ── STATS ─────────────────────────────────────────────── */
+#stats {
+  background: var(--cream); color: var(--dark);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.stat-item {
+  padding: 3rem 2.5rem; border-right: 1px solid var(--border-light);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--serif); font-size: clamp(2.4rem, 4vw, 3.6rem);
+  font-weight: 900; line-height: 1; color: var(--dark); margin-bottom: .5rem;
+}
+.stat-num span { color: var(--acc2); }
+.stat-label { font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted2); }
+
+/* ── ABOUT ─────────────────────────────────────────────── */
+#about {
+  background: var(--cream); color: var(--dark);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+}
+.about-img-wrap {
+  position: relative; min-height: 560px; background: var(--dark3); overflow: hidden;
+}
+.about-img-wrap img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center center;
+  opacity: 0; transition: opacity .6s;
+}
+.about-img-accent {
+  position: absolute; bottom: -1px; right: -1px;
+  width: 100px; height: 100px; background: var(--acc);
+}
+.about-content {
+  padding: 6rem 6vw 6rem 5vw;
+  display: flex; flex-direction: column; justify-content: center; gap: 1.75rem;
+}
+.section-eyebrow {
+  font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--acc2); display: flex; align-items: center; gap: .5rem;
+}
+.section-eyebrow::before { content:''; width:24px; height:2px; background: var(--acc2); display:block; }
+.about-h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900; line-height: 1.12; letter-spacing: -0.02em;
+}
+.about-body { font-size: 1rem; line-height: 1.75; color: var(--muted2); max-width: 480px; }
+.about-creds { display: flex; flex-wrap: wrap; gap: .75rem; }
+.cred-pill {
+  padding: .45rem 1rem; border-radius: 40px;
+  border: 1px solid var(--border-light);
+  font-size: .78rem; font-weight: 600; color: var(--dark);
+  background: var(--white);
+}
+
+/* ── TRANSFORM ─────────────────────────────────────────── */
+#transform {
+  background: var(--dark); color: var(--white);
+  padding: 8rem 7vw;
+}
+.transform-inner { max-width: 1100px; margin: 0 auto; }
+.transform-header {
+  text-align: center; margin-bottom: 5rem;
+}
+.transform-header h2 {
+  font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3.5rem);
+  font-weight: 900; line-height: 1.1; margin-top: 1rem; margin-bottom: 1.25rem;
+}
+.transform-header p { font-size: 1rem; color: rgba(255,255,255,.55); max-width: 480px; margin: 0 auto; }
+.transform-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  border: 2px solid var(--border-dark); border-radius: var(--r-lg); overflow: hidden;
+}
+.transform-col {
+  padding: 3.5rem 3rem; background: var(--dark2);
+}
+.transform-col.right { background: var(--dark3); }
+.transform-col-label {
+  font-size: .68rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+  margin-bottom: 2rem; padding: .35rem .9rem; border-radius: 4px;
+  display: inline-block;
+}
+.transform-col.left .transform-col-label { background: rgba(255,255,255,.06); color: rgba(255,255,255,.45); }
+.transform-col.right .transform-col-label { background: rgba(232,168,48,.12); color: var(--acc); }
+.transform-items { display: flex; flex-direction: column; gap: 1.25rem; }
+.transform-item {
+  display: flex; align-items: flex-start; gap: 1rem;
+  font-size: .95rem; line-height: 1.6;
+}
+.transform-icon {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.transform-col.left .transform-icon { background: rgba(255,255,255,.05); color: rgba(255,255,255,.35); }
+.transform-col.right .transform-icon { background: rgba(232,168,48,.15); color: var(--acc); }
+.transform-item-text { color: rgba(255,255,255,.75); }
+.transform-col.right .transform-item-text { color: rgba(255,255,255,.9); }
+
+/* ── PROCESS ─────────────────────────────────────────────── */
+#process {
+  background: var(--cream); color: var(--dark);
+  padding: 8rem 7vw;
+}
+.process-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 5rem; align-items: start; }
+.process-header { position: sticky; top: 100px; }
+.process-header h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900; line-height: 1.1; margin-top: 1rem; margin-bottom: 1.25rem;
+}
+.process-header p { font-size: .95rem; line-height: 1.7; color: var(--muted2); }
+.process-steps { display: flex; flex-direction: column; gap: 0; }
+.process-step {
+  display: grid; grid-template-columns: 60px 1fr;
+  gap: 1.5rem; padding: 2.5rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.process-step:first-child { padding-top: 0; }
+.process-step:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--serif); font-size: 2.5rem; font-weight: 900;
+  color: var(--acc); line-height: 1; opacity: .6;
+}
+.step-content {}
+.step-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; margin-bottom: .6rem; }
+.step-desc { font-size: .93rem; line-height: 1.7; color: var(--muted2); }
+
+/* ── SERVICES ─────────────────────────────────────────────── */
+#services {
+  background: var(--cream2); color: var(--dark);
+  padding: 8rem 7vw;
+}
+.services-inner { max-width: 1100px; margin: 0 auto; }
+.services-header { margin-bottom: 3.5rem; }
+.services-header h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900; line-height: 1.1; margin-top: 1rem;
+}
+#svc-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+}
+.svc-card {
+  background: var(--white); border-radius: var(--r-lg);
+  padding: 2.5rem 2rem; border: 1px solid var(--border-light);
+  display: flex; flex-direction: column; gap: 1rem;
+  transition: transform .25s, box-shadow .25s;
+}
+.svc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.09); }
+.svc-icon {
+  width: 48px; height: 48px; border-radius: var(--r);
+  background: rgba(232,168,48,.12); color: var(--acc2);
+  display: flex; align-items: center; justify-content: center;
+}
+.svc-icon svg { width: 24px; height: 24px; }
+.svc-name { font-family: var(--serif); font-size: 1.25rem; font-weight: 700; }
+.svc-desc { font-size: .88rem; line-height: 1.65; color: var(--muted2); flex: 1; }
+.svc-price {
+  font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--acc2); padding-top: 1rem; border-top: 1px solid var(--border-light);
+}
+
+/* ── TESTIMONIALS ─────────────────────────────────────────── */
+#testi {
+  background: var(--dark); color: var(--white);
+  padding: 8rem 7vw;
+}
+.testi-inner { max-width: 1100px; margin: 0 auto; }
+.testi-header { text-align: center; margin-bottom: 4rem; }
+.testi-header h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900; line-height: 1.1; margin-top: 1rem;
+}
+.testi-header p { font-size: 1rem; color: rgba(255,255,255,.5); margin-top: .75rem; }
+#testi-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+}
+.testi-card {
+  background: var(--dark2); border: 1px solid var(--border-dark);
+  border-radius: var(--r-lg); padding: 2rem 1.75rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+.testi-stars { display: flex; gap: 3px; }
+.testi-stars svg { width: 16px; height: 16px; fill: var(--acc); color: var(--acc); }
+.testi-quote {
+  font-family: var(--serif); font-style: italic;
+  font-size: 1.05rem; line-height: 1.6; color: rgba(255,255,255,.85); flex: 1;
+}
+.testi-quote::before { content: '\201C'; }
+.testi-quote::after  { content: '\201D'; }
+.testi-author { display: flex; align-items: center; gap: .75rem; }
+.testi-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--acc) 0%, var(--acc2) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .9rem; color: var(--dark); flex-shrink: 0;
+}
+.testi-info strong { display: block; font-size: .88rem; font-weight: 700; }
+.testi-info span { font-size: .78rem; color: rgba(255,255,255,.4); }
+.testi-result-badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .3rem .75rem; border-radius: 20px;
+  background: rgba(232,168,48,.12); color: var(--acc);
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* ── BOOKING ─────────────────────────────────────────────── */
+#booking {
+  background: var(--cream); color: var(--dark);
+  display: grid; grid-template-columns: 1fr 1fr; min-height: 600px;
+}
+.booking-left {
+  background: var(--dark); color: var(--white);
+  padding: 6rem 5vw 6rem 7vw;
+  display: flex; flex-direction: column; justify-content: center; gap: 1.75rem;
+}
+.booking-left h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 900; line-height: 1.1;
+}
+.booking-left p { font-size: 1rem; line-height: 1.7; color: rgba(255,255,255,.55); max-width: 400px; }
+.booking-bullets { display: flex; flex-direction: column; gap: .9rem; }
+.booking-bullet { display: flex; align-items: center; gap: .75rem; font-size: .9rem; }
+.booking-bullet svg { width: 18px; height: 18px; color: var(--acc); flex-shrink: 0; }
+.booking-right {
+  background: var(--cream); padding: 4rem;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+}
+.calendly-wrap {
+  width: 100%; min-height: 460px; border-radius: var(--r-lg); overflow: hidden;
+  background: var(--white); border: 1px solid var(--border-light);
+}
+.calendly-fallback {
+  background: var(--white); border: 1px solid var(--border-light);
+  border-radius: var(--r-lg); padding: 3rem 2.5rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.25rem;
+}
+.fallback-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(232,168,48,.1); color: var(--acc);
+  display: flex; align-items: center; justify-content: center;
+}
+.fallback-icon svg { width: 28px; height: 28px; }
+.fallback-h3 { font-family: var(--serif); font-size: 1.5rem; font-weight: 700; color: var(--dark); }
+.fallback-p { font-size: .9rem; color: var(--muted2); line-height: 1.6; }
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+footer {
+  background: var(--dark); color: rgba(255,255,255,.35);
+  text-align: center; padding: 2.5rem 2rem;
+  font-size: .8rem; border-top: 1px solid var(--border-dark);
+}
+footer a { color: var(--acc); }
+
+/* ── TRANSFORMATIONS / BEFORE-AFTER ────────────────────── */
+#transformations {
+  background: var(--cream); color: var(--dark);
+  padding: 8rem 7vw;
+}
+.tfm-inner { max-width: 1100px; margin: 0 auto; }
+.tfm-header { text-align: center; margin-bottom: 4rem; }
+.tfm-header h2 {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 900; line-height: 1.1; margin-top: 1rem;
+}
+.tfm-header p { font-size: 1rem; color: var(--muted2); margin-top: .75rem; }
+#tfm-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;
+}
+.ba-card { display: flex; flex-direction: column; gap: 1rem; }
+.ba-slider {
+  position: relative; border-radius: var(--r-lg); overflow: hidden;
+  aspect-ratio: 3/4; cursor: col-resize; user-select: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+}
+.ba-before, .ba-after {
+  position: absolute; inset: 0;
+  background: #1a1a1a;
+}
+.ba-before img, .ba-after img {
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  display: block; opacity: 0; transition: opacity .4s;
+}
+.ba-before img.loaded, .ba-after img.loaded { opacity: 1; }
+.ba-after {
+  clip-path: inset(0 50% 0 0);
+  transition: clip-path 0s;
+}
+.ba-divider {
+  position: absolute; top: 0; bottom: 0;
+  left: 50%; transform: translateX(-50%);
+  width: 3px; background: var(--white); z-index: 3;
+  pointer-events: none;
+}
+.ba-handle {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--white); z-index: 4;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  pointer-events: none;
+}
+.ba-handle svg { width: 20px; height: 20px; color: var(--dark); }
+.ba-labels {
+  position: absolute; bottom: 1rem; left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  padding: 0 1rem; z-index: 5; pointer-events: none;
+}
+.ba-label {
+  padding: .3rem .7rem; border-radius: 4px;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--white);
+}
+.ba-label.before { background: rgba(0,0,0,.6); }
+.ba-label.after  { background: var(--acc2); }
+.ba-meta { text-align: center; }
+.ba-meta-name { font-weight: 700; font-size: .95rem; }
+.ba-meta-result {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .78rem; font-weight: 700; color: var(--acc2); margin-top: .25rem;
+}
+.ba-meta-result::before { content: '↑'; }
+
+/* ── SCROLL REVEAL ──────────────────────────────────────── */
+.stat-item, .process-step, .svc-card, .testi-card, .ba-card, .transform-grid, .transform-header, .about-content {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.revealed { opacity: 1 !important; transform: translateY(0) !important; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #hero, #about, #booking { grid-template-columns: 1fr; }
+  .hero-right { min-height: 50vw; }
+  #stats { grid-template-columns: repeat(2,1fr); }
+  .stat-item { border-right: none; border-bottom: 1px solid var(--border-light); }
+  .stat-item:nth-child(odd) { border-right: 1px solid var(--border-light); }
+  .stat-item:nth-last-child(-n+2) { border-bottom: none; }
+  .transform-grid, #testi-grid, #svc-grid, #tfm-grid { grid-template-columns: 1fr; }
+  .process-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .process-header { position: static; }
+  .booking-left { padding: 4rem 5vw; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" id="nav-name">Loading<span>.</span></div>
+  <a class="nav-cta" href="#booking" id="nav-cta">Book a Call</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow" id="hero-eyebrow">Online Coaching</div>
+    <h1 class="hero-h1" id="hero-h1">Build the body you've <em>always</em> been capable of.</h1>
+    <p class="hero-sub" id="hero-sub">Expert 1-on-1 online coaching, personalised to your goals.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#booking" id="hero-cta">Book a Free Call</a>
+      <a class="btn-ghost" href="#about">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        Learn more
+      </a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-img" id="hero-img">
+      <img id="hero-photo" alt="Coach" onload="this.style.opacity=1"/>
+    </div>
+    <div class="hero-img-overlay"></div>
+    <div class="hero-badge" id="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <div class="hero-badge-text">
+        <strong id="badge-stat">18,500 followers</strong>
+        <span id="badge-niche">Online fitness coach</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat-item">
+    <div class="stat-num"><span id="s1">0</span><span id="s1-suf">+</span></div>
+    <div class="stat-label" id="s1-label">Clients Transformed</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span id="s2">0</span><span id="s2-suf">%</span></div>
+    <div class="stat-label" id="s2-label">Success Rate</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span id="s3">0</span><span id="s3-suf">+</span></div>
+    <div class="stat-label" id="s3-label">Years Experience</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span id="s4">0</span><span id="s4-suf">K</span></div>
+    <div class="stat-label" id="s4-label">Instagram Followers</div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-img-wrap">
+    <img id="about-photo" alt="About" onload="this.style.opacity=1"/>
+    <div class="about-img-accent"></div>
+  </div>
+  <div class="about-content">
+    <div class="section-eyebrow">About Me</div>
+    <h2 class="about-h2" id="about-h2">The coach behind the results.</h2>
+    <p class="about-body" id="about-body">I help ambitious athletes build elite physiques through evidence-based programming and relentless accountability. No fluff. No guesswork. Just a proven system that delivers.</p>
+    <div class="about-creds" id="about-creds">
+      <span class="cred-pill">Certified Strength Coach</span>
+      <span class="cred-pill">Nutrition Specialist</span>
+      <span class="cred-pill">6+ Years Coaching</span>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFORM -->
+<section id="transform">
+  <div class="transform-inner">
+    <div class="transform-header">
+      <div class="section-eyebrow" style="justify-content:center;color:var(--acc);">The Difference</div>
+      <h2>Stop guessing. <em>Start transforming.</em></h2>
+      <p>Most coaches offer a plan. I offer a complete system — personalized to you and built to last.</p>
+    </div>
+    <div class="transform-grid">
+      <div class="transform-col left">
+        <div class="transform-col-label">Without Coaching</div>
+        <div class="transform-items" id="pain-list">
+          <div class="transform-item">
+            <div class="transform-icon">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="transform-item-text">Following random programs with no clear progression</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            <div class="transform-item-text">Wasted hours in the gym with nothing to show for it</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            <div class="transform-item-text">Guessing on nutrition and stalling every 4–6 weeks</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+            <div class="transform-item-text">No accountability — easy to quit when life gets hard</div>
+          </div>
+        </div>
+      </div>
+      <div class="transform-col right">
+        <div class="transform-col-label">With My Coaching</div>
+        <div class="transform-items" id="gain-list">
+          <div class="transform-item">
+            <div class="transform-icon">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="transform-item-text">A fully personalized training system built around your goals</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="transform-item-text">Consistent, visible progress every single week</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="transform-item-text">Precision nutrition that fuels performance and body comp</div>
+          </div>
+          <div class="transform-item">
+            <div class="transform-icon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="transform-item-text">Daily check-ins and real accountability to keep you on track</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="process-inner">
+    <div class="process-header">
+      <div class="section-eyebrow">How It Works</div>
+      <h2 id="process-h2">A simple system. <em>Extraordinary results.</em></h2>
+      <p id="process-sub">From our first call to your first breakthrough — here's exactly what to expect.</p>
+    </div>
+    <div class="process-steps" id="process-steps">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Book a free discovery call</div>
+          <div class="step-desc">We talk about your goals, your history, and what's been holding you back. No pressure, no pitch — just clarity on whether we're a fit.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Get your custom blueprint</div>
+          <div class="step-desc">I build your complete training and nutrition system from scratch — tailored to your schedule, body type, and exact goals.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">Execute with daily support</div>
+          <div class="step-desc">You're never training alone. Daily check-ins, form reviews, and weekly plan adjustments keep you progressing every single week.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-title">Build the body — and the habits</div>
+          <div class="step-desc">This isn't a 12-week program. It's a permanent upgrade. You'll leave with the body, the knowledge, and the systems to stay there forever.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-inner">
+    <div class="services-header">
+      <div class="section-eyebrow">What I Offer</div>
+      <h2 id="services-h2">Choose your <em>path forward.</em></h2>
+    </div>
+    <div id="svc-grid">
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="svc-name">1-on-1 Coaching</div>
+        <div class="svc-desc">Fully personalized training and nutrition with daily support. The complete premium experience.</div>
+        <div class="svc-price">Most popular</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="svc-name">Custom Program</div>
+        <div class="svc-desc">A periodized training plan built around your specific goals, schedule, and equipment.</div>
+        <div class="svc-price">One-time investment</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="svc-name">Nutrition Coaching</div>
+        <div class="svc-desc">Evidence-based nutrition strategy — dialed in to your lifestyle, preferences, and performance goals.</div>
+        <div class="svc-price">Add-on available</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFORMATIONS -->
+<section id="transformations">
+  <div class="tfm-inner">
+    <div class="tfm-header">
+      <div class="section-eyebrow" style="justify-content:center;">Client Transformations</div>
+      <h2>The proof is <em>in the results.</em></h2>
+      <p>Real clients. Real photos. No filters, no tricks — just what's possible with the right system.</p>
+    </div>
+    <div id="tfm-grid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testi">
+  <div class="testi-inner">
+    <div class="testi-header">
+      <div class="section-eyebrow" style="justify-content:center;">Client Results</div>
+      <h2>Real people. <em>Real transformations.</em></h2>
+      <p>Don't take my word for it — hear from the people who've done the work.</p>
+    </div>
+    <div id="testi-grid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section id="booking">
+  <div class="booking-left">
+    <div class="section-eyebrow" style="color:var(--acc);">Ready to Start?</div>
+    <h2 id="booking-h2">Your transformation starts with <em>one conversation.</em></h2>
+    <p id="booking-p">A free 20-minute call. No pitch. Just clarity on exactly what it would take to get you to your goals.</p>
+    <div class="booking-bullets">
+      <div class="booking-bullet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>100% free, no obligation</span>
+      </div>
+      <div class="booking-bullet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Get a custom roadmap on the call</span>
+      </div>
+      <div class="booking-bullet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Limited spots available each week</span>
+      </div>
+    </div>
+  </div>
+  <div class="booking-right">
+    <div id="bk-widget"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <p>Built for <strong id="footer-name">your coach</strong> · <a href="%%BARN_SOCIAL_URL%%" target="_blank">Powered by Barn Social</a></p>
+</footer>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────
+const COLOR_VIBES = {
+  bold:    { acc:'#F0532E', acc2:'#D43F1C' },
+  warm:    { acc:'#E8A830', acc2:'#C8901A' },
+  dark:    { acc:'#A78BFA', acc2:'#7C3AED' },
+  minimal: { acc:'#22C55E', acc2:'#16A34A' },
+  clean:   { acc:'#06B6D4', acc2:'#0891B2' }
+};
+
+const DEFAULT_TESTI = [
+  { name:'Marcus J.', sub:'Lost 22lbs in 12 weeks', quote:'I tried three different programs before this. Nothing clicked until I had real accountability and a plan built specifically for me.', result:'+22 lbs lost', init:'MJ' },
+  { name:'Priya S.', sub:'Athlete — 800m runner', quote:'My race times dropped and I finally stopped breaking down in training. The programming is surgical.', result:'PR every month', init:'PS' },
+  { name:'Demi C.', sub:'First-time client', quote:'I was skeptical. I am not anymore. Six months in and I feel stronger than I ever have — and I actually understand why.', result:'6-mo transformation', init:'DC' }
+];
+
+// ── HELPERS ──────────────────────────────────────────
+function emp(str) {
+  if (!str) return '';
+  return str.replace(/\[([^\]]+)\]/g, '<em>$1</em>');
+}
+
+function countUp(el, target, duration=1400) {
+  let start = 0, step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.round(start).toLocaleString();
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
+
+// ── USERNAME ─────────────────────────────────────────
+const username = location.pathname.match(/\/(?:landing)\/([^/?#]+)/)?.[1] || 'test';
+
+// ── TRACK VIEW ───────────────────────────────────────
+fetch(`/track/lp/${username}`, { method: 'POST' }).catch(() => {});
+
+// ── FETCH DATA ───────────────────────────────────────
+// Use server-injected data if available (no loading state), else fetch
+const _dataPromise = window.__PREVIEW_DATA__
+  ? Promise.resolve(window.__PREVIEW_DATA__)
+  : fetch(`/api/preview/${username}`).then(r => r.json());
+
+_dataPromise.then(({ profile, website, images }) => {
+    // Color vibe
+    const vibe = COLOR_VIBES[profile.colorVibe] || COLOR_VIBES.warm;
+    document.documentElement.style.setProperty('--acc',  vibe.acc);
+    document.documentElement.style.setProperty('--acc2', vibe.acc2);
+
+    const first = profile.firstName || 'Your Coach';
+    const full  = profile.fullName  || first;
+
+    // Nav
+    document.getElementById('nav-name').innerHTML = `${first}<span>.</span>`;
+    document.title = `${full} — Online Coaching`;
+
+    // Hero
+    document.getElementById('hero-eyebrow').textContent = profile.niche || 'Online Coaching';
+    document.getElementById('hero-h1').innerHTML = emp(website.headline || `Train with <em>${first}</em>`);
+    document.getElementById('hero-sub').textContent = website.subheadline || `Elite coaching, personalized to you.`;
+    document.getElementById('hero-cta').textContent  = website.cta || 'Book a Free Call';
+    document.getElementById('nav-cta').textContent   = website.cta || 'Book a Free Call';
+
+    // Badge
+    const followers = profile.followers || 0;
+    document.getElementById('badge-stat').textContent = followers >= 1000 ? `${(followers/1000).toFixed(1)}K followers` : `${followers} followers`;
+    document.getElementById('badge-niche').textContent = profile.niche || 'Online Coach';
+
+    // Photos — about section should show a real face photo (profilePic), not the hero image
+    const heroImg  = document.getElementById('hero-photo');
+    const aboutImg = document.getElementById('about-photo');
+    if (images?.hero)  heroImg.src  = images.hero;
+    const aboutSrc = images?.aboutPhoto || images?.profilePic || images?.about;
+    if (aboutSrc) aboutImg.src = aboutSrc;
+    else if (images?.hero) aboutImg.src = images.hero;
+
+    // Stats
+    const stats = website.stats || {};
+    const s = [
+      { id:'s1', val: stats.clients||120, suf:'s1-suf', label:'s1-label', lbl:'Clients Transformed', suffix:'+' },
+      { id:'s2', val: stats.successRate||94, suf:'s2-suf', label:'s2-label', lbl:'Success Rate', suffix:'%' },
+      { id:'s3', val: stats.years||6, suf:'s3-suf', label:'s3-label', lbl:'Years Coaching', suffix:'+' },
+      { id:'s4', val: Math.round((profile.followers||18500)/1000), suf:'s4-suf', label:'s4-label', lbl:'Followers', suffix:'K' }
+    ];
+    s.forEach(st => {
+      document.getElementById(st.suf).textContent = st.suffix;
+      document.getElementById(st.label).textContent = st.lbl;
+    });
+    const { inView, animate, stagger } = Motion;
+    inView('#stats', () => {
+      s.forEach(st => countUp(document.getElementById(st.id), st.val));
+    });
+
+    // About
+    document.getElementById('about-h2').innerHTML = emp(website.aboutHeadline || `The coach behind <em>the results.</em>`);
+    document.getElementById('about-body').textContent = website.bio || profile.bio || `I help ambitious people build bodies that perform at the highest level — through personalized programming and relentless accountability.`;
+
+    const creds = website.credentials || [];
+    if (creds.length) {
+      const credWrap = document.getElementById('about-creds');
+      credWrap.innerHTML = creds.map(c => `<span class="cred-pill">${c}</span>`).join('');
+    }
+
+    // Process steps override
+    if (website.processSteps?.length) {
+      const steps = document.querySelectorAll('.process-step');
+      website.processSteps.forEach((s, i) => {
+        if (steps[i]) {
+          steps[i].querySelector('.step-title').textContent = s.title;
+          steps[i].querySelector('.step-desc').textContent  = s.desc;
+        }
+      });
+    }
+
+    // Services
+    if (website.services?.length) {
+      const svgIcons = [
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`
+      ];
+      document.getElementById('svc-grid').innerHTML = website.services.map((svc, i) => `
+        <div class="svc-card">
+          <div class="svc-icon">${svgIcons[i % svgIcons.length]}</div>
+          <div class="svc-name">${svc.name}</div>
+          <div class="svc-desc">${svc.desc}</div>
+          <div class="svc-price">${svc.price || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // Transformations (before/after slider)
+    const tfms = images?.transformations || [];
+    if (tfms.length) {
+      document.getElementById('tfm-grid').innerHTML = tfms.map(t => `
+        <div class="ba-card">
+          <div class="ba-slider" data-pct="50">
+            <div class="ba-before"><img src="${t.before}" alt="Before" onload="this.classList.add('loaded')"/></div>
+            <div class="ba-after"  style="clip-path:inset(0 50% 0 0)"><img src="${t.after}" alt="After" onload="this.classList.add('loaded')"/></div>
+            <div class="ba-divider"></div>
+            <div class="ba-handle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"/><polyline points="9 18 3 12 9 6" transform="translate(6,0)"/>
+              </svg>
+            </div>
+            <div class="ba-labels">
+              <span class="ba-label before">Before</span>
+              <span class="ba-label after">After</span>
+            </div>
+          </div>
+          <div class="ba-meta">
+            <div class="ba-meta-name">${t.name}</div>
+            <div class="ba-meta-result">${t.result}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Wire up drag-to-reveal on each slider — scoped per slider to avoid cross-interference
+      let activeSlider = null;
+      let activeSetPos = null;
+
+      document.querySelectorAll('.ba-slider').forEach(slider => {
+        const afterEl = slider.querySelector('.ba-after');
+        const divider = slider.querySelector('.ba-divider');
+        const handle  = slider.querySelector('.ba-handle');
+
+        function setPos(e) {
+          e.preventDefault();
+          const rect = slider.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const x = clientX - rect.left;
+          const pct = Math.min(100, Math.max(0, (x / rect.width) * 100));
+          afterEl.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+          divider.style.left = pct + '%';
+          handle.style.left = pct + '%';
+        }
+
+        function startDrag(e) {
+          activeSlider = slider;
+          activeSetPos = setPos;
+          setPos(e);
+        }
+
+        slider.addEventListener('mousedown', startDrag);
+        slider.addEventListener('touchstart', startDrag, { passive: false });
+      });
+
+      // Single global listeners — only act on the active slider
+      window.addEventListener('mousemove', e => { if (activeSlider) activeSetPos(e); });
+      window.addEventListener('touchmove', e => { if (activeSlider) activeSetPos(e); }, { passive: false });
+      window.addEventListener('mouseup',   () => { activeSlider = null; activeSetPos = null; });
+      window.addEventListener('touchend',  () => { activeSlider = null; activeSetPos = null; });
+    } else {
+      // No transformations — hide section
+      const tfmSec = document.getElementById('transformations');
+      if (tfmSec) tfmSec.style.display = 'none';
+    }
+
+    // Testimonials
+    const testimonials = website.testimonials || DEFAULT_TESTI;
+    document.getElementById('testi-grid').innerHTML = testimonials.slice(0,3).map(t => `
+      <div class="testi-card">
+        <div class="testi-stars">${'<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/></svg>'.repeat(5)}</div>
+        <div class="testi-quote">${t.quote}</div>
+        <div class="testi-author">
+          <div class="testi-avatar">${t.init || t.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+          <div class="testi-info">
+            <strong>${t.name}</strong>
+            <span>${t.sub || ''}</span>
+          </div>
+        </div>
+        ${t.result ? `<div class="testi-result-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>${t.result}</div>` : ''}
+      </div>
+    `).join('');
+
+    // Booking
+    document.getElementById('booking-h2').innerHTML = emp(website.bookingHeadline || `Your transformation starts with <em>one conversation.</em>`);
+    document.getElementById('booking-p').textContent = website.bookingSubtext || `A free 20-minute call. No pitch. Just clarity on exactly what it would take to get you to your goals.`;
+    document.getElementById('footer-name').textContent = full;
+
+    // Calendly
+    const calendlyUrl = '%%CALENDLY_LINK%%';
+    const bkWidget = document.getElementById('bk-widget');
+    if (calendlyUrl && calendlyUrl !== '%%CALENDLY_LINK%%') {
+      bkWidget.innerHTML = `<div class="calendly-wrap calendly-inline-widget" data-url="${calendlyUrl}?hide_gdpr_banner=1&primary_color=${vibe.acc.replace('#','')}" style="min-width:300px;height:460px;"></div>`;
+      const s = document.createElement('script');
+      s.src = 'https://assets.calendly.com/assets/external/widget.js';
+      s.async = true;
+      document.head.appendChild(s);
+    } else {
+      bkWidget.innerHTML = `
+        <div class="calendly-fallback">
+          <div class="fallback-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="fallback-h3">Book a Free Call</div>
+          <p class="fallback-p">Reach out directly to schedule your free discovery call with ${first}.</p>
+          <a class="btn-primary" href="mailto:${profile.email || '#'}" style="margin-top:.5rem">Send a Message</a>
+        </div>`;
+    }
+
+    // ── ANIMATIONS ───────────────────────────────────
+    // Hero uses CSS keyframe animations — no Motion needed
+
+    // Scroll-reveal for below-fold sections
+    const revealEls = document.querySelectorAll('.stat-item, .process-step, .svc-card, .testi-card, .ba-card, .transform-grid, .transform-header, .about-content');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => observer.observe(el));
+  })
+  .catch(err => {
+    console.error('Preview load error:', err);
+    document.getElementById('hero-h1').textContent = 'Demo not available';
+  });
+</script>
+</body>
+</html>
